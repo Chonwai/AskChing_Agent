@@ -5,7 +5,7 @@ Updated: 2026-09-09 (Asia/Hong_Kong)
 ## Current checkpoint
 
 - Branch: `main`, tracking public `origin/main`
-- Implementation HEAD: `616897c` (`fix(grok): load root environment in CLI`)
+- Implementation HEAD: `3391bc5` (`fix(demo): pin fixture and live execution modes`)
 - This handoff-only commit follows that implementation checkpoint.
 - Working tree was clean before this handoff update.
 
@@ -27,6 +27,7 @@ New commits in the latest Codex batch:
 - `ce1c4d3 docs: document Grok CLI and current tool scope`
 - `183c1e9 fix(demo): load local environment for live runs`
 - `616897c fix(grok): load root environment in CLI`
+- `3391bc5 fix(demo): pin fixture and live execution modes`
 
 ## Verification evidence
 
@@ -43,6 +44,7 @@ Credentialed end-to-end checks also passed on 2026-09-09:
 - Live Graph: 3 cited sources at blocks 25,933,794–25,933,795; Compound 4.6453%, Aave 3.6283%, Spark 3.5419%.
 - Real Grok with fixture tools: selected `compare_markets`, cited all 3 sources, labeled fixture data, preserved the variable-rate definition, and stated `asOf`.
 - The launchers now load the root `.env`; `evals/demo-env-config.test.ts` guards all credentialed entry points.
+- `pnpm demo` is always fixture mode; `pnpm demo:live` and `pnpm live:smoke` are always live regardless of `.env` defaults.
 
 ## Run the product
 
@@ -63,7 +65,7 @@ For xAI, set `XAI_API_KEY`. For a local OpenAI-compatible server, set `ASKCHING_
 
 ## Next action
 
-Prepare the showcase/demo video and final ETHOnline submission materials using the now-verified live Graph and real Grok paths. Preserve the incremental history and push each documentation or demo-script improvement separately.
+Finalize the three-source demo prompts, then prepare the showcase copy and a 2–4 minute human-narrated video runbook using the verified live Graph and real Grok paths. Preserve the incremental history and push each documentation or demo-script improvement separately.
 
 ## Source-of-truth documents
 
