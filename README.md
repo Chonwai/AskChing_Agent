@@ -4,7 +4,7 @@ AskChing is a Grok-orchestrated research MCP for ETHOnline 2026. It fans out acr
 
 ## Status
 
-The repository is being built from scratch. The first vertical slice is `compare_markets` for a comparable USDC lending metric in deterministic fixture mode and credential-gated live mode.
+The repository was built from scratch for ETHOnline 2026. Its three MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
 
 ## Workspace
 
@@ -26,6 +26,16 @@ pnpm eval
 
 Node.js 20 or newer is required. Fixture mode is the default; set `DEMO_LIVE=1` and provide `GRAPH_API_KEY` for live Graph gateway requests.
 
+## Ask Grok
+
+After building, add `XAI_API_KEY` to `.env` and run:
+
+```bash
+pnpm askching -- "Compare USDC supply APY across Aave, Compound, and Spark"
+```
+
+The CLI sends the natural-language request to Grok, executes any requested AskChing tools in process, and returns Grok's synthesis of the cited tool result. For a local OpenAI-compatible model, set `ASKCHING_LLM_BASE_URL` and `ASKCHING_LLM_MODEL`; a key is not required for local endpoints.
+
 ## Run the comparison
 
 Fixture smoke test:
@@ -40,7 +50,7 @@ Authenticated live smoke test:
 DEMO_LIVE=1 GRAPH_API_KEY=your_studio_key pnpm live:smoke
 ```
 
-Live mode queries the Aave V3 and Compound V3 Ethereum subgraphs listed in `demos/prompts.md`. Missing credentials fail with `GRAPH_API_KEY is required when DEMO_LIVE=1`; source errors and missing lender rates also fail rather than falling back to fixtures.
+Live mode queries the Aave V3, Compound V3, and Spark Lend Ethereum subgraphs listed in `demos/prompts.md`. Missing credentials fail with `GRAPH_API_KEY is required when DEMO_LIVE=1`; failed sources are reported as explicit gaps only when at least two cited sources remain.
 
 ## MCP client configuration
 
@@ -64,9 +74,9 @@ Build first, then replace the placeholder path in this Cursor/Claude-style confi
 
 For live use, change `DEMO_LIVE` to `1` and pass `GRAPH_API_KEY` through the client’s secret environment configuration. MCP uses stdout for protocol messages; diagnostics belong on stderr.
 
-## Bootstrap limitations
+## Current scope
 
-`compare_markets` is implemented for USDC supply APY across Aave V3 and Compound V3. The server registers `research_brief` and `risk_scan`, but they currently return explicit not-implemented errors. The Grok orchestrator package is scaffolded; its tool-calling loop is the next product slice.
+`compare_markets`, `research_brief`, and `risk_scan` are implemented for comparable USDC supply-market research across Aave V3, Compound V3, and Spark Lend. `risk_scan` is intentionally a peer-relative spot snapshot until historical time-series queries are added. AskChing is research software, not a trading bot or transaction executor.
 
 ## Why not just official Subgraph MCP?
 

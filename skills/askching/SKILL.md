@@ -17,7 +17,7 @@ Use AskChing as the research tool layer. Treat its cited structured output as ev
 | Synthesize a question into a cited brief | `research_brief` |
 | Look for peer-relative metric changes | `risk_scan` |
 
-The bootstrap implementation supports `compare_markets` for `usdc_supply_apy` across `aave-v3` and `compound-v3`. The other tools currently return explicit not-implemented errors.
+The implementation supports `usdc_supply_apy` research across `aave-v3`, `compound-v3`, and `spark-lend`. `risk_scan` reports peer-relative spot signals and must not be described as historical analysis.
 
 ## Call pattern
 
@@ -33,7 +33,7 @@ Example input:
 ```json
 {
   "metric": "usdc_supply_apy",
-  "protocols": ["aave-v3", "compound-v3"]
+  "protocols": ["aave-v3", "compound-v3", "spark-lend"]
 }
 ```
 
@@ -41,7 +41,7 @@ Example input:
 
 Before using a number, confirm its row includes `subgraphId`, `timestamp`, and `queryHash`. Confirm a comparison contains at least two distinct subgraph sources. If either check fails, report the evidence gap and do not rank or synthesize the values.
 
-If a tool returns an error or says a capability is not implemented, relay that limitation. Do not replace it with remembered rates, inferred risk scores, or uncited market data.
+If a tool returns an error or an explicit gap, relay that limitation. Do not replace it with remembered rates, inferred risk scores, or uncited market data.
 
 ## Output shape
 
