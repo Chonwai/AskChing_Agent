@@ -273,7 +273,7 @@ const ComparisonSchema = z.object({
 - 每個 row 必須有完整的 citation 欄位
 - 單位不同的 observations 不會被放在同一個 comparison 裡
 
-### 4.2 `research_brief`（🔨 TO BUILD）
+### 4.2 `research_brief`（✅ 已實作 2026-09-08）
 
 **Input:**
 
@@ -313,7 +313,7 @@ const ComparisonSchema = z.object({
 - ✅ `sources` 陣列長度 ≥ 2，且每個 source 有完整 citation 欄位
 - ❌ 若 protocols 參數缺少 ≥2 個 → 回傳 error（不是空 brief）
 
-### 4.3 `risk_scan`（🔨 TO BUILD — 後期）
+### 4.3 `risk_scan`（✅ 已實作 2026-09-08 — 誠實 spot-snapshot 版）
 
 **Input:**
 
@@ -392,6 +392,7 @@ query AskChingUsdcSupplyApy {
 |----------|---------|-------------|--------|
 | Aave V3 | Ethereum mainnet | `JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk` | Messari lending |
 | Compound V3 | Ethereum mainnet | `AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9` | Messari lending |
+| Spark Lend | Ethereum mainnet | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` | Messari lending |
 
 **⚠️ Phase 0 必須驗證：** 用 `GRAPH_API_KEY` 跑 `DEMO_LIVE=1 pnpm live:smoke`，確認兩個 subgraph 的 USDC rate 欄位存在。
 
@@ -483,7 +484,7 @@ DEMO_LIVE=0
 
 ---
 
-## 6b. Demo CLI 規格（🔨 TO BUILD — Phase 1）
+## 6b. Demo CLI 規格（✅ 已實作 2026-09-08）
 
 ```bash
 # Fixture mode (default)
@@ -517,24 +518,22 @@ function createMarketDataSource(env: AskChingEnvironment): MarketDataSource
   // env.DEMO_LIVE === "1" → live mode (requires GRAPH_API_KEY)
 ```
 
-### 7.2 Fan-out 策略（Phase 2 改為 settled）
+### 7.2 Fan-out 策略（✅ 已改為 settled 2026-09-08）
 
-**目前（Phase 1）：** `Promise.all` — 任一 source 失敗 → 全部失敗
-**Phase 2 改為：** `Promise.allSettled` — 至少 2 個 cited 存活即可出結果，其餘標 gap
+**目前（已實作）：** `Promise.allSettled` — 至少 2 個 cited 存活即可出結果，失敗的 source 收集到 `lastGaps` 並在錯誤訊息中指名。
 
 ```typescript
-// Phase 2 pseudo
-const results = await Promise.allSettled(
-  sources.map(s => client.getUsdcSupplyApy(s))
+// 已實作
+const settled = await Promise.allSettled(
+  selected.map((source) => client.getUsdcSupplyApy(source))
 );
-const successful = results
-  .filter(r => r.status === "fulfilled")
-  .map(r => r.value);
-
-if (successful.length < 2) {
-  throw new Error("Need at least 2 cited sources for comparison");
+const fulfilled = settled
+  .filter((r) => r.status === "fulfilled")
+  .map((r) => r.value);
+if (fulfilled.length < 2) {
+  throw new Error(`Need at least 2 cited sources; got ${fulfilled.length}`);
 }
-// Return successful results + caveats for failed ones
+// lastGaps 記錄失敗的 protocol + reason
 ```
 
 ---
