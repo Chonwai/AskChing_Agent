@@ -732,5 +732,5 @@ if (fulfilled.length < 2) {
 
 ---
 
-*Document version: 1.3 — 2026-09-08 (progress update: Phase 0/1a/2 done, Phase 1b next)*  
+*Document version: 1.4 — 2026-09-09（Phase 0–3 完成，Phase 4 進行中，總體 88%）*  
 *Status: For team development and ETHOnline 2026 submission*
