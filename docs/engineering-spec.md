@@ -467,8 +467,8 @@ const result = await compareMarkets(input, dataSource);
 ### 6.3 Grok API Config
 
 ```typescript
-// xAI API — 實際實作（packages/grok-orchestrator/src/index.ts:13,37）
-const XAI_API_BASE = "https://api.x.ai/v1";
+// xAI API — 實際實作（packages/grok-orchestrator/src/index.ts:12-13）
+const DEFAULT_BASE_URL = "https://api.x.ai/v1";  // 可被 ASKCHING_LLM_BASE_URL env 覆寫
 const DEFAULT_MODEL = "grok-4.6";  // 可被 ASKCHING_LLM_MODEL env 覆寫
 // ⚠️ Q1 追蹤：grok-4.6 尚未以真實 xAI API 驗證（見 §13 Q1）
 ```
@@ -587,7 +587,7 @@ if (fulfilled.length < 2) {
 | `three-source-compare` | 3 sources 排名正確 |
 | `risk-scan-basic` | risk_scan 輸出含 findings |
 
-> **實際狀態：** `evals/cases.json` 維持 5 條；settled fan-out、三源排名、gap detection 由 unit tests 覆蓋（pnpm test 21/21）。如需完整 eval 覆蓋可列為 v1.1 改善，不阻擋 submission。
+> **實際狀態：** `evals/cases.json` 維持 5 條；settled fan-out、gap detection 由 unit tests 覆蓋（`data-source.test.ts`）；三源排名沿用同一 ranking code path（`compareObservations`，2-source test 覆蓋）。如需完整 eval 覆蓋可列為 v1.1 改善，不阻擋 submission。
 
 ---
 
