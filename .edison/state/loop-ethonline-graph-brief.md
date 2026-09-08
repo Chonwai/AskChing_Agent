@@ -1,4 +1,4 @@
-# Loop State: AskChain x The Graph From Scratch — 參賽策略藍圖
+# Loop State: AskChing x The Graph From Scratch — 參賽策略藍圖
 
 - **Goal (Done Contract)**: 交付一份研究-backed 藍圖，回答：
   1. ETHOnline 2026 The Graph From Scratch 賽道資格規則（live 數據、load-bearing、open-source、demo 要求）
@@ -28,4 +28,4 @@
 - Team 已 submit showcase: https://ethglobal.com/showcase/askchain-w4ntc
 - Track 鎖定: The Graph — Best AI Tooling or AI Use Case (From Scratch) $5,000（1st $2,500）
 - 不打 Continuity track（code 是報名時才寫的 → From Scratch）
-- 產品定位: AskChain = Grok-orchestrated research MCP over The Graph
+- 產品定位: AskChing = Grok-orchestrated research MCP over The Graph

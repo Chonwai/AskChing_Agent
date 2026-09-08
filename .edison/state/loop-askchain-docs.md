@@ -1,4 +1,4 @@
-# Loop State: AskChain 雙文檔（Product Overview + Engineering Spec/Plan）
+# Loop State: AskChing 雙文檔（Product Overview + Engineering Spec/Plan）
 
 - **Goal (Done Contract)**: 交付兩份文檔
   1. **Product Overview**（`docs/product-overview.md`）：宏觀描述、問題痛點、解決方案、用戶旅程、產品定位、競賽 positioning
@@ -12,7 +12,7 @@
 
 - 活動：ETHOnline 2026, 09/04-09/16, 線上 async, submit 截止 09/13 12:00 PM EDT
 - Track: The Graph — Best AI Tooling or AI Use Case (From Scratch) $5,000
-- 產品定位：AskChain = Grok-orchestrated research MCP over The Graph
+- 產品定位：AskChing = Grok-orchestrated research MCP over The Graph
 - 第一階段：Grok Bot 優先可用（Skills/MCP），之後開放給 Codex / Gemini / Cursor 等
 - Codebase 已有：MCP server (compare_markets) + shared (schemas, compare, graph-client, data-source, fixtures) + evals (5 cases) + SKILL.md
 - Codebase 缺口：Grok orchestrator（1行 stub）、research_brief（not-implemented）、risk_scan（not-implemented）、第三 source、standalone demo CLI
