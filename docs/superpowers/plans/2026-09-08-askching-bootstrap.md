@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Use live The Graph Studio gateway / official Graph APIs; do not rebuild subgraph search.
-- Do not build trading, a large UI, hotel/casino framing, or x402 in this slice.
+- Do not build trading, a large UI, unrelated legacy framing, or x402 in this slice.
 - Commit after every meaningful scaffold, feature, test, and documentation step; never squash incremental history.
 - Fixture comparisons contain at least two distinct citations and a non-empty `asOf`.
 
@@ -71,4 +71,3 @@
 - [ ] Add the thin skill and demo prompts without embedding comparison logic.
 - [ ] Run `pnpm test`, `pnpm build`, and `pnpm eval`; record exact results in `HANDOFF.md`.
 - [ ] Commit tests and docs as separate `test:` and `docs:` commits.
-

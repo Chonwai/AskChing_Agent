@@ -6,7 +6,7 @@ Build a Start Fresh TypeScript pnpm monorepo whose first vertical slice compares
 
 ## Boundaries
 
-The repository owns three narrow layers: shared schemas and Graph access, an MCP server exposing research verbs, and a Grok CLI that calls those verbs. `skills/askching/SKILL.md` is a usage playbook only. AskChing will not implement subgraph discovery, trading, payments, or a substantial UI.
+The repository owns three narrow layers: shared schemas and Graph access, an MCP server exposing research verbs, and a Grok CLI that calls those verbs. `skills/askching/SKILL.md` is a usage playbook only. AskChing will not implement subgraph discovery, trading, payments, a substantial UI, or unrelated legacy framing.
 
 ## Architecture
 
@@ -32,4 +32,3 @@ Vitest covers normalization, citation rejection, fixture fan-out, and credential
 ## Delivery discipline
 
 Each independently reviewable unit is verified and committed with a conventional message. `HANDOFF.md` records the current commit, verification evidence, open constraints, and the next action so another agent can resume without reconstructing the session.
-
