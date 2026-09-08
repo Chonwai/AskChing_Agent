@@ -52,4 +52,68 @@ describe("GraphGatewayClient", () => {
       operationName: "AskChingUsdcSupplyApy"
     });
   });
+
+  it("fails closed on a non-200 HTTP response", async () => {
+    const fetchImpl = vi.fn(async () => new Response("rate limited", { status: 429 }));
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    await expect(client.getUsdcSupplyApy(LIVE_SOURCES[0]!)).rejects.toThrow(
+      /HTTP 429/
+    );
+  });
+
+  it("fails closed when the subgraph returns GraphQL errors", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          errors: [{ message: "subgraph index failed" }]
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    await expect(client.getUsdcSupplyApy(LIVE_SOURCES[0]!)).rejects.toThrow(
+      /subgraph index failed/
+    );
+  });
+
+  it("fails closed when no USDC lender rate is present", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          data: {
+            markets: [
+              {
+                inputToken: { symbol: "USDT" },
+                rates: [
+                  { rate: "5.0", side: "LENDER", type: "VARIABLE" }
+                ],
+                indexLastUpdatedTimestamp: "1788825600"
+              }
+            ],
+            _meta: {
+              deployment: "QmLiveDeployment",
+              block: { number: "22100123", timestamp: "1788825600" }
+            }
+          }
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    await expect(client.getUsdcSupplyApy(LIVE_SOURCES[0]!)).rejects.toThrow(
+      /no USDC lender rate/
+    );
+  });
 });
