@@ -24,5 +24,17 @@ export const MARKET_FIXTURES: readonly MarketObservation[] = [
     block: 21_100_000,
     timestamp: "2026-09-08T00:00:00.000Z",
     queryHash: "sha256:fixture-compound-usdc-supply-apy"
+  },
+  {
+    metric: "usdc_supply_apy",
+    rateType: "variable",
+    value: 2.95,
+    unit: "percent",
+    protocol: "spark-lend",
+    subgraphId: "GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si",
+    deploymentId: "fixture:spark-lend-mainnet",
+    block: 21_100_050,
+    timestamp: "2026-09-08T00:02:30.000Z",
+    queryHash: "sha256:fixture-spark-usdc-supply-apy"
   }
 ] as const;

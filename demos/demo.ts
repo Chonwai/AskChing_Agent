@@ -25,6 +25,8 @@ const question =
   args.join(" ").trim() ||
   "Compare USDC supply APY across Aave V3 and Compound V3";
 
+const protocols = ["aave-v3", "compound-v3", "spark-lend"] as const;
+
 const environment = {
   ...process.env,
   DEMO_LIVE: liveMode ? "1" : process.env.DEMO_LIVE ?? "0"
@@ -34,7 +36,7 @@ const dataSource: MarketDataSource = createMarketDataSource(environment);
 const result = await researchBrief(
   {
     question,
-    protocols: ["aave-v3", "compound-v3"]
+    protocols
   },
   dataSource
 );
