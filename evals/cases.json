@@ -1,0 +1,45 @@
+[
+  {
+    "id": "compare-default-order",
+    "question": "Compare USDC supply APY across Aave V3 and Compound V3.",
+    "input": {
+      "metric": "usdc_supply_apy",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "compare-reversed-order",
+    "question": "Which is higher for USDC supply APY: Compound V3 or Aave V3?",
+    "input": {
+      "metric": "usdc_supply_apy",
+      "protocols": ["compound-v3", "aave-v3"]
+    }
+  },
+  {
+    "id": "compare-as-of",
+    "question": "Compare both protocols and tell me when the data is from.",
+    "input": {
+      "metric": "usdc_supply_apy",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "compare-citations",
+    "question": "Show the cited sources for this USDC APY comparison.",
+    "input": {
+      "metric": "usdc_supply_apy",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "compare-timeframe-gap",
+    "question": "Compare USDC supply APY over the last 24 hours.",
+    "input": {
+      "metric": "usdc_supply_apy",
+      "protocols": ["aave-v3", "compound-v3"],
+      "timeframe": "24h"
+    },
+    "requireTimeframeCaveat": true
+  }
+]
+
