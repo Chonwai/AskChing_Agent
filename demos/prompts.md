@@ -8,9 +8,11 @@ Expected path: three source queries (`aave-v3`, `compound-v3`, `spark-lend`), no
 
 ## Demo B — evidence follow-up
 
-> For the top result, show me its subgraph, block, query hash, and observation timestamp. Do not add any number that is not in the tool result. Every result must state the `asOf` block timestamp.
+> Re-query the live sources and show me the citation structure for any protocol in the result: subgraph, block, query hash, and observation timestamp. Do not add any number that is not in the tool result. Every result must state the `asOf` block timestamp.
 
-Expected path: a single evidence chain back to the cited tool result — subgraph identity, block, query hash, and observation timestamp — with no invented numbers and the `asOf` restated.
+Expected path: a fresh fan-out that surfaces the evidence structure for at least one source — subgraph identity, block, query hash, and observation timestamp — with no invented numbers and the `asOf` restated.
+
+> **跨 prompt 引用限制（stateless CLI）：** 每支 CLI 呼叫皆 stateless（`runGrokOrchestrator` 單次執行），**無法**引用上一支 CLI 的 tool result。因此 Demo B 不可假設 Grok「追蹤 top result 回到先前的 citation」；它必須**重新查詢**並展示 citation 結構。若 Grok 回「I don't have the previous result」，請改用 run-script §2.3 的 zoom-in 變體（畫面 zoom-in 現有 ranked 結果的 citation 欄位）。
 
 ## Demo C — honest spot snapshot
 
