@@ -395,7 +395,7 @@ query AskChingUsdcSupplyApy {
 
 **⚠️ Phase 0 必須驗證：** 用 `GRAPH_API_KEY` 跑 `DEMO_LIVE=1 pnpm live:smoke`，確認兩個 subgraph 的 USDC rate 欄位存在。
 
-**🔴 當前狀態：未驗證。** 截至 2026-09-08，無 `GRAPH_API_KEY`，從未執行過 `DEMO_LIVE=1` live smoke。Phase 0 是所有後續開發的**硬性前置條件**——若 schema 不通，Phase 1–4 全部延期。
+**✅ 已驗證。** 截至 2026-09-08，使用 `GRAPH_API_KEY` 成功執行 `DEMO_LIVE=1 pnpm live:smoke`。Aave V3 返回 3.62% USDC supply APY（block 25932159），Compound V3 返回 5.10%（block 25932159）。兩個 subgraph 的 field mapping 正確，完整 citation（subgraphId + deploymentId + block + timestamp + queryHash）全部返回。
 
 ---
 

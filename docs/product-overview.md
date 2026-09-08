@@ -46,7 +46,7 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 返回給用戶 / Cursor / Grok Bot
 ```
 
-> ⚠️ 以上流程描述的是**設計目標**。截至 2026-09-08，live data flow 尚未經端到端驗證（需 Phase 0 用 `GRAPH_API_KEY` 跑 `DEMO_LIVE=1 pnpm live:smoke` 確認）。Fixture mode 已完整驗證；live mode 待 Phase 0 確認。詳見 `docs/engineering-spec.md` §5.4。
+> ✅ **Live 已驗證：** 2026-09-08 用 `GRAPH_API_KEY` 執行 `DEMO_LIVE=1 pnpm live:smoke` 成功 — Compound V3 USDC supply APY 5.10%，Aave V3 3.62%（block 25932159），完整 citation 返回。詳見 `docs/engineering-spec.md` §5.4。
 
 ### 核心能力
 
