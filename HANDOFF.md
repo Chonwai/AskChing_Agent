@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Tasks 1–3 are implemented on `main`. Fixture mode returns cited Aave V3 and Compound V3 observations without network access. Live mode fans out through the Graph gateway with bearer auth, parses their shared Messari lending schema, and fails clearly without `GRAPH_API_KEY`. Commits already present: `88eaf4e` (design/plan), `eb4c87e` (scaffold), and `58dbf24` (comparison contract).
+Tasks 1–4 are implemented on `main`. The MCP stdio server registers `compare_markets`, `research_brief`, and `risk_scan`; `compare_markets` is the completed end-to-end slice, while the latter two return explicit errors rather than invented analysis. Commits already present: `88eaf4e` (design/plan), `eb4c87e` (scaffold), `58dbf24` (comparison contract), and `edc8a9a` (Graph sources).
 
 ## Source of truth
 
@@ -12,7 +12,7 @@ Tasks 1–3 are implemented on `main`. Fixture mode returns cited Aave V3 and Co
 
 ## Next action
 
-Commit the data sources as `feat(shared): add fixture and live Graph market sources`, then execute Task 4 test-first: define `compareMarkets(input, dataSource)` behavior before implementing the MCP handler and stdio registration.
+Commit the MCP slice as `feat(mcp): implement compare_markets vertical slice`, then execute Task 5: add the fixture eval runner first, followed by the thin skill, demo prompts, README MCP configuration/live smoke notes, and final handoff evidence in separate commits.
 
 ## Verification
 
@@ -21,7 +21,9 @@ Commit the data sources as `feat(shared): add fixture and live Graph market sour
 - The comparison test was observed red on missing `compare.js`, then passed 2 tests after implementation.
 - `vitest.config.ts` excludes `.getsuperpower` because Ponytrail stores source copies that otherwise look like tests.
 - Data-source tests were observed red on missing `data-source.js`; live request coverage was observed red on missing `operationName`.
-- Fresh `pnpm test`: 3 files, 5 tests passed. Fresh `pnpm build`: all three packages passed.
+- Handler tests were observed red on missing `tools.js`, then passed 2 tests after implementation.
+- `@types/node` 22 was added for the executable MCP entry point.
+- Focused MCP verification: 2 handler tests passed and the MCP package build passed.
 
 ## Live source notes
 
