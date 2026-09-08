@@ -22,8 +22,10 @@
 - [ ] `GRAPH_API_KEY` 已填入
 - [ ] `ASKCHING_LLM_BASE_URL=https://api.x.ai/v1`
 - [ ] `ASKCHING_LLM_MODEL` 設定為有效 model ID（`grok-4.6`；若呼叫失敗改用 `grok-4`）
-- [ ] **Grok model 驗證：** 執行 `pnpm askching -- "Say hi"` 確認回覆正常
+- [ ] **Grok model 驗證：** 以**真實 `XAI_API_KEY`** 執行 `pnpm askching -- "Say hi"` 確認回覆正常
+- [ ] **⚠️ model ID fallback：** 若 `grok-4.6` 呼叫失敗（404 / model not found），改用 `grok-4`，並**同步更新三處**：`.env` 的 `ASKCHING_LLM_MODEL`、`.env.example` 的預設值、以及文件（`docs/engineering-spec.md`、本 checklist、run-script、README 若有提及 model ID 處）
 - [ ] **Live smoke 驗證：** 執行 `pnpm live:smoke`（DEMO_LIVE=1）確認三源可達、無 401
+- [ ] **askching live 路徑確認：** 錄影若用 `pnpm askching` 展示 tool-call 決策，需確認環境有 `DEMO_LIVE=1`（讓 Grok orchestrator 走 live Graph 資料而非 fixture）且 `.env` 就緒（`XAI_API_KEY` + `GRAPH_API_KEY`）；可用 `pnpm askching -- "<Demo A prompt>"` 實測一次，確認結果無 fixture 標籤
 
 ### A3. Fixture Rehearsal（≥ 3 次）
 
