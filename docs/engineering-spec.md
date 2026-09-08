@@ -1,7 +1,6 @@
-# AskChain — Engineering Spec & Development Plan
+# AskChing — Engineering Spec & Development Plan
 
-> **命名說明：** 產品品牌名為 AskChain（易記），內部代碼與 package 使用 AskChing（避免 trademark 衝突）。兩者指同一產品。  
-> AskChain 是一個 Grok-orchestrated research MCP over The Graph。  
+> AskChing 是一個 Grok-orchestrated research MCP over The Graph。  
 > 本文檔定義技術架構、API 契約、開發路線圖和驗收標準。
 
 ---
@@ -30,7 +29,7 @@
 
 ## 0. Problem Statement
 
-DeFi 研究員和 AI agent 開發者需要即時、有來源的鏈上數據分析，但 The Graph 雖然提供了結構化 Subgraph API，仍需手寫 GraphQL 查詢且缺乏跨協議比較與 AI reasoning 能力。AskChain 在 The Graph 之上疊加 Grok orchestration layer，讓 agent 從「會查」變成「會答、會判斷」。
+DeFi 研究員和 AI agent 開發者需要即時、有來源的鏈上數據分析，但 The Graph 雖然提供了結構化 Subgraph API，仍需手寫 GraphQL 查詢且缺乏跨協議比較與 AI reasoning 能力。AskChing 在 The Graph 之上疊加 Grok orchestration layer，讓 agent 從「會查」變成「會答、會判斷」。
 
 ## 0b. Goals & Non-Goals
 
@@ -62,7 +61,7 @@ DeFi 研究員和 AI agent 開發者需要即時、有來源的鏈上數據分�
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    AskChain Stack                         │
+│                    AskChing Stack                         │
 │                                                          │
 │  ┌────────────────────────────────────────────────────┐  │
 │  │  Client Layer                                      │  │
@@ -112,7 +111,7 @@ DeFi 研究員和 AI agent 開發者需要即時、有來源的鏈上數據分�
 
 | 原則 | 說明 |
 |------|------|
-| **The Graph 是 load-bearing** | 拔掉 The Graph → AskChain 沒有意義 |
+| **The Graph 是 load-bearing** | 拔掉 The Graph → AskChing 沒有意義 |
 | **自研 MCP，不套殼** | 我們的 server 包含 normalization + citation + synthesis，官方 MCP 只是 dependency |
 | **Fixture + Live 雙模式** | `DEMO_LIVE=0` 用 fixture（開發/測試），`DEMO_LIVE=1` 用 live Studio gateway |
 | **Fail-closed** | 缺 credential / schema 錯誤 / 數據不足 → 明確報錯，不猜測 |
@@ -706,5 +705,5 @@ if (successful.length < 2) {
 
 ---
 
-*Document version: 1.1 — 2026-09-08 (revised per doc-reviewer Round 1 findings DRA-001~010)*  
+*Document version: 1.2 — 2026-09-08 (renamed AskChain → AskChing per team alignment)*  
 *Status: For team development and ETHOnline 2026 submission*
