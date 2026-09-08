@@ -12,6 +12,17 @@ export const CompareMarketsInputSchema = z.object({
   timeframe: z.string().min(1).optional()
 });
 
+export const ResearchBriefInputSchema = z.object({
+  question: z.string().min(1),
+  protocols: z.array(ProtocolSchema).optional()
+});
+
+export const RiskScanInputSchema = z.object({
+  protocols: z.array(ProtocolSchema).min(1),
+  assets: z.array(z.string().min(1)).optional(),
+  window: z.string().min(1)
+});
+
 export async function compareMarkets(
   rawInput: unknown,
   dataSource: MarketDataSource

@@ -3,9 +3,13 @@
 import { ComparisonSchema, createMarketDataSource } from "@askching/shared";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
 
-import { CompareMarketsInputSchema, compareMarkets } from "./tools.js";
+import {
+  CompareMarketsInputSchema,
+  ResearchBriefInputSchema,
+  RiskScanInputSchema,
+  compareMarkets
+} from "./tools.js";
 
 const dataSource = createMarketDataSource(process.env);
 const server = new McpServer({ name: "askching", version: "0.1.0" });
@@ -28,11 +32,6 @@ server.registerTool(
   }
 );
 
-const ResearchBriefInputSchema = z.object({
-  question: z.string().min(1),
-  protocols: z.array(z.string().min(1)).optional()
-});
-
 server.registerTool(
   "research_brief",
   {
@@ -51,12 +50,6 @@ server.registerTool(
     isError: true
   })
 );
-
-const RiskScanInputSchema = z.object({
-  protocols: z.array(z.string().min(1)).min(1),
-  assets: z.array(z.string().min(1)).optional(),
-  window: z.string().min(1)
-});
 
 server.registerTool(
   "risk_scan",
