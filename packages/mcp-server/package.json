@@ -5,6 +5,16 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./tools.js": {
+      "types": "./dist/tools.d.ts",
+      "default": "./dist/tools.js"
+    }
+  },
   "bin": {
     "askching-mcp": "dist/index.js"
   },
@@ -18,4 +28,3 @@
     "zod": "^3.25.76"
   }
 }
-

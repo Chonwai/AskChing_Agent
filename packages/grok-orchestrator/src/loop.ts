@@ -1,0 +1,212 @@
+import {
+  compareMarkets,
+  researchBrief,
+  riskScan
+} from "@askching/mcp-server/tools.js";
+import type { MarketDataSource } from "@askching/shared";
+
+export interface FunctionToolCall {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+export type ChatMessage =
+  | { role: "system" | "user"; content: string }
+  | {
+      role: "assistant";
+      content: string | null;
+      tool_calls?: FunctionToolCall[];
+    }
+  | { role: "tool"; tool_call_id: string; name: string; content: string };
+
+export interface ToolDefinition {
+  type: "function";
+  function: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  };
+}
+
+export interface ChatCompletionRequest {
+  messages: ChatMessage[];
+  tools: ToolDefinition[];
+  toolChoice: "auto";
+}
+
+export interface ChatCompletionClient {
+  complete(request: ChatCompletionRequest): Promise<{
+    role: "assistant";
+    content: string | null;
+    tool_calls?: FunctionToolCall[];
+  }>;
+}
+
+export interface ToolExecution {
+  name: string;
+  arguments: unknown;
+  result: unknown;
+}
+
+export interface OrchestratorResult {
+  answer: string;
+  toolCalls: ToolExecution[];
+}
+
+export const ASKCHING_TOOLS: ToolDefinition[] = [
+  {
+    type: "function",
+    function: {
+      name: "compare_markets",
+      description:
+        "Compare USDC supply APY across at least two supported protocols with citations.",
+      parameters: {
+        type: "object",
+        properties: {
+          metric: { type: "string", enum: ["usdc_supply_apy"] },
+          protocols: {
+            type: "array",
+            items: {
+              type: "string",
+              enum: ["aave-v3", "compound-v3", "spark-lend"]
+            },
+            minItems: 2
+          },
+          timeframe: { type: "string" }
+        },
+        required: ["metric", "protocols"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "research_brief",
+      description:
+        "Create a structured cited research brief for two or more supported protocols.",
+      parameters: {
+        type: "object",
+        properties: {
+          question: { type: "string" },
+          protocols: {
+            type: "array",
+            items: {
+              type: "string",
+              enum: ["aave-v3", "compound-v3", "spark-lend"]
+            },
+            minItems: 2
+          }
+        },
+        required: ["question", "protocols"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "risk_scan",
+      description:
+        "Return peer-relative spot risk signals and explicit data gaps for supported protocols.",
+      parameters: {
+        type: "object",
+        properties: {
+          protocols: {
+            type: "array",
+            items: {
+              type: "string",
+              enum: ["aave-v3", "compound-v3", "spark-lend"]
+            },
+            minItems: 2
+          },
+          assets: { type: "array", items: { type: "string" } },
+          window: { type: "string" }
+        },
+        required: ["protocols", "window"],
+        additionalProperties: false
+      }
+    }
+  }
+];
+
+export async function runGrokOrchestrator(options: {
+  prompt: string;
+  client: ChatCompletionClient;
+  dataSource: MarketDataSource;
+  systemPrompt: string;
+  maxTurns?: number;
+}): Promise<OrchestratorResult> {
+  const messages: ChatMessage[] = [
+    { role: "system", content: options.systemPrompt },
+    { role: "user", content: options.prompt }
+  ];
+  const toolCalls: ToolExecution[] = [];
+
+  for (let turn = 0; turn < (options.maxTurns ?? 4); turn += 1) {
+    const assistant = await options.client.complete({
+      messages,
+      tools: ASKCHING_TOOLS,
+      toolChoice: "auto"
+    });
+    messages.push(assistant);
+
+    if (!assistant.tool_calls?.length) {
+      if (!assistant.content?.trim()) {
+        throw new Error("The model returned neither an answer nor a tool call");
+      }
+      return { answer: assistant.content, toolCalls };
+    }
+
+    for (const call of assistant.tool_calls) {
+      const argumentsValue = parseToolArguments(call);
+      const result = await executeTool(
+        call.function.name,
+        argumentsValue,
+        options.dataSource
+      );
+      toolCalls.push({
+        name: call.function.name,
+        arguments: argumentsValue,
+        result
+      });
+      messages.push({
+        role: "tool",
+        tool_call_id: call.id,
+        name: call.function.name,
+        content: JSON.stringify(result)
+      });
+    }
+  }
+
+  throw new Error("The model exceeded the maximum tool-calling turns");
+}
+
+function parseToolArguments(call: FunctionToolCall): unknown {
+  try {
+    return JSON.parse(call.function.arguments);
+  } catch {
+    throw new Error(`Invalid JSON arguments for tool ${call.function.name}`);
+  }
+}
+
+async function executeTool(
+  name: string,
+  input: unknown,
+  dataSource: MarketDataSource
+): Promise<unknown> {
+  switch (name) {
+    case "compare_markets":
+      return compareMarkets(input, dataSource);
+    case "research_brief":
+      return researchBrief(input, dataSource);
+    case "risk_scan":
+      return riskScan(input, dataSource);
+    default:
+      throw new Error(`Unsupported AskChing tool: ${name}`);
+  }
+}

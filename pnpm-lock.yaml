@@ -23,6 +23,9 @@ importers:
 
   packages/grok-orchestrator:
     dependencies:
+      '@askching/mcp-server':
+        specifier: workspace:*
+        version: link:../mcp-server
       '@askching/shared':
         specifier: workspace:*
         version: link:../shared
