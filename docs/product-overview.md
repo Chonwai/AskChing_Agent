@@ -46,7 +46,7 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 返回給用戶 / Cursor / Grok Bot
 ```
 
-> ✅ **Live 已驗證：** 2026-09-08 用 `GRAPH_API_KEY` 執行 `DEMO_LIVE=1 pnpm live:smoke` 成功 — Compound V3 USDC supply APY 5.10%，Aave V3 3.62%（block 25932159），完整 citation 返回。詳見 `docs/engineering-spec.md` §5.4。
+> ✅ **Live 已驗證（3-source）：** 2026-09-08 用 `GRAPH_API_KEY` 執行 `DEMO_LIVE=1` 成功 — Compound V3 4.86%，Aave V3 3.62%，Spark Lend 3.54%（block 25932799），完整 citation 返回。詳見 `docs/engineering-spec.md` §5.4。
 
 ### 核心能力
 
@@ -209,7 +209,7 @@ Grok Bot 驗證後，AskChing MCP Server 開放給其他 AI 工具：
 
 ## 8. 未來方向（Hackathon 後，簡述）
 
-Hackathon 交付 **v1.0**（Grok Bot + MCP + compare_markets + research_brief）。後續方向包括開放 Cursor/Codex/Gemini 接入、x402 agent payment、Standardized schema 等。詳見 `docs/engineering-spec.md` §11 Out of Scope。
+Hackathon 交付 **v1.0**（Grok Bot + MCP + compare_markets + research_brief + risk_scan + demo CLI + Spark source，均已實作）。後續方向包括開放 Cursor/Codex/Gemini 接入、x402 agent payment、Standardized schema 等。詳見 `docs/engineering-spec.md` §11 Out of Scope。
 
 ---
 

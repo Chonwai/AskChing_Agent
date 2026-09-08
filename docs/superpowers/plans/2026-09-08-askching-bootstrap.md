@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> 📌 **進度（2026-09-08）：** 全部 5 個 bootstrap Task 已完成（scaffold / schemas+compare / fixture+live / MCP handler / evals+playbook）。後續為 Phase 1b Grok Orchestrator（見 `HANDOFF.md`）。
+
 **Goal:** Deliver a buildable AskChing monorepo and a test-first `compare_markets` vertical slice with fixture and live data paths.
 
 **Architecture:** Shared contracts and data access sit below dependency-injected MCP handlers. Fixture and live sources produce the same cited normalized record, so tests exercise production comparison logic without network access.

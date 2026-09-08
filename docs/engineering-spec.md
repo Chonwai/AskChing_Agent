@@ -3,6 +3,8 @@
 > AskChing 是一個 Grok-orchestrated research MCP over The Graph。  
 > 本文檔定義技術架構、API 契約、開發路線圖和驗收標準。
 
+> 📌 **進度（2026-09-08）：** Phase 0 ✅ / Phase 1a ✅（compare_markets, research_brief, risk_scan, demo CLI）/ Phase 2 ✅（Spark 第三 source + settled fan-out）。**Phase 1b（Grok Orchestrator）為下一開發目標。**
+
 ---
 
 ## Table of Contents
@@ -396,7 +398,7 @@ query AskChingUsdcSupplyApy {
 
 **⚠️ Phase 0 必須驗證：** 用 `GRAPH_API_KEY` 跑 `DEMO_LIVE=1 pnpm live:smoke`，確認兩個 subgraph 的 USDC rate 欄位存在。
 
-**✅ 已驗證。** 截至 2026-09-08，使用 `GRAPH_API_KEY` 成功執行 `DEMO_LIVE=1 pnpm live:smoke`。Aave V3 返回 3.62% USDC supply APY（block 25932159），Compound V3 返回 5.10%（block 25932159）。兩個 subgraph 的 field mapping 正確，完整 citation（subgraphId + deploymentId + block + timestamp + queryHash）全部返回。
+**✅ 已驗證（3-source）。** 截至 2026-09-08，使用 `GRAPH_API_KEY` 成功執行 `DEMO_LIVE=1`。Compound V3 返回 4.86% USDC supply APY（block 25932799），Aave V3 返回 3.62%（block 25932799），Spark Lend 返回 3.54%（block 25932799）。三個 subgraph 的 field mapping 正確，完整 citation（subgraphId + deploymentId + block + timestamp + queryHash）全部返回。
 
 ---
 
@@ -705,5 +707,5 @@ if (fulfilled.length < 2) {
 
 ---
 
-*Document version: 1.2 — 2026-09-08 (renamed AskChain → AskChing per team alignment)*  
+*Document version: 1.3 — 2026-09-08 (progress update: Phase 0/1a/2 done, Phase 1b next)*  
 *Status: For team development and ETHOnline 2026 submission*
