@@ -1,2 +1,2 @@
-export const packageName = "@askching/shared";
-
+export * from "./compare.js";
+export * from "./schemas.js";

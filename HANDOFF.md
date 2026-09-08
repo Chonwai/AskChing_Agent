@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Task 1 is implemented on `main`. The repository now has a three-package pnpm workspace, strict shared TypeScript configuration, environment example, MIT license, and README stub. The design/plan checkpoint is commit `88eaf4e`.
+Tasks 1 and 2 are implemented on `main`. The shared package now validates citation-bearing observations, ranks comparable APY values, requires two distinct subgraph sources, and emits `asOf` plus timestamp caveats. Commits already present: `88eaf4e` (design/plan) and `eb4c87e` (scaffold).
 
 ## Source of truth
 
@@ -12,12 +12,14 @@ Task 1 is implemented on `main`. The repository now has a three-package pnpm wor
 
 ## Next action
 
-Commit the scaffold as `chore: scaffold AskChing pnpm monorepo`, then execute Task 2 test-first: add a failing comparison-contract test before creating schemas or normalization code.
+Commit the shared contract as `feat(shared): normalize cited market comparisons`, then execute Task 3 test-first: define fixture-mode and missing-live-credential behavior before implementing a data source.
 
 ## Verification
 
 - `pnpm install` passed with pnpm 9.15.4.
 - `pnpm build` passed across all three workspace packages on Node.js 22.13.1 (the project floor is Node.js 20).
+- The comparison test was observed red on missing `compare.js`, then passed 2 tests after implementation.
+- `vitest.config.ts` excludes `.getsuperpower` because Ponytrail stores source copies that otherwise look like tests.
 
 ## Suggested skills
 
