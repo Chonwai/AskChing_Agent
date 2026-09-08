@@ -624,11 +624,11 @@ if (fulfilled.length < 2) {
 |---|------|------|-----|
 | 1.1 | Grok tool-calling loop（in-process import MCP handlers） | `grok-orchestrator/src/loop.ts` | ✅ 輸入 NL → 輸出 tool call + result |
 | 1.2 | `research_brief` handler 實作（compare → brief template） | `mcp-server/src/tools.ts` | ✅ 回傳 brief JSON 而非 error |
-| 1.3 | `npm run demo` standalone CLI（fixture mode default, `--live` flag） | `demos/demo.ts` + `package.json` | ✅ `npm run demo` 跑通 |
+| 1.3 | `pnpm demo` standalone CLI（fixture mode default, `--live` flag） | `demos/demo.ts` + `package.json` | ✅ `pnpm demo` 跑通 |
 | 1.4 | Grok loop fixture-mode unit test | `grok-orchestrator/src/*.test.ts` | ✅ `pnpm test` 綠 |
 | 1.5 | Commit: `feat(grok): implement tool-calling orchestrator` | git | ✅ |
 
-**晚間驗收**：`DEMO_LIVE=1 npm run demo` → 輸入 "Compare USDC supply APY" → 拿到 cited brief
+**晚間驗收**：`pnpm demo:live` → 輸入 "Compare USDC supply APY" → 拿到 cited brief
 
 ---
 
@@ -660,7 +660,7 @@ if (fulfilled.length < 2) {
 |---|------|------|-----|
 | 4.1 | 錄 demo video（2-4 min, ≥720p, 真人配音, live data） | 場景 A+B+C | ✅ |
 | 4.2 | 上傳 video（YouTube unlisted） | URL | ✅ |
-| 4.3 | 最終 live smoke（`DEMO_LIVE=1 npm run demo`） | terminal | ✅ green |
+| 4.3 | 最終 live smoke（`pnpm demo:live`） | terminal | ✅ green |
 | 4.4 | 確認 git log 完整（不 squash） | `git log --oneline` | ✅ 多個 commits |
 | 4.5 | 確認 repo 公開 + README 正常 | GitHub | ✅ |
 | 4.6 | Update showcase + submit | ethglobal.com | ✅ |
@@ -685,7 +685,7 @@ if (fulfilled.length < 2) {
 - [x] Public GitHub repo with clean `git log`
 - [x] `README.md` with Start Fresh declaration
 - [x] `SKILL.md` (agent playbook)
-- [x] `npm run demo` works (fixture + live)
+- [x] `pnpm demo` works (fixture + live)
 - [x] `pnpm test` passes (all eval cases green)
 - [x] `pnpm build` passes (all packages)
 - [ ] Demo video uploaded (2-4 min, ≥720p, human voice)
