@@ -11,9 +11,9 @@
     "build": "pnpm -r build",
     "test": "vitest run",
     "eval": "tsx evals/run.ts",
-    "live:smoke": "tsx --env-file=.env demos/live-smoke.ts",
-    "demo": "tsx --env-file=.env demos/demo.ts",
-    "demo:live": "tsx --env-file=.env demos/demo.ts --live",
+    "live:smoke": "DEMO_LIVE=1 tsx --env-file=.env demos/live-smoke.ts",
+    "demo": "DEMO_LIVE=0 tsx --env-file=.env demos/demo.ts",
+    "demo:live": "DEMO_LIVE=1 tsx --env-file=.env demos/demo.ts --live",
     "askching": "node --env-file=.env packages/grok-orchestrator/dist/index.js"
   },
   "devDependencies": {
