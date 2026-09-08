@@ -23,5 +23,12 @@ export const LIVE_SOURCES: readonly SubgraphSource[] = [
     subgraphId: "AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9",
     explorerUrl:
       "https://thegraph.com/explorer/subgraphs/AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9"
+  },
+  {
+    protocol: "spark-lend",
+    network: "mainnet",
+    subgraphId: "GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si",
+    explorerUrl:
+      "https://thegraph.com/explorer/subgraphs/GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si"
   }
 ] as const;

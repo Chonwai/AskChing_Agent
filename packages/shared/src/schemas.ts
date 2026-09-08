@@ -3,7 +3,7 @@ import { z } from "zod";
 export const MarketMetricSchema = z.enum(["usdc_supply_apy"]);
 export type MarketMetric = z.infer<typeof MarketMetricSchema>;
 
-export const ProtocolSchema = z.enum(["aave-v3", "compound-v3"]);
+export const ProtocolSchema = z.enum(["aave-v3", "compound-v3", "spark-lend"]);
 export type ProtocolSlug = z.infer<typeof ProtocolSchema>;
 
 export const RateTypeSchema = z.literal("variable");
