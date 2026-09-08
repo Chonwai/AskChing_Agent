@@ -506,11 +506,17 @@ DEMO_LIVE=0
 ## 6b. Demo CLI 規格（✅ 已實作 2026-09-08）
 
 ```bash
-# Fixture mode (default)
-npm run demo -- "Compare USDC supply APY across Aave V3 and Compound V3"
+# Fixture mode（預設，DEMO_LIVE=0 pinned）
+pnpm demo -- "Compare USDC supply APY across Aave V3 and Compound V3"
 
-# Live mode
-npm run demo --live -- "Compare USDC supply APY"
+# Live mode（DEMO_LIVE=1 pinned）
+pnpm demo:live -- "Compare USDC supply APY"
+
+# Grok orchestrator CLI（真 Grok tool-calling loop，需先 pnpm build）
+pnpm askching -- "Compare USDC supply APY"
+
+# 三源 live smoke
+pnpm live:smoke
 
 # 預期輸出
 # ─── Research Brief ───
@@ -571,7 +577,7 @@ if (fulfilled.length < 2) {
 | `compare-citations` | 每個 row 有完整 citation |
 | `compare-timeframe-gap` | timeframe 參數產生 caveat |
 
-### 8.2 Phase 2 新增 Cases（3-5 條）
+### 8.2 Phase 2 目標 Cases（實作方式：unit tests）
 
 | ID | 測試內容 |
 |----|---------|
@@ -581,6 +587,8 @@ if (fulfilled.length < 2) {
 | `three-source-compare` | 3 sources 排名正確 |
 | `risk-scan-basic` | risk_scan 輸出含 findings |
 
+> **實際狀態：** `evals/cases.json` 維持 5 條；settled fan-out、三源排名、gap detection 由 unit tests 覆蓋（pnpm test 21/21）。如需完整 eval 覆蓋可列為 v1.1 改善，不阻擋 submission。
+
 ---
 
 ## 9. Development Plan
@@ -589,7 +597,7 @@ if (fulfilled.length < 2) {
 建議 Phase 4 在 Day 4 結束前完成錄影和上傳，Day 5 作為 submit buffer。
 若任何 Phase 延誤超過半天，立即決定 OOS 項目降級（risk_scan → not-implemented, 第三 source → 捨棄）。
 
-### Phase 0 — Live Smoke Validation（Day 0，2hr）🔴 Critical
+### Phase 0 — Live Smoke Validation ✅ 已完成（6/6）
 
 | # | 任務 | 檔案 | AC |
 |---|------|------|-----|
@@ -610,7 +618,7 @@ if (fulfilled.length < 2) {
 
 ---
 
-### Phase 1 — Grok Orchestrator（Day 1-2）🔥 Highest Priority
+### Phase 1 — Grok Orchestrator ✅ 已完成（5/5）
 
 | # | 任務 | 檔案 | AC |
 |---|------|------|-----|
@@ -624,7 +632,7 @@ if (fulfilled.length < 2) {
 
 ---
 
-### Phase 2 — Multi-source + Settled Fan-out（Day 2-3）
+### Phase 2 — Multi-source + Settled Fan-out ✅ 已完成（4/4）
 
 | # | 任務 | 檔案 | AC |
 |---|------|------|-----|
@@ -635,7 +643,7 @@ if (fulfilled.length < 2) {
 
 ---
 
-### Phase 3 — README + Showcase + Doc Finalization（Day 3-4）
+### Phase 3 — README + Showcase + Doc Finalization ✅ 已完成（4/4）
 
 | # | 任務 | 檔案 | AC |
 |---|------|------|-----|
@@ -646,7 +654,7 @@ if (fulfilled.length < 2) {
 
 ---
 
-### Phase 4 — Demo Video + Submit（Day 4-5）
+### Phase 4 — Demo Video + Submit 🔄 進行中（2/6：4.3/4.4 ✅，4.1/4.2/4.5/4.6 待執行）
 
 | # | 任務 | 說明 | AC |
 |---|------|------|-----|
@@ -674,12 +682,12 @@ if (fulfilled.length < 2) {
 
 ### Final Submission AC
 
-- [ ] Public GitHub repo with clean `git log`
-- [ ] `README.md` with Start Fresh declaration
-- [ ] `SKILL.md` (agent playbook)
-- [ ] `npm run demo` works (fixture + live)
-- [ ] `pnpm test` passes (all eval cases green)
-- [ ] `pnpm build` passes (all packages)
+- [x] Public GitHub repo with clean `git log`
+- [x] `README.md` with Start Fresh declaration
+- [x] `SKILL.md` (agent playbook)
+- [x] `npm run demo` works (fixture + live)
+- [x] `pnpm test` passes (all eval cases green)
+- [x] `pnpm build` passes (all packages)
 - [ ] Demo video uploaded (2-4 min, ≥720p, human voice)
 - [ ] Showcase page updated with repo URL + video URL
 - [ ] Submit before 2026-09-13 12:00 PM EDT
@@ -715,12 +723,12 @@ if (fulfilled.length < 2) {
 
 ## 13. Open Questions (PM)
 
-| ID | 問題 | 預設 | 誰回答 | Deadline |
+| ID | 問題 | 狀態 | 誰回答 | Deadline |
 |----|------|------|--------|----------|
-| Q1 | Grok model 選擇：grok-4 vs grok-3.5？ | grok-4（最新） | PM 確認 xAI API 可用性 | Phase 0 |
-| Q2 | Demo video 配音：真人 vs TTS？ | 真人（賽道要求） | PM 確認 | Phase 4 |
-| Q3 | 第三 source 選擇：Morpho / Spark / 其他？ | 視 Phase 0 schema 驗證結果 | Engineering | Phase 0 |
-| Q4 | Showcase page description 長度限制？ | 300 字以內 | PM 查 ethglobal.com | Phase 3 |
+| Q1 | Grok model 選擇：grok-4 vs grok-3.5？ | ⚠️ 部分決定 — grok-4.6 未以真實 API 驗證（checklist A2 fallback 流程已定義） | PM 確認 xAI API 可用性 | Phase 0 |
+| Q2 | Demo video 配音：真人 vs TTS？ | ✅ 已決定 — 真人旁白 | PM 確認 | Phase 4 |
+| Q3 | 第三 source 選擇：Morpho / Spark / 其他？ | ✅ 已決定 — Spark Lend | Engineering | Phase 0 |
+| Q4 | Showcase page description 長度限制？ | ✅ 已決定 — 備選 <60 chars（弱驗證） | PM 查 ethglobal.com | Phase 3 |
 
 ---
 
