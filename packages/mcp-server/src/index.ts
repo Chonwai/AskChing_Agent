@@ -10,7 +10,8 @@ import {
   ResearchBriefResultSchema,
   RiskScanInputSchema,
   compareMarkets,
-  researchBrief
+  researchBrief,
+  riskScan
 } from "./tools.js";
 
 const dataSource = createMarketDataSource(process.env);
@@ -57,18 +58,16 @@ server.registerTool(
   {
     title: "Risk scan",
     description:
-      "Scan protocol metrics for peer-relative changes. The bootstrap server exposes this surface while implementation follows the compare_markets slice.",
+      "Scan protocol metrics for peer-relative signals and explicit gaps: which peer has the highest rate, spread vs peers, and an honest time-series limitation note.",
     inputSchema: RiskScanInputSchema.shape
   },
-  async () => ({
-    content: [
-      {
-        type: "text",
-        text: "risk_scan is not implemented in the bootstrap slice; no uncited risk assessment was produced."
-      }
-    ],
-    isError: true
-  })
+  async (input) => {
+    const result = await riskScan(input, dataSource);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      structuredContent: result as unknown as Record<string, unknown>
+    };
+  }
 );
 
 await server.connect(new StdioServerTransport());

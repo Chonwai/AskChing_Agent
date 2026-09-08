@@ -4,7 +4,7 @@ import {
 } from "@askching/shared";
 import { describe, expect, it } from "vitest";
 
-import { compareMarkets, researchBrief } from "./tools.js";
+import { compareMarkets, researchBrief, riskScan } from "./tools.js";
 
 describe("compareMarkets", () => {
   it("returns a normalized comparison with two fixture citations", async () => {
@@ -76,6 +76,40 @@ describe("researchBrief", () => {
         { question: "single protocol", protocols: ["aave-v3"] },
         dataSource
       )
+    ).rejects.toThrow(/at least two protocols/);
+  });
+});
+
+describe("riskScan", () => {
+  it("returns peer-relative findings with an explicit time-series gap", async () => {
+    const dataSource = createMarketDataSource({ DEMO_LIVE: "0" });
+
+    const result = await riskScan(
+      {
+        protocols: ["aave-v3", "compound-v3"],
+        window: "7d"
+      },
+      dataSource
+    );
+
+    expect(result.findings).toHaveLength(2);
+    expect(result.findings[0]!.protocol).toBe("aave-v3");
+    expect(result.findings[0]!.note).toContain("Highest USDC supply APY");
+    expect(result.gaps.length).toBeGreaterThan(0);
+    expect(result.gaps[0]).toContain("No time-series data");
+    expect(result.asOf).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(result.sources).toHaveLength(2);
+  });
+
+  it("rejects fewer than two protocols", async () => {
+    const dataSource: MarketDataSource = {
+      async getObservations() {
+        throw new Error("data source should not be called");
+      }
+    };
+
+    await expect(
+      riskScan({ protocols: ["aave-v3"], window: "7d" }, dataSource)
     ).rejects.toThrow(/at least two protocols/);
   });
 });

@@ -133,3 +133,77 @@ export async function researchBrief(
     caveats: comparison.caveats
   };
 }
+
+export interface RiskFinding {
+  protocol: string;
+  metric: string;
+  note: string;
+  value: number;
+}
+
+export interface RiskScanResult {
+  findings: RiskFinding[];
+  gaps: string[];
+  asOf: string;
+  sources: Comparison["sources"];
+}
+
+const RiskScanResultSchema = z.object({
+  findings: z.array(
+    z.object({
+      protocol: z.string(),
+      metric: z.string(),
+      note: z.string(),
+      value: z.number().finite()
+    })
+  ),
+  gaps: z.array(z.string()),
+  asOf: z.string().datetime(),
+  sources: z.array(ComparisonSourceSchema)
+});
+
+export async function riskScan(
+  rawInput: unknown,
+  dataSource: MarketDataSource
+): Promise<RiskScanResult> {
+  const input = RiskScanInputSchema.parse(rawInput);
+  const protocols = input.protocols;
+  if (protocols.length < 2) {
+    throw new Error(
+      "risk_scan requires at least two protocols for a peer-relative scan"
+    );
+  }
+
+  const comparison = await compareMarkets(
+    { metric: "usdc_supply_apy", protocols },
+    dataSource
+  );
+
+  const best = comparison.rows[0]!;
+  const second = comparison.rows[1]!;
+  const spread = Math.abs(best.value - second.value);
+
+  const findings: RiskFinding[] = [
+    {
+      protocol: best.protocol,
+      metric: "usdc_supply_apy",
+      note: `Highest USDC supply APY among scanned peers (${spread.toFixed(2)}ppt spread over ${second.protocol}).`,
+      value: best.value
+    },
+    {
+      protocol: second.protocol,
+      metric: "usdc_supply_apy",
+      note: `Lower USDC supply APY than ${best.protocol} by ${spread.toFixed(2)} percentage points.`,
+      value: second.value
+    }
+  ];
+
+  return {
+    findings,
+    gaps: [
+      "No time-series data is available: risk_scan currently reflects a single spot snapshot. Peer-relative change over time is not assessed."
+    ],
+    asOf: comparison.asOf,
+    sources: comparison.sources
+  };
+}
