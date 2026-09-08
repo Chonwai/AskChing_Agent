@@ -483,7 +483,7 @@ DEMO_LIVE=0
 
 ---
 
-## 6b. Demo CLI 規格
+## 6b. Demo CLI 規格（🔨 TO BUILD — Phase 1）
 
 ```bash
 # Fixture mode (default)
@@ -691,6 +691,7 @@ if (successful.length < 2) {
 | R4 | Scope creep 導致做不完 | 🟡 High | High | 嚴格執行 Phase 順序，不加新功能 | PM |
 | R5 | 第三 subgraph schema 不相容 | 🟡 Medium | Medium | Phase 0 併入驗證，不相容就不加 | Engineering |
 | R6 | Track 定位被質疑 | 🟡 Medium | Low | README 明確 "AI orchestration layer" | PM |
+| R7 | Submission 平台故障（ethglobal.com 提交時不可用） | 🟡 Medium | Low | Day 5 保留 buffer + 提前截圖備份 showcase 內容 | PM |
 
 ---
 
