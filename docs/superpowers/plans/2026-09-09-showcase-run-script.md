@@ -4,7 +4,7 @@
 > **依據 spec：** `docs/superpowers/specs/2026-09-09-product-led-showcase-design.md`
 > **依賴 prompts：** `demos/prompts.md`（Demo A / Demo C，已定稿）
 > **總時長：** 2:55（2.5–3 分鐘，符合 Acceptance Criteria「2–4 分鐘」）
-> **錄影路徑：** `pnpm demo:live`（live）；**rehearsal 路徑：** `pnpm demo`（fixture）
+> **錄影路徑：** 展示 tool-call 決策 → `pnpm askching`（配 `DEMO_LIVE=1`）；僅展示 brief → `pnpm demo:live`（見 §5 路徑對照）；**rehearsal 路徑：** `pnpm demo`（fixture）
 
 ---
 
