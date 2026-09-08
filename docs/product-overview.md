@@ -1,6 +1,7 @@
 # AskChain — Product Overview
 
 > **「有咩唔識就 Ask Chain。」**  
+> **命名說明：** 產品品牌名為 **AskChain**（易記、對應「問師兄」粵語諧音），內部代碼與 package 使用 **AskChing**（repo 名 `AskChing_Agent`、`@askching/*`）——兩者指同一產品。  
 > 一個 Grok-powered AI research agent，用自然語言即時查詢並分析多協議鏈上數據，背後由 The Graph 提供結構化 live data 支撐。
 
 ---
@@ -45,6 +46,8 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
     ↓
 返回給用戶 / Cursor / Grok Bot
 ```
+
+> ⚠️ 以上流程描述的是**設計目標**。截至 2026-09-08，live data flow 尚未經端到端驗證（需 Phase 0 用 `GRAPH_API_KEY` 跑 `DEMO_LIVE=1 pnpm live:smoke` 確認）。Fixture mode 已完整驗證；live mode 待 Phase 0 確認。詳見 `docs/engineering-spec.md` §5.4。
 
 ### 核心能力
 
@@ -205,14 +208,9 @@ Grok Bot 驗證後，AskChain MCP Server 開放給其他 AI 工具：
 
 ---
 
-## 8. 未來路線圖（Hackathon 後）
+## 8. 未來方向（Hackathon 後，簡述）
 
-| 階段 | 內容 | 時間 |
-|------|------|------|
-| **v1.0（Hackathon）** | Grok Bot + MCP + compare_markets + research_brief | 2026-09 |
-| **v1.1** | 開放 Cursor / Codex / Gemini 接入 + risk_scan 完整版 | 2026-10 |
-| **v1.2** | x402 agent payment（agent 自付查詢費） | 2026-11 |
-| **v2.0** | Standardized schema 一 query 打多協議 + Substreams streaming | 2026-12 |
+Hackathon 交付 **v1.0**（Grok Bot + MCP + compare_markets + research_brief）。後續方向包括開放 Cursor/Codex/Gemini 接入、x402 agent payment、Standardized schema 等。詳見 `docs/engineering-spec.md` §11 Out of Scope。
 
 ---
 
@@ -226,5 +224,5 @@ Grok Bot 驗證後，AskChain MCP Server 開放給其他 AI 工具：
 
 ---
 
-*Document version: 1.0 — 2026-09-08*  
+*Document version: 1.1 — 2026-09-08 (revised per doc-reviewer Round 1 findings)*  
 *Status: For team alignment and ETHOnline 2026 submission*
