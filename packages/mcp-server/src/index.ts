@@ -7,8 +7,10 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CompareMarketsInputSchema,
   ResearchBriefInputSchema,
+  ResearchBriefResultSchema,
   RiskScanInputSchema,
-  compareMarkets
+  compareMarkets,
+  researchBrief
 } from "./tools.js";
 
 const dataSource = createMarketDataSource(process.env);
@@ -37,18 +39,17 @@ server.registerTool(
   {
     title: "Research brief",
     description:
-      "Prepare a cited research brief. The bootstrap server exposes this surface while implementation follows the compare_markets slice.",
-    inputSchema: ResearchBriefInputSchema.shape
+      "Prepare a cited research brief: conclusion, key figures with sources, as-of time, risks, and a suggested follow-up.",
+    inputSchema: ResearchBriefInputSchema.shape,
+    outputSchema: ResearchBriefResultSchema.shape
   },
-  async () => ({
-    content: [
-      {
-        type: "text",
-        text: "research_brief is not implemented in the bootstrap slice; use compare_markets for cited USDC APY data."
-      }
-    ],
-    isError: true
-  })
+  async (input) => {
+    const result = await researchBrief(input, dataSource);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      structuredContent: result as unknown as Record<string, unknown>
+    };
+  }
 );
 
 server.registerTool(
