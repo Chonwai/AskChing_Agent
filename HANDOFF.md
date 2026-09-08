@@ -5,7 +5,7 @@ Updated: 2026-09-09 (Asia/Hong_Kong)
 ## Current checkpoint
 
 - Branch: `main`, tracking public `origin/main`
-- Implementation HEAD: `3391bc5` (`fix(demo): pin fixture and live execution modes`)
+- Current work HEAD: `a901470` (`docs: design product-led hackathon showcase`)
 - This handoff-only commit follows that implementation checkpoint.
 - Working tree was clean before this handoff update.
 
@@ -28,6 +28,7 @@ New commits in the latest Codex batch:
 - `183c1e9 fix(demo): load local environment for live runs`
 - `616897c fix(grok): load root environment in CLI`
 - `3391bc5 fix(demo): pin fixture and live execution modes`
+- `a901470 docs: design product-led hackathon showcase`
 
 ## Verification evidence
 
@@ -65,7 +66,7 @@ For xAI, set `XAI_API_KEY`. For a local OpenAI-compatible server, set `ASKCHING_
 
 ## Next action
 
-Finalize the three-source demo prompts, then prepare the showcase copy and a 2–4 minute human-narrated video runbook using the verified live Graph and real Grok paths. Preserve the incremental history and push each documentation or demo-script improvement separately.
+Review `docs/superpowers/specs/2026-09-09-product-led-showcase-design.md`. Once approved, turn it into the three-source prompts, ready-to-copy showcase text, and a 2.5–3 minute human-narrated recording runbook. Preserve the incremental history and push each documentation or demo-script improvement separately.
 
 ## Source-of-truth documents
 
