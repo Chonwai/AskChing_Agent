@@ -18,12 +18,22 @@
 - **EXECUTE 修復**: M1 (graph-client error tests +3), M2 (schema centralized), A4 (docs live verified)
 - **Decision**: johnku2011 code = solid foundation。下一步 = Phase 1 research_brief (fixture-mode testable, 不需 XAI key) + Grok orchestrator (需 XAI key for live)
 
+### Iteration 2 (2026-09-08) — Phase 1a: research_brief ✅
+- **EXECUTE**: `research_brief` handler 實作（tools.ts + index.ts + tests +2），符合 spec §4.2 testable AC
+- **VERIFY**: pnpm build ✅ / 13 tests ✅ / 5 evals ✅
+- **LIVE E2E**: `DEMO_LIVE=1` 端到端驗證成功 — conclusion "compound-v3 leads aave-v3 (5.08% vs 3.62%) as of 2026-09-08T11:49:59Z"，完整 citation（deploymentId + block 25932459 + queryHash）
+- **Commit**: 74b80e9 feat(mcp): implement research_brief handler
+
 ## Commits (Iteration 1)
 - e208658 docs(review): record johnku2011 bootstrap review (93.15 PASS)
 - e3c6f57 test(shared): add graph-client error path tests (M1)
 - 330c861 refactor(mcp): centralize tool input schemas in tools.ts (M2)
 - 0555678 docs: mark live smoke as verified (Aave 3.62% / Compound 5.10%)
 
+## Commits (Iteration 2)
+- 74b80e9 feat(mcp): implement research_brief handler
+
 ## Circuit Breaker Status
 - 連續失敗: 0
-- Blockers: **XAI_API_KEY 為空** — Phase 1 Grok orchestrator live mode 被 block；fixture mode 開發不受影響
+- Blockers: **XAI_API_KEY 為空** — Phase 1b Grok orchestrator live mode 被 block；fixture mode 開發不受影響
+- Next: risk_scan (Phase 3) 或 Grok orchestrator (需 XAI key) 或 demo CLI (npm run demo)
