@@ -1,27 +1,29 @@
 # Loop State: johnku2011 code review + Phase 0/1 development
 
 - **Goal (Done Contract)**:
-  1. Review johnku2011 的 code 改動（Maker = johnku2011, Checker = smith）
-  2. 用新增的 GRAPH_API_KEY 執行 Phase 0 live smoke validation
-  3. 基於 review 結果 + live 驗證，決定下一步開發（Phase 1 Grok orchestrator?）
+  1. Review johnku2011 的 code 改動（Maker = johnku2011, Checker = smith） — ✅ DONE (93.15 PASS)
+  2. 用新增的 GRAPH_API_KEY 執行 Phase 0 live smoke validation — ✅ DONE (Aave 3.62% / Compound 5.10%)
+  3. 基於 review 結果 + live 驗證，決定下一步開發 — ✅ DECISION: Phase 1 research_brief (fixture mode) + Grok orchestrator needs XAI key
 - **Quality Mode**: strict（Threshold 93）｜**Depth**: L3 Deep Dive
 - **Loop Shape**: 完整開發（Review + Execute 混合）
-- **Stage Round Counters**: DISCOVER: 0/1, PLAN: 0/1, EXECUTE: 0/1, VERIFY: 0/2
+- **Stage Round Counters**: DISCOVER: 1/1 ✅, PLAN: 1/1 ✅, EXECUTE: 1/1 ✅ (M1/M2/A4), VERIFY: 2/2 ✅
 - **Timeline**: 2026-09-08, submit 截止 2026-09-13
-
-## 已知事實（累積）
-
-- AskChing = Grok-orchestrated research MCP over The Graph
-- Track: The Graph — Best AI Tooling or AI Use Case (From Scratch) $5,000
-- 兩份文檔已達 97.6/100（doc-reviewer Round 2 PASS）
-- 用戶說已加 Graph API key
-- 隊友 johnku2011 已做代碼開發，要在其基礎上繼續
-- Codebase 缺口（上輪盤點）：Grok orchestrator（1行 stub）、research_brief（not-implemented）、risk_scan（not-implemented）、第三 source、demo CLI、settled fan-out
 
 ## Iterations
 
-（每次 dispatch 記錄於此）
+### Iteration 1 (2026-09-08)
+- **DISCOVER**: johnku2011 (John Ku) 的 commits = bootstrap core (c413c98→55bbea7)。`.env` 已有 GRAPH_API_KEY（XAI 空）
+- **Phase 0**: `DEMO_LIVE=1 pnpm live:smoke` PASS — Compound V3 5.10% / Aave V3 3.62%（block 25932159，完整 citation）
+- **VERIFY**: smith review 93.15/100 PASS（0 Critical / 0 High / 2 Medium / 9 Low）
+- **EXECUTE 修復**: M1 (graph-client error tests +3), M2 (schema centralized), A4 (docs live verified)
+- **Decision**: johnku2011 code = solid foundation。下一步 = Phase 1 research_brief (fixture-mode testable, 不需 XAI key) + Grok orchestrator (需 XAI key for live)
+
+## Commits (Iteration 1)
+- e208658 docs(review): record johnku2011 bootstrap review (93.15 PASS)
+- e3c6f57 test(shared): add graph-client error path tests (M1)
+- 330c861 refactor(mcp): centralize tool input schemas in tools.ts (M2)
+- 0555678 docs: mark live smoke as verified (Aave 3.62% / Compound 5.10%)
 
 ## Circuit Breaker Status
-
 - 連續失敗: 0
+- Blockers: **XAI_API_KEY 為空** — Phase 1 Grok orchestrator live mode 被 block；fixture mode 開發不受影響
