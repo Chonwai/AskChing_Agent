@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Bootstrap design and execution plan prepared from the ETHOnline 2026 Start Fresh brief. The repository began empty on `main`; no product code existed.
+Task 1 is implemented on `main`. The repository now has a three-package pnpm workspace, strict shared TypeScript configuration, environment example, MIT license, and README stub. The design/plan checkpoint is commit `88eaf4e`.
 
 ## Source of truth
 
@@ -12,11 +12,12 @@ Bootstrap design and execution plan prepared from the ETHOnline 2026 Start Fresh
 
 ## Next action
 
-Execute Task 1 from the plan: scaffold the pnpm workspace, install dependencies, verify the root build, and commit it independently.
+Commit the scaffold as `chore: scaffold AskChing pnpm monorepo`, then execute Task 2 test-first: add a failing comparison-contract test before creating schemas or normalization code.
 
 ## Verification
 
-No product commands exist yet. Inspect with `git status --short --branch` and `git log --oneline`.
+- `pnpm install` passed with pnpm 9.15.4.
+- `pnpm build` passed across all three workspace packages on Node.js 22.13.1 (the project floor is Node.js 20).
 
 ## Suggested skills
 
