@@ -158,16 +158,18 @@ AskChing_Agent/
 │   │       └── tools.test.ts      # Handler tests
 │   └── grok-orchestrator/         # @askching/grok-orchestrator
 │       └── src/
-│           ├── index.ts           # Grok tool-calling loop (TO BUILD)
-│           ├── loop.ts            # Core loop logic (TO BUILD)
-│           └── loop.test.ts       # Loop tests (TO BUILD)
+│           ├── index.ts           # Grok CLI entry (DEFAULT_MODEL, env config)
+│           ├── client.ts          # OpenAI-compatible client
+│           ├── client.test.ts     # Client tests
+│           ├── loop.ts            # runGrokOrchestrator() — in-process tool loop
+│           └── loop.test.ts       # Loop tests (mock LLM)
 ├── evals/
 │   ├── cases.json                 # Eval case definitions
 │   └── run.ts                     # Eval runner
 ├── demos/
 │   ├── live-smoke.ts              # Live fixture smoke test
-│   ├── demo.ts                    # One-click demo CLI (TO BUILD)
-│   └── prompts.md                 # Demo prompt scripts
+│   ├── demo.ts                    # One-click demo CLI (✅)
+│   └── prompts.md                 # Demo A/B/C 三源 prompts（✅ 已定稿）
 ├── skills/
 │   └── askching/
 │       └── SKILL.md               # Agent playbook (thin)
@@ -413,15 +415,13 @@ query AskChingUsdcSupplyApy {
 | Compound V3 | Ethereum mainnet | `AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9` | Messari lending |
 | Spark Lend | Ethereum mainnet | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` | Messari lending |
 
-**⚠️ Phase 0 必須驗證：** 用 `GRAPH_API_KEY` 跑 `DEMO_LIVE=1 pnpm live:smoke`，確認兩個 subgraph 的 USDC rate 欄位存在。
-
-**✅ 已驗證（3-source）。** 截至 2026-09-08，使用 `GRAPH_API_KEY` 成功執行 `DEMO_LIVE=1`。Compound V3 返回 4.86% USDC supply APY（block 25932799），Aave V3 返回 3.62%（block 25932799），Spark Lend 返回 3.54%（block 25932799）。三個 subgraph 的 field mapping 正確，完整 citation（subgraphId + deploymentId + block + timestamp + queryHash）全部返回。
+**✅ 已驗證（2026-09-08）：** `DEMO_LIVE=1 pnpm live:smoke` 三源全回（Compound V3 4.6453% / Aave V3 3.6283% / Spark Lend 3.5419% @ blocks 25,933,794–795），field mapping 正確，完整 citation 返回。
 
 ---
 
 ## 6. Grok Orchestrator
 
-`packages/grok-orchestrator/` — Phase 1 核心缺口。
+`packages/grok-orchestrator/` — **✅ 已實作（2026-09-08，commits 53dc3fa / 0c71cd0）**。含 loop.ts（212 行 runGrokOrchestrator，ASKCHING_TOOLS 3 工具、maxTurns=4）、client.ts（OpenAI-compatible）、index.ts（CLI entry）、loop.test.ts / client.test.ts。
 
 ### 6.1 設計
 
@@ -460,24 +460,24 @@ const dataSource = createMarketDataSource(process.env);
 const result = await compareMarkets(input, dataSource);
 ```
 
+**✅ 已實作：** `mcp-server` 已 export `compareMarkets`，orchestrator 直接 in-process import（與設計一致）。
+
 **注意：** `compareMarkets()` 的第二個參數是 `MarketDataSource`，需要在 orchestrator 中自行建立（與 MCP server 相同的 pattern）。兩邊的 dataSource 建立邏輯會重複，但 hackathon 時間內不抽取共用 factory。
 
 ### 6.3 Grok API Config
 
 ```typescript
-// xAI API — Grok 4.6 or latest
+// xAI API — 實際實作（packages/grok-orchestrator/src/index.ts:13,37）
 const XAI_API_BASE = "https://api.x.ai/v1";
-const MODEL = "grok-4";  // or latest available
-
-// System prompt includes SKILL.md content
-// Tools: [compare_markets, research_brief]
+const DEFAULT_MODEL = "grok-4.6";  // 可被 ASKCHING_LLM_MODEL env 覆寫
+// ⚠️ Q1 追蹤：grok-4.6 尚未以真實 xAI API 驗證（見 §13 Q1）
 ```
 
 ### 6.4 API Key 配置
 
 | 變數 | 來源 | 用途 |
 |------|------|------|
-| `XAI_API_KEY` | xAI Console (console.x.ai) | Grok API 認證 |
+| `XAI_API_KEY` | xAI Console (console.x.ai) | Grok API 認證（**可選**：本地 LLM（Ollama）或 fixture 模式可省略；live Grok 模式必需） |
 | `GRAPH_API_KEY` | Subgraph Studio | The Graph Gateway 認證 |
 
 ```typescript
