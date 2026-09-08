@@ -3,6 +3,7 @@ import type { MarketObservation } from "./schemas.js";
 export const MARKET_FIXTURES: readonly MarketObservation[] = [
   {
     metric: "usdc_supply_apy",
+    rateType: "variable",
     value: 4.25,
     unit: "percent",
     protocol: "aave-v3",
@@ -14,6 +15,7 @@ export const MARKET_FIXTURES: readonly MarketObservation[] = [
   },
   {
     metric: "usdc_supply_apy",
+    rateType: "variable",
     value: 3.14,
     unit: "percent",
     protocol: "compound-v3",
@@ -24,4 +26,3 @@ export const MARKET_FIXTURES: readonly MarketObservation[] = [
     queryHash: "sha256:fixture-compound-usdc-supply-apy"
   }
 ] as const;
-

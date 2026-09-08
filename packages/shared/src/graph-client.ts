@@ -17,7 +17,7 @@ const USDC_MARKET_QUERY = `
   }
 `;
 
-const NumericStringSchema = z.union([z.string(), z.number()]);
+const GraphNumberSchema = z.coerce.number().finite();
 const GraphEnvelopeSchema = z.object({
   data: z
     .object({
@@ -27,20 +27,20 @@ const GraphEnvelopeSchema = z.object({
           rates: z
             .array(
               z.object({
-                rate: NumericStringSchema,
+                rate: GraphNumberSchema,
                 side: z.string(),
                 type: z.string()
               })
             )
             .nullable(),
-          indexLastUpdatedTimestamp: NumericStringSchema.nullish()
+          indexLastUpdatedTimestamp: GraphNumberSchema.nullish()
         })
       ),
       _meta: z.object({
         deployment: z.string().optional(),
         block: z.object({
-          number: NumericStringSchema,
-          timestamp: NumericStringSchema.optional()
+          number: GraphNumberSchema,
+          timestamp: GraphNumberSchema.optional()
         })
       })
     })
@@ -100,9 +100,11 @@ export class GraphGatewayClient {
       .filter((market) => market.inputToken.symbol.toUpperCase() === "USDC")
       .flatMap((market) =>
         (market.rates ?? [])
-          .filter((rate) => rate.side === "LENDER")
+          .filter(
+            (rate) => rate.side === "LENDER" && rate.type === "VARIABLE"
+          )
           .map((rate) => ({
-            rate: Number(rate.rate),
+            rate: rate.rate,
             timestamp: market.indexLastUpdatedTimestamp
           }))
       )
@@ -125,13 +127,14 @@ export class GraphGatewayClient {
 
     return MarketObservationSchema.parse({
       metric: "usdc_supply_apy",
+      rateType: "variable",
       value: bestRate.rate,
       unit: "percent",
       protocol: source.protocol,
       subgraphId: source.subgraphId,
       deploymentId: envelope.data._meta.deployment,
-      block: Number(envelope.data._meta.block.number),
-      timestamp: new Date(Number(timestampSeconds) * 1000).toISOString(),
+      block: envelope.data._meta.block.number,
+      timestamp: new Date(timestampSeconds * 1000).toISOString(),
       queryHash: await sha256(USDC_MARKET_QUERY)
     });
   }

@@ -4,6 +4,7 @@ import { compareObservations } from "./compare.js";
 
 const compound = {
   metric: "usdc_supply_apy" as const,
+  rateType: "variable" as const,
   value: 3.14,
   unit: "percent" as const,
   protocol: "compound-v3",
@@ -16,6 +17,7 @@ const compound = {
 
 const aave = {
   metric: "usdc_supply_apy" as const,
+  rateType: "variable" as const,
   value: 4.25,
   unit: "percent" as const,
   protocol: "aave-v3",

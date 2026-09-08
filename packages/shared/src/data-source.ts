@@ -1,7 +1,11 @@
 import { MARKET_FIXTURES } from "./fixtures.js";
 import { GraphGatewayClient } from "./graph-client.js";
-import type { MarketMetric, MarketObservation } from "./schemas.js";
-import { LIVE_SOURCES, type ProtocolSlug } from "./source-config.js";
+import type {
+  MarketMetric,
+  MarketObservation,
+  ProtocolSlug
+} from "./schemas.js";
+import { LIVE_SOURCES } from "./source-config.js";
 
 export interface AskChingEnvironment {
   DEMO_LIVE?: string;
@@ -25,7 +29,7 @@ export function createMarketDataSource(
         return MARKET_FIXTURES.filter(
           (observation) =>
             observation.metric === metric &&
-            (!protocols || protocols.includes(observation.protocol as ProtocolSlug))
+            (!protocols || protocols.includes(observation.protocol))
         );
       }
     };
@@ -53,4 +57,3 @@ export function createMarketDataSource(
     }
   };
 }
-

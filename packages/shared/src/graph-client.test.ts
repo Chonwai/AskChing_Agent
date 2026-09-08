@@ -14,6 +14,7 @@ describe("GraphGatewayClient", () => {
                 inputToken: { symbol: "USDC" },
                 rates: [
                   { rate: "4.75", side: "LENDER", type: "VARIABLE" },
+                  { rate: "9.50", side: "LENDER", type: "STABLE" },
                   { rate: "6.25", side: "BORROWER", type: "VARIABLE" }
                 ],
                 indexLastUpdatedTimestamp: "1788825600"
@@ -37,6 +38,7 @@ describe("GraphGatewayClient", () => {
 
     expect(result.value).toBe(4.75);
     expect(result.unit).toBe("percent");
+    expect(result.rateType).toBe("variable");
     expect(result.protocol).toBe("aave-v3");
     expect(result.deploymentId).toBe("QmLiveDeployment");
     expect(result.block).toBe(22_100_123);

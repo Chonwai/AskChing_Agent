@@ -3,10 +3,15 @@ import { z } from "zod";
 export const MarketMetricSchema = z.enum(["usdc_supply_apy"]);
 export type MarketMetric = z.infer<typeof MarketMetricSchema>;
 
+export const ProtocolSchema = z.enum(["aave-v3", "compound-v3"]);
+export type ProtocolSlug = z.infer<typeof ProtocolSchema>;
+
+export const RateTypeSchema = z.literal("variable");
+
 export const CitationSchema = z.object({
   value: z.number().finite(),
   unit: z.literal("percent"),
-  protocol: z.string().min(1),
+  protocol: ProtocolSchema,
   subgraphId: z.string().min(1),
   deploymentId: z.string().min(1).optional(),
   block: z.number().int().nonnegative().optional(),
@@ -16,7 +21,8 @@ export const CitationSchema = z.object({
 export type Citation = z.infer<typeof CitationSchema>;
 
 export const MarketObservationSchema = CitationSchema.extend({
-  metric: MarketMetricSchema
+  metric: MarketMetricSchema,
+  rateType: RateTypeSchema
 });
 export type MarketObservation = z.infer<typeof MarketObservationSchema>;
 
@@ -41,4 +47,3 @@ export const ComparisonSchema = z.object({
   sources: z.array(ComparisonSourceSchema).min(2)
 });
 export type Comparison = z.infer<typeof ComparisonSchema>;
-

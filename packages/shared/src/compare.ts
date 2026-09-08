@@ -1,5 +1,6 @@
 import {
   ComparisonSchema,
+  ComparisonSourceSchema,
   MarketMetricSchema,
   MarketObservationSchema,
   type Comparison,
@@ -46,23 +47,6 @@ export function compareObservations(
     asOf,
     rows,
     caveats,
-    sources: rows.map(
-      ({
-        protocol,
-        subgraphId,
-        deploymentId,
-        block,
-        timestamp,
-        queryHash
-      }) => ({
-        protocol,
-        subgraphId,
-        deploymentId,
-        block,
-        timestamp,
-        queryHash
-      })
-    )
+    sources: rows.map((row) => ComparisonSourceSchema.parse(row))
   });
 }
-

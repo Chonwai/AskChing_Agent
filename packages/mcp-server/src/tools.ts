@@ -1,13 +1,14 @@
 import {
   compareObservations,
   type Comparison,
-  type MarketDataSource
+  type MarketDataSource,
+  ProtocolSchema
 } from "@askching/shared";
 import { z } from "zod";
 
 export const CompareMarketsInputSchema = z.object({
   metric: z.literal("usdc_supply_apy"),
-  protocols: z.array(z.enum(["aave-v3", "compound-v3"])).min(2),
+  protocols: z.array(ProtocolSchema).min(2),
   timeframe: z.string().min(1).optional()
 });
 
@@ -34,4 +35,3 @@ export async function compareMarkets(
     ]
   };
 }
-

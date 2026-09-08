@@ -1,4 +1,6 @@
-export type ProtocolSlug = "aave-v3" | "compound-v3";
+import type { ProtocolSlug } from "./schemas.js";
+
+export type { ProtocolSlug } from "./schemas.js";
 
 export interface SubgraphSource {
   protocol: ProtocolSlug;
@@ -23,4 +25,3 @@ export const LIVE_SOURCES: readonly SubgraphSource[] = [
       "https://thegraph.com/explorer/subgraphs/AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9"
   }
 ] as const;
-
