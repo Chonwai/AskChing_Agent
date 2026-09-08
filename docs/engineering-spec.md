@@ -3,7 +3,9 @@
 > AskChing 是一個 Grok-orchestrated research MCP over The Graph。  
 > 本文檔定義技術架構、API 契約、開發路線圖和驗收標準。
 
-> 📌 **進度（2026-09-08）：** Phase 0 ✅ / Phase 1a ✅（compare_markets, research_brief, risk_scan, demo CLI）/ Phase 2 ✅（Spark 第三 source + settled fan-out）。**Phase 1b（Grok Orchestrator）為下一開發目標。**
+> 📌 **進度（2026-09-09）：** Phase 0 ✅（live smoke 3-source）/ Phase 1a ✅（compare_markets, research_brief, risk_scan）/ Phase 1b ✅（Grok Orchestrator：loop.ts + client.ts + CLI）/ Phase 2 ✅（Spark 第三 source + settled fan-out）/ Phase 3 ✅（README + Showcase 文書 + SKILL.md）。**Phase 4（錄影 + 提交）進行中**：4.3/4.4 ✅，4.1/4.2/4.5/4.6 待執行。
+>
+> 📊 **完成度：約 88%**（技術實作 100%、Phase 0–3 100%、Showcase 文書 100%、Phase 4 ~17%、Open Questions 75%）。完整審計見 `docs/reviews/2026-09-09-blueprint-completion-audit.md`。
 
 ---
 
@@ -12,6 +14,7 @@
 0. [Problem Statement](#0-problem-statement)
 0b. [Goals & Non-Goals](#0b-goals--non-goals)
 0c. [Glossary](#0c-glossary)
+0d. [完成度摘要](#0d-完成度摘要)
 1. [系統架構](#1-系統架構)
 2. [Package 結構](#2-package-結構)
 3. [核心 Schema 定義](#3-核心-schema-定義)
@@ -56,6 +59,20 @@ DeFi 研究員和 AI agent 開發者需要即時、有來源的鏈上數據分�
 | **Settled fan-out** | 使用 Promise.allSettled，允許部分 source 失敗 |
 | **Load-bearing** | 拔掉 The Graph 後產品無意義 |
 | **In-process import** | 直接 import MCP handler function，不經 stdio transport |
+
+---
+
+## 0d. 完成度摘要（2026-09-09）
+
+| 區塊 | 狀態 |
+|------|------|
+| 技術實作（三 tools + Grok Orchestrator + 三源 fan-out） | ✅ 100% |
+| Phase 0–3（live smoke → Grok → multi-source → 文書） | ✅ 100% |
+| Showcase 文書（README / run script / ETHGlobal copy / checklist） | ✅ 100% |
+| Phase 4（錄影 + 上傳 + repo 公開 + submit） | ⚠️ ~17%（僅 4.3/4.4） |
+| Open Questions（Q1–Q4） | ⚠️ 75%（Q1 未實測） |
+
+**總體：約 88%**。剩餘全為執行型任務（錄影、上傳、填表單、驗證），無核心程式碼風險。完整審計：`docs/reviews/2026-09-09-blueprint-completion-audit.md`。
 
 ---
 
