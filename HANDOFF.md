@@ -1,11 +1,11 @@
 # AskChing handoff
 
-Updated: 2026-09-08 (Asia/Hong_Kong)
+Updated: 2026-09-09 (Asia/Hong_Kong)
 
 ## Current checkpoint
 
 - Branch: `main`, tracking public `origin/main`
-- Implementation HEAD: `ce1c4d3` (`docs: document Grok CLI and current tool scope`)
+- Implementation HEAD: `616897c` (`fix(grok): load root environment in CLI`)
 - This handoff-only commit follows that implementation checkpoint.
 - Working tree was clean before this handoff update.
 
@@ -25,18 +25,24 @@ New commits in the latest Codex batch:
 - `53dc3fa feat(grok): implement in-process tool loop`
 - `0c71cd0 feat(grok): add OpenAI-compatible CLI`
 - `ce1c4d3 docs: document Grok CLI and current tool scope`
+- `183c1e9 fix(demo): load local environment for live runs`
+- `616897c fix(grok): load root environment in CLI`
 
 ## Verification evidence
 
-Run from the repository root at implementation HEAD `ce1c4d3`:
+Run from the repository root at implementation HEAD `616897c`:
 
 ```text
-pnpm test  -> 7 files passed, 19 tests passed
+pnpm test  -> 8 files passed, 20 tests passed
 pnpm build -> all 3 workspace packages built successfully
 pnpm eval  -> 5/5 eval cases passed
 ```
 
-The orchestrator tests use a deterministic mock model and fixture data, so they require no network credentials. The CLI was also checked to fail clearly when the default xAI endpoint is selected without `XAI_API_KEY`.
+Credentialed end-to-end checks also passed on 2026-09-09:
+
+- Live Graph: 3 cited sources at blocks 25,933,794–25,933,795; Compound 4.6453%, Aave 3.6283%, Spark 3.5419%.
+- Real Grok with fixture tools: selected `compare_markets`, cited all 3 sources, labeled fixture data, preserved the variable-rate definition, and stated `asOf`.
+- The launchers now load the root `.env`; `evals/demo-env-config.test.ts` guards all credentialed entry points.
 
 ## Run the product
 
@@ -51,14 +57,13 @@ For xAI, set `XAI_API_KEY`. For a local OpenAI-compatible server, set `ASKCHING_
 
 ## Open constraints
 
-- No real Grok end-to-end call was made in this batch because `XAI_API_KEY` is not available in the checked-in environment.
-- Live Graph behavior was already validated earlier, but was not re-run in this batch to avoid unnecessary gateway traffic.
 - `risk_scan` is an honest peer-relative spot snapshot, not historical time-series risk analysis.
 - AskChing remains research software: no trading, transaction execution, or large UI is in scope.
+- Credentials remain local in `.env` and must never be committed or pasted into logs.
 
 ## Next action
 
-Add `XAI_API_KEY` locally and record one real fixture-mode Grok CLI transcript. Then prepare the showcase/demo video and final ETHOnline submission materials. If the real model emits unexpected tool arguments, add the transcript shape as a regression test before changing the loop.
+Prepare the showcase/demo video and final ETHOnline submission materials using the now-verified live Graph and real Grok paths. Preserve the incremental history and push each documentation or demo-script improvement separately.
 
 ## Source-of-truth documents
 
