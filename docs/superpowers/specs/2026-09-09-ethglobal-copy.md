@@ -9,15 +9,15 @@
 
 AskChing: Grok-Reasoning Agent for Multi-Subgraph DeFi Research
 
-**字數檢查：** 66 chars（< 60 chars 限制 → ⚠️ 需縮短）
+**字數檢查：** 63 chars（> 60 chars 限制 → ⚠️ 需縮短）
 
 ### Shortlisted Titles（< 60 chars）
 
 | Title | Length | 說明 |
 | --- | --- | --- |
-| AskChing: Multi-Subgraph DeFi Research Agent | 47 | ✅ 推薦 |
-| AskChing: Grok DeFi Research Agent | 36 | ✅ 精簡 |
-| AskChing: Cited DeFi Research Agent | 36 | ✅ 強調證據 |
+| AskChing: Multi-Subgraph DeFi Research Agent | 44 | ✅ 推薦 |
+| AskChing: Grok DeFi Research Agent | 34 | ✅ 精簡 |
+| AskChing: Cited DeFi Research Agent | 35 | ✅ 強調證據 |
 
 **標題規則：** 避免「Trading」「Yield」「Bot」字眼；強調 research + evidence。
 
@@ -27,14 +27,14 @@ AskChing: Grok-Reasoning Agent for Multi-Subgraph DeFi Research
 
 AskChing is a cited research agent that compares live DeFi lending metrics across multiple The Graph subgraphs using Grok.
 
-**字數檢查：** 138 chars（< 280 chars ✅）
+**字數檢查：** 122 chars（< 280 chars ✅）
 
 ### 備選
 
 | 版本 | Length | 說明 |
 | --- | --- | --- |
-| Ask one DeFi research question, get a normalized cross-protocol answer with citations back to live subgraphs. | 154 | ✅ |
-| A Grok-orchestrated research MCP that fans out across live subgraphs and returns evidence-traceable DeFi comparisons. | 153 | ✅ |
+| Ask one DeFi research question, get a normalized cross-protocol answer with citations back to live subgraphs. | 109 | ✅ |
+| A Grok-orchestrated research MCP that fans out across live subgraphs and returns evidence-traceable DeFi comparisons. | 117 | ✅ |
 
 ---
 
@@ -52,7 +52,7 @@ AskChing is a cited research agent that compares live DeFi lending metrics acros
 
 ### Paragraph 3 — How it works
 
-> Ask a question like "Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend." Grok reads the request, selects an AskChing research tool, and the agent fans out to three live Ethereum subgraphs using the Messari lending schema. Observations sharing the same metric definition and unit are ranked, and the answer carries the subgraph, block, query hash, and an explicit as-of time for each source.
+> Ask a question like "Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend." Grok reads the request, selects an AskChing research tool, and the agent fans out to three live Ethereum subgraphs using the Messari lending schema. Observations sharing the same metric definition and unit are ranked, and the answer carries the subgraph, block, query hash (the same query is run against each source, so the hash is the same across sources), and an explicit as-of time for each source.
 
 ### Paragraph 4 — Tech
 
@@ -74,7 +74,7 @@ AskChing is a cited research agent that compares live DeFi lending metrics acros
 | TypeScript | 全端型別安全 |
 | pnpm monorepo | `packages/shared` / `packages/mcp-server` / `packages/grok-orchestrator` |
 | Vitest | 行為測試（comparison/evidence/risk 邏輯） |
-| The Graph Studio | Live gateway 存取（`GRAPH_API_KEY`） |
+| Subgraph Studio | Live gateway 存取（`GRAPH_API_KEY`） |
 
 ---
 
