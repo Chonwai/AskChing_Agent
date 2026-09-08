@@ -1,14 +1,13 @@
-# AskChain — Product Overview
+# AskChing — Product Overview
 
-> **「有咩唔識就 Ask Chain。」**  
-> **命名說明：** 產品品牌名為 **AskChain**（易記、對應「問師兄」粵語諧音），內部代碼與 package 使用 **AskChing**（repo 名 `AskChing_Agent`、`@askching/*`）——兩者指同一產品。  
+> **「有咩唔識就 Ask Ching。」**  
 > 一個 Grok-powered AI research agent，用自然語言即時查詢並分析多協議鏈上數據，背後由 The Graph 提供結構化 live data 支撐。
 
 ---
 
 ## 1. 一句話定位
 
-AskChain 是一個 **AI 研究中間層**：你用自然語言問，Grok 決定查哪些 The Graph Subgraph，拿到 live 鏈上數據，再寫成有來源、有時間、有風險提示的 **cited research brief**。
+AskChing 是一個 **AI 研究中間層**：你用自然語言問，Grok 決定查哪些 The Graph Subgraph，拿到 live 鏈上數據，再寫成有來源、有時間、有風險提示的 **cited research brief**。
 
 **我們不是另一個 ChatGPT。** 我們是讓 AI agent 從「會查」變成「會答、會判斷」的基礎設施。
 
@@ -25,13 +24,13 @@ AskChain 是一個 **AI 研究中間層**：你用自然語言問，Grok 決定�
 
 ### 一句話痛點
 
-> The Graph 像圖書館索引——數據已經整理好了，但你需要知道怎麼問、問誰、怎麼讀。AskChain 是那個**識睇目錄、幫你寫摘要的研究員助手**（而且必須去圖書館攞真書，唔准亂編）。
+> The Graph 像圖書館索引——數據已經整理好了，但你需要知道怎麼問、問誰、怎麼讀。AskChing 是那個**識睇目錄、幫你寫摘要的研究員助手**（而且必須去圖書館攞真書，唔准亂編）。
 
 ---
 
 ## 3. 解決方案
 
-AskChain 在 The Graph 數據之上疊加一層 **AI reasoning + multi-source synthesis**：
+AskChing 在 The Graph 數據之上疊加一層 **AI reasoning + multi-source synthesis**：
 
 ```
 用戶自然語言提問
@@ -72,7 +71,7 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 └──────────────────────┬──────────────────────────┘
                        ↓
 ┌─────────────────────────────────────────────────┐
-│  AskChain SKILL 引導 Grok：                     │
+│  AskChing SKILL 引導 Grok：                     │
 │  1. 識別問題類型（compare / brief / risk）        │
 │  2. 選擇對應 MCP tool                           │
 │  3. 組裝參數（metric + protocols）               │
@@ -98,7 +97,7 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 
 ### 4.2 Phase 2：Cursor / Codex / Gemini 用戶（開放）
 
-Grok Bot 驗證後，AskChain MCP Server 開放給其他 AI 工具：
+Grok Bot 驗證後，AskChing MCP Server 開放給其他 AI 工具：
 
 | 工具 | 接入方式 | 用戶體驗 |
 |------|----------|---------|
@@ -109,7 +108,7 @@ Grok Bot 驗證後，AskChain MCP Server 開放給其他 AI 工具：
 
 ### 4.3 用戶類型
 
-| 類型 | 需求 | AskChain 價值 |
+| 類型 | 需求 | AskChing 價值 |
 |------|------|--------------|
 | **DeFi 研究員** | 跨協議利率比較、TVL 追蹤 | Multi-source comparison + citations |
 | **AI Agent 開發者** | 需要可靠鏈上數據源 | Reusable MCP infrastructure |
@@ -124,12 +123,12 @@ Grok Bot 驗證後，AskChain MCP Server 開放給其他 AI 工具：
 
 ```
 ┌─────────────────────────────────────┐
-│         AskChain Stack              │
+│         AskChing Stack              │
 ├─────────────────────────────────────┤
 │  🧠 Grok Orchestrator              │  ← AI reasoning layer
 │     (xAI tool-calling loop)         │
 ├─────────────────────────────────────┤
-│  🔧 AskChain MCP Server            │  ← Reusable infrastructure
+│  🔧 AskChing MCP Server            │  ← Reusable infrastructure
 │     compare_markets                 │
 │     research_brief                  │
 │     risk_scan                       │
@@ -173,7 +172,7 @@ Grok Bot 驗證後，AskChain MCP Server 開放給其他 AI 工具：
 
 ### 6.2 Positioning
 
-> AskChain 不取代 The Graph 官方 Subgraph MCP；我們用它做數據層，上面加 Grok 作業程序同研究報告輸出，令 agent 由「會查」變成「會答、會判斷、裝進 Cursor 就用得」。
+> AskChing 不取代 The Graph 官方 Subgraph MCP；我們用它做數據層，上面加 Grok 作業程序同研究報告輸出，令 agent 由「會查」變成「會答、會判斷、裝進 Cursor 就用得」。
 
 ### 6.3 評審 10 秒測試
 
@@ -196,7 +195,7 @@ Grok Bot 驗證後，AskChain MCP Server 開放給其他 AI 工具：
 
 ## 7. 競爭優勢
 
-| 維度 | AskChain | 官方 Subgraph MCP | 一般 DeFi Dashboard |
+| 維度 | AskChing | 官方 Subgraph MCP | 一般 DeFi Dashboard |
 |------|----------|-------------------|---------------------|
 | 數據來源 | The Graph (live) | The Graph (live) | 自建 / 延遲 |
 | 多源對比 | ✅ fan-out + normalize | ❌ 單一 query | ⚠️ 人工切換 |
@@ -224,5 +223,5 @@ Hackathon 交付 **v1.0**（Grok Bot + MCP + compare_markets + research_brief）
 
 ---
 
-*Document version: 1.1 — 2026-09-08 (revised per doc-reviewer Round 1 findings)*  
+*Document version: 1.2 — 2026-09-08 (renamed AskChain → AskChing per team alignment)*  
 *Status: For team alignment and ETHOnline 2026 submission*
