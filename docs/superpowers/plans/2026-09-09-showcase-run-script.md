@@ -2,7 +2,7 @@
 
 > **日期：** 2026-09-09
 > **依據 spec：** `docs/superpowers/specs/2026-09-09-product-led-showcase-design.md`
-> **依賴 prompts：** `demos/prompts.md`（Demo A / Demo C，已定稿）
+> **依賴 prompts：** `demos/prompts.md`（Demo A / Demo B / Demo C，已定稿）
 > **總時長：** 2:55（2.5–3 分鐘，符合 Acceptance Criteria「2–4 分鐘」）
 > **錄影路徑：** 展示 tool-call 決策 → `pnpm askching`（配 `DEMO_LIVE=1`）；僅展示 brief → `pnpm demo:live`（見 §5 路徑對照）；**rehearsal 路徑：** `pnpm demo`（fixture）
 
@@ -51,7 +51,7 @@
 | --- | --- | --- |
 | 0:20–0:32 | "Here is the question: *Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend right now. Rank the results, cite each source, and state the as-of time.*" | 逐字輸入 Demo A prompt（`demos/prompts.md` Demo A）。**不要**先寫好再貼上 — 讓觀眾看到打字，但保持流暢。 |
 | 0:32–0:38 | "One sentence. Three protocols. Grok reads the request, and it has to decide which AskChing tool fits." | 游標停在輸入完成後、Enter 前，停 1–2 秒。 |
-| 0:38–0:50 | "Watch the tool selection — Grok picks either `compare_markets` for a straight comparison or `research_brief` for a synthesized brief, depending on how it frames the request. Two versions of the narration below." | 按 Enter。畫面顯示 Grok 的 tool-call 決策（**必須用 `pnpm askching` 才看得到**，見 §5）：tool name + 參數，例如 `research_brief` + `protocols: [aave-v3, compound-v3, spark-lend]`，或 `compare_markets` + 相同 protocols。 |
+| 0:38–0:50 | "Watch the tool selection — Grok picks either `compare_markets` for a straight comparison or `research_brief` for a synthesized brief, depending on how it frames the request. Two versions of the narration below." | 按 Enter。畫面顯示 Grok 的 tool-call 決策（**必須用 `pnpm askching` 才看得到**，見 §5）：⚠️ **CLI 預設不印 tool-call log**；要顯示 tool 名稱需先做「讓 tool-call 可見」處理（見 §5 方案 A），否則用泛化旁白（見下方 STOP-IF fallback，方案 B）。若已處理：tool name + 參數，例如 `research_brief` + `protocols: [aave-v3, compound-v3, spark-lend]`，或 `compare_markets` + 相同 protocols。 |
 
 **Tool-selection 旁白（二選一，依當次實際 tool 選擇）：**
 - **若選 `compare_markets`：** "It picks `compare_markets` — the question is a direct three-way comparison, so no synthesis is needed yet."
@@ -115,11 +115,15 @@
 | --- | --- | --- |
 | **Rehearsal** | `pnpm demo`（DEMO_LIVE=0） | fixture 資料；快速練習逐字稿與指令節奏，**不可**錄製為正式內容 |
 | **Brief 展示** | `pnpm demo:live`（DEMO_LIVE=1，需 `GRAPH_API_KEY`） | live Graph 資料，**直接呼叫 `researchBrief`（不走 Grok）** → 只產出 brief，**不會**展示 Grok 的 tool-call 決策過程 |
-| **Tool-call 決策展示** | `pnpm askching -- "…"`（node --env-file=.env，**配 `DEMO_LIVE=1`** 走 live Graph 資料；需 `XAI_API_KEY` + `GRAPH_API_KEY`） | 走完整 Grok orchestrator（tool-call log + 合成回答）；**只有這個路徑能展示 Grok 的 tool-selection 決策**（§2.1） |
+| **Tool-call 決策展示** | `pnpm askching -- "…"`（node --env-file=.env，**配 `DEMO_LIVE=1`** 走 live Graph 資料；需 `XAI_API_KEY` + `GRAPH_API_KEY`） | 走完整 Grok orchestrator（**CLI 預設僅輸出最終合成回答，不印 tool-call log**）；此路徑能展示 Grok 的 tool-selection **結果**，但若需在畫面上看到 tool 名稱，需依下方「讓 tool-call 可見」處理 |
 | Live smoke 檢查 | `pnpm live:smoke` | 開錄前確認三源可達、憑證有效 |
 
+> **讓 tool-call 可見（尚未實作，二選一）：**
+> - **方案 A（文件建議、尚未實作）：** 新增 `ASKCHING_DEBUG=1` 環境變數，讓 CLI 在輸出最終回答前印出 `result.toolCalls`（tool name + arguments）；接著 `pnpm askching` 即可在畫面看到 tool 名稱。
+> - **方案 B（預設最穩，不需改 code）：** 泛化旁白，不依賴看到 tool name——直接說「watch it pick the right research tool」，畫面停留在 CLI 輸出即可；完全迴避 tool-call log 可見性問題。
+
 > **§2.1 錄影路徑決策（重要）：**
-> - 要展示 **tool-call 決策**（§2.1「Watch the tool selection」）→ 用 `pnpm askching`（配 `DEMO_LIVE=1`）。
+> - 要展示 **tool-call 決策**（§2.1「Watch the tool selection」）→ 用 `pnpm askching`（配 `DEMO_LIVE=1`）（需先讓 tool-call 可見，見上方說明；否則用方案 B 泛化旁白）。
 > - 若只展示 **brief 產出** → 用 `pnpm demo:live`，但旁白**不可**說「watch the tool selection」，需改為背景式旁白（見 §2.1 STOP-IF fallback）。
 > - **STOP-IF：** 若錄影中 Grok tool-call log 不顯示或行為不穩 → 降級為背景旁白，不要硬唸 tool 名稱。
 
