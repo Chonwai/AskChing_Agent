@@ -1,7 +1,9 @@
 {
   "name": "@askching/mcp-server",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "AskChing MCP server: cited multi-subgraph DeFi market research over stdio.",
+  "license": "MIT",
+  "private": false,
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,8 +20,24 @@
   "bin": {
     "askching-mcp": "dist/index.js"
   },
+  "files": ["dist"],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "defi",
+    "the-graph",
+    "research",
+    "ai-agent"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "start": "node dist/index.js"
   },
   "dependencies": {
