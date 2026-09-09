@@ -324,7 +324,7 @@ const ComparisonSchema = z.object({
 }
 ```
 
-**實作方式:** `research_brief` 內部呼叫 `compare_markets`，然後用模板把結果包成 brief 結構。不是獨立的查詢邏輯。
+**實作方式:** `research_brief` 內部呼叫 `compare_markets`，然後用模板把結果包成 brief 結構（**非 LLM synthesis**——模板包裝；Grok orchestrator 版本的 synthesis 才由 LLM 負責）。不是獨立的查詢邏輯。
 
 **驗收標準（testable）：**
 - ✅ Input valid question + protocols → output 含 `brief.conclusion`（非空字串）
