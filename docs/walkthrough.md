@@ -93,10 +93,10 @@ pnpm eval
 **`pnpm build`：** 三個 packages 依序建置，結尾應有類似：
 
 ```
-Scope: 3 workspace projects
-...  packages/shared       build: done in ...
-...  packages/mcp-server   build: done in ...
-...  packages/grok-orchestrator  build: done in ...
+Scope: 3 of 4 workspace projects
+...  packages/shared       build: Done
+...  packages/mcp-server   build: Done
+...  packages/grok-orchestrator  build: Done
 ```
 
 **`pnpm test`：** 結尾為：
@@ -373,7 +373,7 @@ mcp-smoke OK: askching (3 tools)
 
 ## ⚡ 快速完成清單（10 分鐘 smoke 版）
 
-> 時間緊迫時只跑這 4 站（不需 `XAI_API_KEY`，但 `GRAPH_API_KEY` 需先填好以備 Station 4）：
+> 時間緊迫時只跑這 5 站（不需 `XAI_API_KEY`，但 `GRAPH_API_KEY` 需先填好以備 Station 4）：
 
 ```bash
 # Station 0（2 分鐘）
@@ -406,7 +406,13 @@ pnpm mcp:smoke
 
 ---
 
-## 📚 相關文件
+## � 未納入本旅程的功能
+
+- **`risk_scan`（Demo C，第三個 MCP tool）** — 本 7 站旅程著重於「比較 / 證據 / 跨平台」主路徑，未含 `risk_scan` 的 peer-relative spot-snapshot 驗證。要測試它，請用 `demos/prompts.md` 的 Demo C prompt，透過 MCP client（見 `docs/cross-platform.md`）或 `pnpm askching` 呼叫。預期輸出為 peer-relative spot signals + 明確的 time-series gap 聲明。
+
+---
+
+## �📚 相關文件
 
 | 文件 | 用途 |
 |---|---|
