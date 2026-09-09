@@ -19,6 +19,7 @@ export const GET_MARKETS_QUERY = `
       totalValueLockedUSD
       totalDepositBalanceUSD
       totalBorrowBalanceUSD
+      indexLastUpdatedTimestamp
       isActive
     }
     _meta {

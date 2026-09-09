@@ -389,6 +389,7 @@ describe("GraphGatewayClient.getMarketObservation", () => {
     expect(body.query).toContain("totalValueLockedUSD");
     expect(body.query).toContain("totalDepositBalanceUSD");
     expect(body.query).toContain("totalBorrowBalanceUSD");
+    expect(body.query).toContain("indexLastUpdatedTimestamp");
     expect(body.query).toContain("isActive");
     expect(body.query).toContain("rates { rate side type }");
   });
@@ -419,6 +420,7 @@ describe("GET_MARKETS_QUERY", () => {
     expect(GET_MARKETS_QUERY).toContain("totalValueLockedUSD");
     expect(GET_MARKETS_QUERY).toContain("totalDepositBalanceUSD");
     expect(GET_MARKETS_QUERY).toContain("totalBorrowBalanceUSD");
+    expect(GET_MARKETS_QUERY).toContain("indexLastUpdatedTimestamp");
     expect(GET_MARKETS_QUERY).toContain("isActive");
     expect(GET_MARKETS_QUERY).toContain("_meta");
   });
