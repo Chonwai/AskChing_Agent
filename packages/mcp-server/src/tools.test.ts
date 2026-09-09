@@ -3,8 +3,16 @@ import {
   type MarketDataSource
 } from "@askching/shared";
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
-import { compareMarkets, researchBrief, riskScan } from "./tools.js";
+import {
+  CompareMarketsCoreSchema,
+  ResearchBriefCoreSchema,
+  RiskScanCoreSchema,
+  compareMarkets,
+  researchBrief,
+  riskScan
+} from "./tools.js";
 
 describe("compareMarkets", () => {
   it("returns a normalized comparison with two fixture citations", async () => {
@@ -102,6 +110,86 @@ describe("compareMarkets", () => {
         dataSource
       )
     ).rejects.toThrow(/Unknown metric/);
+  });
+
+  it("exposes metric/asset validation in the MCP input schema (shape)", () => {
+    // The MCP SDK re-wraps the registered .shape via objectFromShape, so the
+    // field-level refinements must reject an unknown metric / bad asset even
+    // without the runtime superRefine path.
+    const exposed = CompareMarketsCoreSchema.shape;
+    const shapeSchema = z
+      .object(exposed)
+      .extend({
+        protocols: z.array(z.string()).min(2)
+      });
+
+    const badMetric = shapeSchema.safeParse({
+      metric: "borrow_tvl",
+      protocols: ["aave-v3", "compound-v3"]
+    });
+    expect(badMetric.success).toBe(false);
+
+    const badAsset = shapeSchema.safeParse({
+      metric: "supply_apy",
+      asset: "ETH!!",
+      protocols: ["aave-v3", "compound-v3"]
+    });
+    expect(badAsset.success).toBe(false);
+
+    const good = shapeSchema.safeParse({
+      metric: "supply_apy",
+      asset: "WETH",
+      protocols: ["aave-v3", "compound-v3"]
+    });
+    expect(good.success).toBe(true);
+  });
+
+  it("exposes the same validation on research_brief and risk_scan shapes", () => {
+    const researchShape = z.object(ResearchBriefCoreSchema.shape);
+    // research_brief requires question
+    expect(
+      researchShape.safeParse({ metric: "borrow_tvl", question: "q" }).success
+    ).toBe(false);
+    expect(
+      researchShape.safeParse({
+        metric: "supply_apy",
+        asset: "ETH!!",
+        question: "q"
+      }).success
+    ).toBe(false);
+    expect(
+      researchShape.safeParse({
+        metric: "supply_apy",
+        asset: "USDT",
+        question: "q"
+      }).success
+    ).toBe(true);
+
+    const riskShape = z.object(RiskScanCoreSchema.shape);
+    // risk_scan requires protocols + window
+    expect(
+      riskShape.safeParse({
+        metric: "borrow_tvl",
+        protocols: ["aave-v3"],
+        window: "7d"
+      }).success
+    ).toBe(false);
+    expect(
+      riskShape.safeParse({
+        metric: "supply_apy",
+        asset: "ETH!!",
+        protocols: ["aave-v3"],
+        window: "7d"
+      }).success
+    ).toBe(false);
+    expect(
+      riskShape.safeParse({
+        metric: "supply_apy",
+        asset: "USDT",
+        protocols: ["aave-v3"],
+        window: "7d"
+      }).success
+    ).toBe(true);
   });
 });
 

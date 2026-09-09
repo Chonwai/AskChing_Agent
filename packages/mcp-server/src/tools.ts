@@ -9,12 +9,39 @@ import {
 } from "@askching/shared";
 import { z } from "zod";
 
+// ── Metric / asset field-level validation (H3) ─────────────────────
+// MCP registration passes CoreSchema.shape to the SDK, which re-wraps it as a
+// plain object. Schema-level superRefine on ZodEffects is NOT reflected there
+// (normalizeObjectSchema returns undefined for ZodEffects), so metric/asset
+// validation must live on the fields themselves for the exposed schema and the
+// runtime MCP argument check to agree.
+const MetricFieldSchema = z
+  .string()
+  .min(1)
+  .refine(
+    (value) => {
+      try {
+        resolveMetricId(value);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    "Unknown metric or legacy alias"
+  )
+  .describe("MarketMetricId or legacy alias (usdc_supply_apy)");
+
+const AssetFieldSchema = z
+  .string()
+  .min(1)
+  .refine(
+    (value) => AssetSymbolSchema.safeParse(value.toUpperCase()).success,
+    "Asset symbol must be 2-10 uppercase alphanumerics"
+  );
+
 export const CompareMarketsCoreSchema = z.object({
-  metric: z
-    .string()
-    .min(1)
-    .describe("MarketMetricId or legacy alias (usdc_supply_apy)"),
-  asset: z.string().min(1).optional().default("USDC"),
+  metric: MetricFieldSchema,
+  asset: AssetFieldSchema.optional().default("USDC"),
   protocols: z.array(ProtocolSchema).min(2),
   timeframe: z.string().min(1).optional()
 });
@@ -45,8 +72,8 @@ export const CompareMarketsInputSchema = CompareMarketsCoreSchema.superRefine(
 export const ResearchBriefCoreSchema = z.object({
   question: z.string().min(1),
   protocols: z.array(ProtocolSchema).optional(),
-  metric: z.string().min(1).optional().default("supply_apy"),
-  asset: z.string().min(1).optional().default("USDC")
+  metric: MetricFieldSchema.optional().default("supply_apy"),
+  asset: AssetFieldSchema.optional().default("USDC")
 });
 
 export const ResearchBriefInputSchema = ResearchBriefCoreSchema.superRefine(
@@ -79,9 +106,9 @@ export const ResearchBriefInputSchema = ResearchBriefCoreSchema.superRefine(
  */
 export const RiskScanCoreSchema = z.object({
   protocols: z.array(ProtocolSchema).min(1),
-  assets: z.array(z.string().min(1)).optional(),
-  asset: z.string().min(1).optional(),
-  metric: z.string().min(1).optional().default("supply_apy"),
+  assets: z.array(AssetFieldSchema).optional(),
+  asset: AssetFieldSchema.optional(),
+  metric: MetricFieldSchema.optional().default("supply_apy"),
   window: z.string().min(1)
 });
 
