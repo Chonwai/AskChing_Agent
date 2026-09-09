@@ -90,7 +90,8 @@
 | --- | --- | --- |
 | 1:55–2:02 | "Now let's push on trust. *Scan Aave V3, Compound V3, and Spark Lend for unusual USDC risk over seven days.*" | 輸入 Demo C prompt（`demos/prompts.md` Demo C）。 |
 | 2:02–2:10 | "Grok calls `risk_scan`. And here is where the honesty kicks in." | 畫面顯示 Grok 呼叫 `risk_scan`（tool name 可標註）。 |
-| 2:10–2:25 | "AskChing compares these three protocols *right now* — peer-relative spot signals — but it has no time-series, so it does **not** claim a seven-day trend. It says so, explicitly: *this is a spot snapshot; historical trend is not assessed.* That is the behavior we care about — refusing to fabricate history it does not have." | 畫面停留 `risk_scan` 輸出：findings（peer-relative spread）+ gaps（明確寫「No time-series data is available… single spot snapshot… not assessed」）。**停留 10 秒**。加重「refuses to fabricate」語氣。 |
+| 2:10–2:23 | "AskChing compares these three protocols *right now* — peer-relative spot signals — but it has no time-series, so it does **not** claim a seven-day trend. It says so, explicitly: *this is a spot snapshot; historical trend is not assessed.* That is the behavior we care about — refusing to fabricate history it does not have." | 畫面停留 `risk_scan` 輸出：findings（peer-relative spread）+ gaps（明確寫「No time-series data is available… single spot snapshot… not assessed」）。**停留 8–10 秒**。加重「refuses to fabricate」語氣。 |
+| 2:23–2:25 | "And that is the product's core promise: AskChing would rather say 'I don't have that data' than invent an answer." | 游標指著 gaps 欄位（「No time-series data is available…」），畫面停留至 2:25，語氣平穩堅定。 |
 
 **旁白提示：** 本段是誠實度示範，語氣要「平靜、堅定」，不是道歉。
 
