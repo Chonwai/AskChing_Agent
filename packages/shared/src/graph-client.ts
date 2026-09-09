@@ -126,7 +126,8 @@ export class GraphGatewayClient {
     }
 
     return MarketObservationSchema.parse({
-      metric: "usdc_supply_apy",
+      metric: "supply_apy",
+      asset: "USDC",
       rateType: "variable",
       value: bestRate.rate,
       unit: "percent",

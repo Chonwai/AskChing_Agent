@@ -1,17 +1,17 @@
 import {
   ComparisonSchema,
   ComparisonSourceSchema,
-  MarketMetricSchema,
+  MarketMetricIdSchema,
   MarketObservationSchema,
   type Comparison,
-  type MarketMetric
+  type MarketMetricId
 } from "./schemas.js";
 
 export function compareObservations(
   observations: readonly unknown[],
-  requestedMetric: MarketMetric
+  requestedMetric: MarketMetricId
 ): Comparison {
-  const metric = MarketMetricSchema.parse(requestedMetric);
+  const metric = MarketMetricIdSchema.parse(requestedMetric);
   const parsed = observations.map((observation) =>
     MarketObservationSchema.parse(observation)
   );
@@ -23,6 +23,15 @@ export function compareObservations(
   if (parsed.some((observation) => observation.metric !== metric)) {
     throw new Error(`All observations must use the requested metric: ${metric}`);
   }
+
+  // Cross-asset guard: all observations must share the same asset
+  const assets = new Set(parsed.map((observation) => observation.asset));
+  if (assets.size > 1) {
+    throw new Error(
+      `All observations must share the same asset. Found: ${[...assets].join(", ")}`
+    );
+  }
+  const asset = [...assets][0]!;
 
   const rows = [...parsed]
     .sort((left, right) => right.value - left.value)
@@ -37,13 +46,19 @@ export function compareObservations(
   const asOf = timestamps.reduce((latest, current) =>
     current > latest ? current : latest
   );
-  const caveats =
-    new Set(timestamps).size > 1
-      ? ["Source observations were recorded at different timestamps."]
-      : [];
+  const caveats: string[] = [];
+  if (new Set(timestamps).size > 1) {
+    caveats.push("Source observations were recorded at different timestamps.");
+  }
+  if (metric === "tvl") {
+    caveats.push(
+      "TVL reflects the largest market for this asset, not total protocol TVL."
+    );
+  }
 
   return ComparisonSchema.parse({
     metric,
+    asset,
     asOf,
     rows,
     caveats,

@@ -1,6 +1,7 @@
 import {
   compareObservations,
   ComparisonSourceSchema,
+  resolveMetricId,
   type Comparison,
   type MarketDataSource,
   ProtocolSchema
@@ -8,7 +9,7 @@ import {
 import { z } from "zod";
 
 export const CompareMarketsInputSchema = z.object({
-  metric: z.literal("usdc_supply_apy"),
+  metric: z.string().min(1),
   protocols: z.array(ProtocolSchema).min(2),
   timeframe: z.string().min(1).optional()
 });
@@ -29,11 +30,12 @@ export async function compareMarkets(
   dataSource: MarketDataSource
 ): Promise<Comparison> {
   const input = CompareMarketsInputSchema.parse(rawInput);
+  const { metricId } = resolveMetricId(input.metric);
   const observations = await dataSource.getObservations(
-    input.metric,
+    metricId,
     input.protocols
   );
-  const comparison = compareObservations(observations, input.metric);
+  const comparison = compareObservations(observations, metricId);
 
   if (!input.timeframe) {
     return comparison;
@@ -100,13 +102,12 @@ export async function researchBrief(
       "research_brief requires at least two protocols for a cited comparison"
     );
   }
-  const metrics = ["usdc_supply_apy"] as const;
-  const metric = metrics[0]!;
   const comparison = await compareMarkets(
-    { metric, protocols: input.protocols },
+    { metric: "supply_apy", protocols: input.protocols },
     dataSource
   );
 
+  const metric = comparison.metric;
   const best = comparison.rows[0]!;
   const second = comparison.rows[1]!;
   const conclusion = `${best.protocol} leads ${second.protocol} on ${metric} (${best.value}% vs ${second.value}%) as of ${comparison.asOf}.`;
@@ -175,7 +176,7 @@ export async function riskScan(
   }
 
   const comparison = await compareMarkets(
-    { metric: "usdc_supply_apy", protocols },
+    { metric: "supply_apy", protocols },
     dataSource
   );
 
@@ -186,13 +187,13 @@ export async function riskScan(
   const findings: RiskFinding[] = [
     {
       protocol: best.protocol,
-      metric: "usdc_supply_apy",
+      metric: "supply_apy",
       note: `Highest USDC supply APY among scanned peers (${spread.toFixed(2)}ppt spread over ${second.protocol}).`,
       value: best.value
     },
     {
       protocol: second.protocol,
-      metric: "usdc_supply_apy",
+      metric: "supply_apy",
       note: `Lower USDC supply APY than ${best.protocol} by ${spread.toFixed(2)} percentage points.`,
       value: second.value
     }

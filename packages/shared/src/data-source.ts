@@ -1,7 +1,9 @@
 import { MARKET_FIXTURES } from "./fixtures.js";
 import { GraphGatewayClient } from "./graph-client.js";
+import { resolveMetricId } from "./metrics.js";
 import type {
   MarketMetric,
+  MarketMetricId,
   MarketObservation,
   ProtocolSlug
 } from "./schemas.js";
@@ -14,7 +16,7 @@ export interface AskChingEnvironment {
 
 export interface MarketDataSource {
   getObservations(
-    metric: MarketMetric,
+    metric: MarketMetric | MarketMetricId,
     protocols?: readonly ProtocolSlug[]
   ): Promise<MarketObservation[]>;
 }
@@ -30,9 +32,12 @@ export function createMarketDataSource(
   if (environment.DEMO_LIVE !== "1") {
     return {
       async getObservations(metric, protocols) {
+        // Boundary normalization: legacy aliases resolve to the generalized
+        // metric id (+ asset hint) so fixture filtering is metric-aware.
+        const { metricId } = resolveMetricId(metric);
         return MARKET_FIXTURES.filter(
           (observation) =>
-            observation.metric === metric &&
+            observation.metric === metricId &&
             (!protocols || protocols.includes(observation.protocol))
         );
       }
@@ -47,8 +52,9 @@ export function createMarketDataSource(
       if (!environment.GRAPH_API_KEY) {
         throw new Error("GRAPH_API_KEY is required when DEMO_LIVE=1");
       }
-      if (metric !== "usdc_supply_apy") {
-        throw new Error(`Unsupported live metric: ${metric}`);
+      const { metricId } = resolveMetricId(metric);
+      if (metricId !== "supply_apy") {
+        throw new Error(`Unsupported live metric: ${metricId}`);
       }
 
       const selected = LIVE_SOURCES.filter(

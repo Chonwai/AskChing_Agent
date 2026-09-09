@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { compareObservations } from "./compare.js";
 
 const compound = {
-  metric: "usdc_supply_apy" as const,
+  metric: "supply_apy" as const,
+  asset: "USDC" as const,
   rateType: "variable" as const,
   value: 3.14,
   unit: "percent" as const,
@@ -16,7 +17,8 @@ const compound = {
 };
 
 const aave = {
-  metric: "usdc_supply_apy" as const,
+  metric: "supply_apy" as const,
+  asset: "USDC" as const,
   rateType: "variable" as const,
   value: 4.25,
   unit: "percent" as const,
@@ -30,7 +32,7 @@ const aave = {
 
 describe("compareObservations", () => {
   it("ranks comparable observations and exposes distinct cited sources with an as-of time", () => {
-    const result = compareObservations([compound, aave], "usdc_supply_apy");
+    const result = compareObservations([compound, aave], "supply_apy");
 
     expect(result.rows.map((row) => row.protocol)).toEqual([
       "aave-v3",
@@ -47,8 +49,19 @@ describe("compareObservations", () => {
   it("rejects an observation whose citation is missing a query hash", () => {
     const { queryHash: _queryHash, ...uncited } = compound;
 
+    expect(() => compareObservations([uncited], "supply_apy")).toThrow(
+      /queryHash/
+    );
+  });
+
+  it("rejects a comparison mixing observations across assets", () => {
     expect(() =>
-      compareObservations([uncited], "usdc_supply_apy")
-    ).toThrow(/queryHash/);
+      compareObservations([compound, { ...aave, asset: "WETH" }], "supply_apy")
+    ).toThrow(/same asset/);
+  });
+
+  it("propagates the shared asset onto the comparison", () => {
+    const result = compareObservations([compound, aave], "supply_apy");
+    expect(result.asset).toBe("USDC");
   });
 });
