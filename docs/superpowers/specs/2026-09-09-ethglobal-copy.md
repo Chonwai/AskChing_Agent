@@ -48,11 +48,11 @@ AskChing is a cited research agent that compares live DeFi lending metrics acros
 
 ### Paragraph 2 — Solution
 
-> AskChing is a cited research agent that answers one natural-language DeFi research question and returns a ranked, normalized comparison across multiple live The Graph subgraphs — with every number traceable to its source. It is research software, not a trading bot: it never executes transactions and never guesses a metric it cannot cite.
+> AskChing is a cited research agent that answers one natural-language DeFi research question and returns a ranked, normalized comparison across multiple live The Graph subgraphs. Evidence is not a display option — it is a structural invariant: every number is traceable to a live subgraph, and AskChing refuses to guess. It is research software, not a trading bot: it never executes transactions and never guesses a metric it cannot cite.
 
 ### Paragraph 3 — How it works
 
-> Ask a question like "Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend." Grok reads the request, selects an AskChing research tool, and the agent fans out to three live Ethereum subgraphs using the Messari lending schema. Observations sharing the same metric definition and unit are ranked, and the answer carries the subgraph, block, query hash (the same query is run against each source, so the hash is the same across sources), and an explicit as-of time for each source.
+> Ask a question like "Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend." Grok reads the request, selects an AskChing research tool, and the agent fans out to three live Ethereum subgraphs using the Messari lending schema. Observations sharing the same metric definition and unit are ranked, and the answer carries the subgraph, block, query hash (the same query is run against each source, so the hash is the same across sources), and an explicit as-of time for each source. If fewer than two sources come back with full citations, the comparison fails closed instead of returning a partial answer.
 
 ### Paragraph 4 — Tech
 
@@ -104,4 +104,5 @@ AskChing is a cited research agent that compares live DeFi lending metrics acros
 | OpenAI-compatible in-process loop | `packages/grok-orchestrator/src/loop.ts` runGrokOrchestrator |
 | 證據（subgraph/block/queryHash） | `compareObservations` + citation enforcement |
 | Risk = spot snapshot，非歷史 | `riskScan` gaps 明確標示 |
+| Evidence = structural invariant | `CitationSchema` 缺欄位即 fail + `compareObservations` 少於 2 源即 fail |
 | research software, 非 trading bot | README + 本文件皆明示 |
