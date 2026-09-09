@@ -6,6 +6,16 @@ AskChing is a Grok-orchestrated research MCP for ETHOnline 2026. It fans out acr
 
 The repository was built from scratch for ETHOnline 2026. Its three MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
 
+## Evidence-first by design
+
+AskChing treats provenance as a structural invariant, not a display option:
+
+- Every returned number carries `subgraphId`, `block`, `timestamp`, and `queryHash`.
+- A comparison without at least two distinct cited sources **fails closed** — no partial credit.
+- `risk_scan` reports peer-relative spot signals and explicitly states it is **not** historical time-series analysis.
+
+This means AskChing refuses to fabricate. When it cannot verify, it says so.
+
 ## Workspace
 
 - `packages/shared`: schemas, normalization, citations, fixtures, and The Graph client
@@ -41,6 +51,8 @@ To show Grok's selected tool and arguments during the hackathon demo, enable the
 ```bash
 ASKCHING_DEBUG=1 pnpm askching -- "Compare USDC supply APY across Aave, Compound, and Spark"
 ```
+
+> The Grok reasoning layer is currently a CLI. Packaging it as an MCP server is on the roadmap — once there, any MCP-compatible agent can call Grok-driven AskChing reasoning directly. The MCP tool layer is already cross-platform today (see `docs/cross-platform.md`).
 
 ## Run the comparison
 
