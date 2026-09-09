@@ -87,6 +87,66 @@
       "assets": ["USDC"],
       "window": "7d"
     }
+  },
+  {
+    "id": "compare-usdt-supply",
+    "question": "Compare USDT supply APY across Aave V3 and Compound V3.",
+    "input": {
+      "metric": "supply_apy",
+      "asset": "USDT",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "compare-weth-supply",
+    "question": "Compare WETH supply APY across Aave V3 and Compound V3.",
+    "input": {
+      "metric": "supply_apy",
+      "asset": "WETH",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "compare-usdc-borrow",
+    "question": "Compare USDC borrow APY across Aave V3 and Compound V3.",
+    "input": {
+      "metric": "borrow_apy",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "compare-usdc-tvl",
+    "question": "Compare USDC TVL across Aave V3 and Compound V3.",
+    "input": {
+      "metric": "tvl",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "compare-legacy-alias",
+    "question": "Compare USDC supply APY using the legacy metric alias.",
+    "input": {
+      "metric": "usdc_supply_apy",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "compare-six-protocol",
+    "question": "Compare USDC supply APY across all six live protocols.",
+    "input": {
+      "metric": "supply_apy",
+      "asset": "USDC",
+      "protocols": [
+        "aave-v3",
+        "compound-v3",
+        "spark-lend",
+        "aave-v2",
+        "uwu-lend",
+        "zerolend"
+      ]
+    }
   }
 ]
 

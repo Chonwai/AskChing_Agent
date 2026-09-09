@@ -73,7 +73,7 @@ DEMO_LIVE=0
 
 ## Station 1 — 建置與測試紅綠燈（3 分鐘）
 
-> 目標：確認三 packages 可建置、26 個單元測試全過、5 個 evals 全過。
+> 目標：確認三 packages 可建置、75 個單元測試全過、16 個 evals 全過。
 
 ### 輸入
 
@@ -102,20 +102,20 @@ Scope: 3 of 4 workspace projects
 **`pnpm test`：** 結尾為：
 
 ```
- Test Files  10 passed (10)
-      Tests  26 passed (26)
+ Test Files  12 passed (12)
+      Tests  75 passed (75)
 ```
 
-**`pnpm eval`：** 5 個 cases 全部通過（`compare-default-order` / `compare-reversed-order` / `compare-as-of` / `compare-citations` / `compare-timeframe-gap`），結尾為 `evals: 5/5 passed`（或等價訊息）。
+**`pnpm eval`：** 16 個 cases 全部通過（10 個既有 USDC 行為 cases + 6 個泛化 cases：`compare-usdt-supply` / `compare-weth-supply` / `compare-usdc-borrow` / `compare-usdc-tvl` / `compare-legacy-alias` / `compare-six-protocol`），結尾為 `AskChing evals passed: 16/16`。
 
 ### ✅ 驗證點
 
 - [ ] `pnpm build` 無 TypeScript error，三 packages 皆 `done`
-- [ ] `pnpm test` 顯示 `26 passed`（10 個 test files）
-- [ ] `pnpm eval` 顯示 `5/5` evals passed
+- [ ] `pnpm test` 顯示 `75 passed`（12 個 test files）
+- [ ] `pnpm eval` 顯示 `16/16` evals passed
 - [ ] 三條指令 exit code 皆為 0
 
-> 📝 **這些在驗證什麼：** build 驗證 TS 編譯、test 驗證單元行為（citation 強制、fail-closed、fixture normalization）、eval 驗證固定契約（≥2 rows、≥2 sources、asOf 存在、每 row 帶完整 citation、timeframe gap caveat）。
+> 📝 **這些在驗證什麼：** build 驗證 TS 編譯、test 驗證單元行為（citation 強制、fail-closed、fixture normalization、跨 asset guard、四 metric 提取分支）、eval 驗證固定契約（≥2 rows、≥2 sources、asOf 存在、每 row 帶完整 citation、timeframe gap caveat、泛化 asset/metric 透傳）。泛化後 AskChing 支援 4 資產 × 4 metrics × 6 LIVE 協議，legacy `usdc_supply_apy` 呼叫仍向後相容。
 
 ---
 

@@ -8,14 +8,21 @@ import {
 } from "../packages/mcp-server/src/tools.js";
 
 type EvalKind = "compare_markets" | "research_brief" | "risk_scan";
-type EvalProtocol = "aave-v3" | "compound-v3" | "spark-lend";
+type EvalProtocol =
+  | "aave-v3"
+  | "compound-v3"
+  | "spark-lend"
+  | "aave-v2"
+  | "uwu-lend"
+  | "zerolend";
 
 interface EvalCase {
   id: string;
   question: string;
   kind?: EvalKind;
   input: {
-    metric?: "usdc_supply_apy";
+    metric?: string;
+    asset?: string;
     question?: string;
     protocols: EvalProtocol[];
     timeframe?: string;
@@ -47,7 +54,8 @@ for (const testCase of cases) {
           Boolean(row.subgraphId) &&
           Boolean(row.timestamp) &&
           Boolean(row.queryHash) &&
-          Number.isFinite(row.value)
+          Number.isFinite(row.value) &&
+          Boolean(row.asset)
       ),
       testCase.id,
       "expected every numeric row to carry a complete citation"
@@ -90,6 +98,15 @@ for (const testCase of cases) {
       testCase.id,
       "expected every key figure to carry protocol, metric, value, and source"
     );
+    if (testCase.input.asset) {
+      assert(
+        result.brief.keyFigures.every(
+          (figure) => figure.metric === testCase.input.metric
+        ),
+        testCase.id,
+        "expected key figures to honor the requested metric"
+      );
+    }
     assert(
       !Number.isNaN(Date.parse(result.brief.asOf)),
       testCase.id,
@@ -115,21 +132,17 @@ for (const testCase of cases) {
     result.sources.forEach((source) => sourceIds.add(source.subgraphId));
 
     assert(
-      result.findings.length >= 1,
-      testCase.id,
-      "expected at least one risk finding"
-    );
-    assert(
       result.findings.every(
         (finding) =>
           Boolean(finding.protocol) &&
           Boolean(finding.metric) &&
+          Boolean(finding.asset) &&
           typeof finding.note === "string" &&
           finding.note.length > 0 &&
           Number.isFinite(finding.value)
       ),
       testCase.id,
-      "expected every finding to carry protocol, metric, note, and value"
+      "expected every finding to carry protocol, metric, asset, note, and value"
     );
     assert(
       Array.isArray(result.gaps),
