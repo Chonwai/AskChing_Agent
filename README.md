@@ -47,13 +47,13 @@ ASKCHING_DEBUG=1 pnpm askching -- "Compare USDC supply APY across Aave, Compound
 Fixture smoke test:
 
 ```bash
-pnpm live:smoke
+pnpm demo
 ```
 
 Authenticated live smoke test:
 
 ```bash
-DEMO_LIVE=1 GRAPH_API_KEY=your_studio_key pnpm live:smoke
+pnpm live:smoke
 ```
 
 Live mode queries the Aave V3, Compound V3, and Spark Lend Ethereum subgraphs listed in `demos/prompts.md`. Missing credentials fail with `GRAPH_API_KEY is required when DEMO_LIVE=1`; failed sources are reported as explicit gaps only when at least two cited sources remain.
@@ -87,6 +87,13 @@ For live use, change `DEMO_LIVE` to `1` and pass `GRAPH_API_KEY` through the cli
 ## Why not just official Subgraph MCP?
 
 The official Subgraph MCP helps agents discover schemas and query individual subgraphs. AskChing uses official Graph access as infrastructure, then adds a deliberately smaller research layer: multi-subgraph fan-out, metric normalization, ranking, citation enforcement, explicit gaps, and Grok-driven synthesis. It complements rather than reimplements the official service.
+
+## Hackathon showcase
+
+- [Canonical three-source prompts](demos/prompts.md)
+- [2:55 recording runbook](docs/superpowers/plans/2026-09-09-showcase-run-script.md)
+- [Ready-to-copy ETHGlobal submission text](docs/superpowers/specs/2026-09-09-ethglobal-copy.md)
+- [Pre-recording and pre-submission checklist](docs/superpowers/specs/2026-09-09-pre-recording-checklist.md)
 
 ## License
 
