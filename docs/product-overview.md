@@ -82,7 +82,7 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 │  1. Fan-out → 各 Subgraph live query            │
 │  2. Normalize → 單位對齊 + 排名                  │
 │  3. Cite → 每個數字帶完整來源                    │
-│  4. Synthesize → Grok 寫 brief                  │
+│  4. Synthesize → 模板包裝 brief（Grok 版本為 LLM synthesis）│
 └──────────────────────┬──────────────────────────┘
                        ↓
 ┌─────────────────────────────────────────────────┐
@@ -97,7 +97,7 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 
 ### 4.2 Phase 2：Cursor / Codex / Gemini 用戶（開放）
 
-Grok 推理層（CLI）驗證後，AskChing MCP Server 開放給其他 AI 工具；Grok 推理層的 MCP server 化列為 roadmap。
+Grok 推理層（CLI）已驗證；AskChing MCP Server **現在**即可供其他 AI 工具接入；Grok 推理層的 MCP server 化列為 roadmap。
 
 | 工具 | 接入方式 | 用戶體驗 |
 |------|----------|---------|
