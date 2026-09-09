@@ -118,9 +118,11 @@ export class GraphGatewayClient {
 
     let value: number;
     let unit: "percent" | "usd" = descriptor.unit;
-
-    switch (metricId) {
-      case "supply_apy": {
+    // M1: branch on the descriptor's declared extractor so the registry is the
+    // single source of truth for how each metric is computed.
+    switch (descriptor.extractor) {
+      case "rates": {
+        const isBorrow = descriptor.rateSide === "BORROWER";
         const rates = candidates
           .flatMap((market) =>
             (market.rates ?? []).filter(
@@ -136,26 +138,8 @@ export class GraphGatewayClient {
             `The Graph query for ${source.protocol} returned no ${normalizedAsset} ${metricId} rate`
           );
         }
-        value = Math.max(...rates);
-        break;
-      }
-      case "borrow_apy": {
-        const rates = candidates
-          .flatMap((market) =>
-            (market.rates ?? []).filter(
-              (rate) =>
-                rate.side === descriptor.rateSide &&
-                rate.type === descriptor.rateType
-            )
-          )
-          .map((rate) => rate.rate)
-          .filter(Number.isFinite);
-        if (rates.length === 0) {
-          throw new Error(
-            `The Graph query for ${source.protocol} returned no ${normalizedAsset} ${metricId} rate`
-          );
-        }
-        value = Math.min(...rates);
+        // supply_apy picks the best (max) rate; borrow_apy the cheapest (min).
+        value = isBorrow ? Math.min(...rates) : Math.max(...rates);
         break;
       }
       case "tvl": {
