@@ -5,7 +5,7 @@ Updated: 2026-09-09 (Asia/Hong_Kong)
 ## Current checkpoint
 
 - Branch: `main`, tracking public `origin/main`
-- Current work HEAD: `64fa752` (`docs(demo): document visible Grok tool trace`)
+- Current work HEAD: `86d67aa` (`docs: expose verified hackathon showcase package`)
 - This handoff-only commit follows that implementation checkpoint.
 - Working tree was clean before this handoff update.
 
@@ -33,13 +33,14 @@ New commits in the latest Codex batch:
 - `0959e69 Merge remote-tracking branch 'origin/main'` (preserves both incremental histories)
 - `e64412e feat(grok): add safe tool-call debug trace`
 - `64fa752 docs(demo): document visible Grok tool trace`
+- `86d67aa docs: expose verified hackathon showcase package`
 
 ## Verification evidence
 
-Run from the repository root at current work HEAD `64fa752`:
+Run from the repository root at current work HEAD `86d67aa`:
 
 ```text
-pnpm test  -> 9 files passed, 23 tests passed
+pnpm test  -> 10 files passed, 26 tests passed
 pnpm build -> all 3 workspace packages built successfully
 pnpm eval  -> 5/5 eval cases passed
 ```
@@ -59,6 +60,7 @@ Submission artifacts:
 - `docs/superpowers/plans/2026-09-09-showcase-run-script.md` — 2:55 narration and screen actions
 - `docs/superpowers/specs/2026-09-09-ethglobal-copy.md` — ready-to-copy platform text
 - `docs/superpowers/specs/2026-09-09-pre-recording-checklist.md` — recording and submission gate
+- `README.md` now links the full showcase package, and `evals/showcase-contract.test.ts` guards its prompts, required sections, and discoverability.
 
 ## Run the product
 
