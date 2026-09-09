@@ -267,9 +267,17 @@ describe("riskScan", () => {
     expect(result.findings[0]!.asset).toBe("USDC");
     expect(result.findings[0]!.note).toContain("Highest USDC supply_apy");
     expect(result.gaps.length).toBeGreaterThan(0);
-    expect(result.gaps.some((gap) => gap.includes("No time-series data"))).toBe(
-      true
-    );
+    expect(
+      result.gaps.some((gap) => gap.reason.includes("No time-series data"))
+    ).toBe(true);
+    expect(
+      result.gaps.every(
+        (gap) =>
+          typeof gap.asset === "string" &&
+          typeof gap.protocol === "string" &&
+          typeof gap.reason === "string"
+      )
+    ).toBe(true);
     expect(result.asOf).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(result.sources).toHaveLength(2);
   });

@@ -4,6 +4,7 @@ import {
   ComparisonSourceSchema,
   resolveMetricId,
   type Comparison,
+  type LiveDataSource,
   type MarketDataSource,
   ProtocolSchema
 } from "@askching/shared";
@@ -252,9 +253,15 @@ export interface RiskFinding {
   value: number;
 }
 
+export interface RiskGap {
+  asset: string;
+  protocol: string;
+  reason: string;
+}
+
 export interface RiskScanResult {
   findings: RiskFinding[];
-  gaps: string[];
+  gaps: RiskGap[];
   asOf: string;
   sources: Comparison["sources"];
 }
@@ -269,7 +276,13 @@ const RiskScanResultSchema = z.object({
       value: z.number().finite()
     })
   ),
-  gaps: z.array(z.string()),
+  gaps: z.array(
+    z.object({
+      asset: z.string(),
+      protocol: z.string(),
+      reason: z.string()
+    })
+  ),
   asOf: z.string().datetime(),
   sources: z.array(ComparisonSourceSchema)
 });
@@ -288,7 +301,7 @@ export async function riskScan(
   const { metricId } = resolveMetricId(input.metric);
 
   const comparisons: Comparison[] = [];
-  const gaps: string[] = [];
+  const gaps: RiskGap[] = [];
   for (const asset of input.assets) {
     try {
       const comparison = await compareMarkets(
@@ -297,13 +310,36 @@ export async function riskScan(
       );
       comparisons.push(comparison);
     } catch (error) {
-      gaps.push(`${asset}: ${(error as Error).message}`);
+      const message = (error as Error).message;
+      // Attribute the failure per-protocol when the live source recorded
+      // individual gaps (e.g. "aave-v3: No USDC market found ...").
+      const liveGaps = (dataSource as Partial<LiveDataSource>).lastGaps;
+      if (liveGaps && liveGaps.length > 0) {
+        for (const entry of liveGaps) {
+          const separator = entry.indexOf(": ");
+          gaps.push(
+            separator === -1
+              ? { asset, protocol: "unknown", reason: entry }
+              : {
+                  asset,
+                  protocol: entry.slice(0, separator),
+                  reason: entry.slice(separator + 2)
+                }
+          );
+        }
+      } else {
+        gaps.push({
+          asset,
+          protocol: protocols.join(","),
+          reason: message
+        });
+      }
     }
   }
 
   if (comparisons.length === 0) {
     throw new Error(
-      `risk_scan found no comparable observations. Gaps: ${gaps.join("; ")}`
+      `risk_scan found no comparable observations. Gaps: ${gaps.map((gap) => `${gap.asset}/${gap.protocol}: ${gap.reason}`).join("; ")}`
     );
   }
 
@@ -339,7 +375,12 @@ export async function riskScan(
     findings,
     gaps: [
       ...gaps,
-      "No time-series data is available: risk_scan currently reflects a single spot snapshot. Peer-relative change over time is not assessed."
+      {
+        asset: input.assets.join(","),
+        protocol: protocols.join(","),
+        reason:
+          "No time-series data is available: risk_scan currently reflects a single spot snapshot. Peer-relative change over time is not assessed."
+      }
     ],
     asOf: latest,
     sources

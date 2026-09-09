@@ -150,6 +150,16 @@ for (const testCase of cases) {
       "expected gaps to be an array"
     );
     assert(
+      result.gaps.every(
+        (gap) =>
+          typeof gap.asset === "string" &&
+          typeof gap.protocol === "string" &&
+          typeof gap.reason === "string"
+      ),
+      testCase.id,
+      "expected every gap to carry asset, protocol, and reason"
+    );
+    assert(
       !Number.isNaN(Date.parse(result.asOf)),
       testCase.id,
       "expected a valid ISO as-of timestamp"

@@ -90,25 +90,3 @@ export const ComparisonSchema = z.object({
   sources: z.array(ComparisonSourceSchema).min(2)
 });
 export type Comparison = z.infer<typeof ComparisonSchema>;
-
-// ── Backward-compat helpers ─────────────────────────────────────────
-/** 舊 Comparison（無 asset 欄位）的寬鬆解析，用於讀取舊快照 */
-export const LegacyComparisonSchema = z.object({
-  metric: z.union([MarketMetricIdSchema, LegacyMetricAliasSchema]),
-  asOf: z.string().datetime(),
-  rows: z
-    .array(
-      ComparisonRowSchema.omit({ asset: true }).extend({
-        asset: AssetSymbolSchema.optional()
-      })
-    )
-    .min(2),
-  caveats: z.array(z.string()),
-  sources: z
-    .array(
-      ComparisonSourceSchema.omit({ asset: true }).extend({
-        asset: AssetSymbolSchema.optional()
-      })
-    )
-    .min(2)
-});
