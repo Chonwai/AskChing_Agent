@@ -241,3 +241,18 @@ cd packages/mcp-server && npm pack --dry-run
 `mcp-smoke` 輸出 `mcp-smoke OK: askching (3 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
 
 > **⚠️ 注意**：驗證 tarball 請用 `npm pack --dry-run`（pnpm 不支援 `pack --dry-run` flag），且需在 `packages/mcp-server` 目錄內執行（在 repo root 執行會 pack 整個 private workspace）。
+
+---
+
+## 9. Grok 推理層（Roadmap）
+
+AskChing 的 MCP server 可被**任何 MCP-compatible agent**（Claude、Cursor、Codex、支援 MCP 的 Grok）使用。
+
+Grok orchestration（`@askching/grok-orchestrator`）目前是 **CLI**（`pnpm askching -- "..."`），以 in-process 方式呼叫 AskChing tools。讓 Grok 推理層以 **MCP server 形式**跨平台可用的實作已列入 roadmap——屆時任何 MCP-compatible agent 都能直接呼叫 Grok 驅動的 AskChing 推理，而不只是工具層。
+
+### 現況 vs roadmap
+
+| 層 | 現況 | Roadmap |
+|----|------|---------|
+| MCP server（工具層） | ✅ 跨平台可用（本文件 §3-§7） | — |
+| Grok orchestrator（推理層） | CLI + in-process | MCP server 化，跨平台可用 |
