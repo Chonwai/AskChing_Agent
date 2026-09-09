@@ -16,13 +16,14 @@ import {
 import { researchBrief } from "../packages/mcp-server/src/tools.js";
 
 const args = process.argv.slice(2);
-const liveIndex = args.indexOf("--live");
+const cleanArgs = args[0] === "--" ? args.slice(1) : args;
+const liveIndex = cleanArgs.indexOf("--live");
 const liveMode = liveIndex !== -1;
 if (liveMode) {
-  args.splice(liveIndex, 1);
+  cleanArgs.splice(liveIndex, 1);
 }
 const question =
-  args.join(" ").trim() ||
+  cleanArgs.join(" ").trim() ||
   "Compare USDC supply APY across Aave V3 and Compound V3";
 
 const protocols = ["aave-v3", "compound-v3", "spark-lend"] as const;
