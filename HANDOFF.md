@@ -5,7 +5,7 @@ Updated: 2026-09-09 (Asia/Hong_Kong)
 ## Current checkpoint
 
 - Branch: `main`, tracking public `origin/main`
-- Current work HEAD: `a901470` (`docs: design product-led hackathon showcase`)
+- Current work HEAD: `64fa752` (`docs(demo): document visible Grok tool trace`)
 - This handoff-only commit follows that implementation checkpoint.
 - Working tree was clean before this handoff update.
 
@@ -29,13 +29,17 @@ New commits in the latest Codex batch:
 - `616897c fix(grok): load root environment in CLI`
 - `3391bc5 fix(demo): pin fixture and live execution modes`
 - `a901470 docs: design product-led hackathon showcase`
+- `536ed52 chore(state): loop complete — VERIFY R2 PASS 97/100` (collaborator showcase review)
+- `0959e69 Merge remote-tracking branch 'origin/main'` (preserves both incremental histories)
+- `e64412e feat(grok): add safe tool-call debug trace`
+- `64fa752 docs(demo): document visible Grok tool trace`
 
 ## Verification evidence
 
-Run from the repository root at implementation HEAD `616897c`:
+Run from the repository root at current work HEAD `64fa752`:
 
 ```text
-pnpm test  -> 8 files passed, 20 tests passed
+pnpm test  -> 9 files passed, 23 tests passed
 pnpm build -> all 3 workspace packages built successfully
 pnpm eval  -> 5/5 eval cases passed
 ```
@@ -46,6 +50,15 @@ Credentialed end-to-end checks also passed on 2026-09-09:
 - Real Grok with fixture tools: selected `compare_markets`, cited all 3 sources, labeled fixture data, preserved the variable-rate definition, and stated `asOf`.
 - The launchers now load the root `.env`; `evals/demo-env-config.test.ts` guards all credentialed entry points.
 - `pnpm demo` is always fixture mode; `pnpm demo:live` and `pnpm live:smoke` are always live regardless of `.env` defaults.
+- Real Grok debug check: `ASKCHING_DEBUG=1` visibly printed `compare_markets` plus its three protocol arguments, then the cited answer; it did not print credentials or raw tool results.
+- Showcase package reviewed at 97/100 and ready for manual recording.
+
+Submission artifacts:
+
+- `demos/prompts.md` — final three-source prompts
+- `docs/superpowers/plans/2026-09-09-showcase-run-script.md` — 2:55 narration and screen actions
+- `docs/superpowers/specs/2026-09-09-ethglobal-copy.md` — ready-to-copy platform text
+- `docs/superpowers/specs/2026-09-09-pre-recording-checklist.md` — recording and submission gate
 
 ## Run the product
 
@@ -66,7 +79,7 @@ For xAI, set `XAI_API_KEY`. For a local OpenAI-compatible server, set `ASKCHING_
 
 ## Next action
 
-Review `docs/superpowers/specs/2026-09-09-product-led-showcase-design.md`. Once approved, turn it into the three-source prompts, ready-to-copy showcase text, and a 2.5–3 minute human-narrated recording runbook. Preserve the incremental history and push each documentation or demo-script improvement separately.
+John records the 2:55 demo with human narration by following `docs/superpowers/plans/2026-09-09-showcase-run-script.md`, uploads it unlisted, pastes the video URL into the ETHGlobal form, and submits. Before recording, run the checklist and use `ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching -- "<Demo A prompt>"` so the tool choice and live cited answer are both visible. Do not claim recording or submission is complete until John confirms it.
 
 ## Source-of-truth documents
 
