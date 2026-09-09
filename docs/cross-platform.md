@@ -29,6 +29,8 @@ AskChing 的「可重用性」證明分兩層：
 
 ## 3. 各平台一行 config（發布後）
 
+> **⚠️ 關於 `env`**：以下 config 為**fixture 模式**（`DEMO_LIVE=0`），不需 `GRAPH_API_KEY`。若要 live 模式，請在每個 config 的 `env` 欄位加入 `DEMO_LIVE: "1"` 與 `GRAPH_API_KEY`（見 §6 Credential 處理表）。
+
 ### 3.1 Claude Desktop
 
 `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -122,7 +124,10 @@ args = ["-y", "@askching/mcp-server"]
 | 平台 | Skill 掃描目錄 | 接入方式 |
 | --- | --- | --- |
 | Claude Code | `.claude/skills/` | symlink 或複製 `skills/askching` |
-| Codex / Cursor | `.agents/skills/` | symlink 或複製 `skills/askching` |
+| Codex | `.agents/skills/` | symlink 或複製 `skills/askching` |
+| Cursor | `.agents/skills/`（**待實測**） | symlink 或複製 `skills/askching` |
+
+> **⚠️ 待實測註記**：研究報告僅證實 Codex 掃描 `.agents/skills/`；Cursor 是否支援該目錄**未經研究證實**，標為「待實測」。若 Cursor 不支援，請改用 §3 的 MCP config 接入。
 
 本 repo 已建立相對路徑 symlink：
 
@@ -147,11 +152,13 @@ ln -s ../../skills/askching .agents/skills/askching
   "mcpServers": {
     "askching": {
       "command": "node",
-      "args": ["/Users/chonwai/Desktop/Self/Lab/AskChing_Agent/packages/mcp-server/dist/index.js"]
+      "args": ["<repo>/packages/mcp-server/dist/index.js"]
     }
   }
 }
 ```
+
+> **可攜式路徑**：`<repo>` 是佔位符，請替換為你 clone 本 repo 的絕對路徑（例如 `/Users/you/AskChing_Agent`）。各平台對相對路徑的解析基準不同，建議使用絕對路徑或平台支援的 `${workspaceFolder}` 變數。
 
 先建置：
 
@@ -226,6 +233,11 @@ pnpm mcp:smoke
 
 # 完整測試套件
 pnpm test
+
+# 檢查發布 tarball 內容（含 dist/）
+npm pack --dry-run
 ```
 
-`mcp-smoke` 輸出 `mcp-smoke OK: askching` 即代表 stdio server 可真實啟動並完成 MCP handshake。
+`mcp-smoke` 輸出 `mcp-smoke OK: askching (3 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
+
+> **⚠️ 注意**：驗證 tarball 請用 `npm pack --dry-run`（pnpm 不支援 `pack --dry-run` flag）。
