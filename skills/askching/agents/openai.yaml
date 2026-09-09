@@ -2,3 +2,17 @@ interface:
   display_name: "AskChing"
   short_description: "Run cited multi-subgraph market research"
   default_prompt: "Use $askching to compare USDC supply APY across supported protocols with citations."
+
+policy:
+  allow_implicit_invocation: false
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "askching"
+      description: "AskChing MCP server for cited multi-subgraph market research"
+      transport: "stdio"
+      command: "npx"
+      args:
+        - "-y"
+        - "@askching/mcp-server"

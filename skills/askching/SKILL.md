@@ -1,6 +1,19 @@
 ---
 name: askching
 description: Use when a user asks to compare supported DeFi markets, request a cited multi-subgraph research brief, or scan supported protocols for metric-based risk signals through the AskChing MCP.
+allowed-tools:
+  - compare_markets
+  - research_brief
+  - risk_scan
+version: 0.1.0
+license: MIT
+compatibility:
+  - claude-code
+  - codex
+  - cursor
+metadata:
+  category: research/data
+  author: "AskChing"
 ---
 
 # AskChing
