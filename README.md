@@ -36,6 +36,12 @@ pnpm askching -- "Compare USDC supply APY across Aave, Compound, and Spark"
 
 The CLI sends the natural-language request to Grok, executes any requested AskChing tools in process, and returns Grok's synthesis of the cited tool result. For a local OpenAI-compatible model, set `ASKCHING_LLM_BASE_URL` and `ASKCHING_LLM_MODEL`; a key is not required for local endpoints.
 
+To show Grok's selected tool and arguments during the hackathon demo, enable the safe trace. It does not print credentials or raw tool results:
+
+```bash
+ASKCHING_DEBUG=1 pnpm askching -- "Compare USDC supply APY across Aave, Compound, and Spark"
+```
+
 ## Run the comparison
 
 Fixture smoke test:
