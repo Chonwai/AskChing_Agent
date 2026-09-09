@@ -40,6 +40,53 @@
       "timeframe": "24h"
     },
     "requireTimeframeCaveat": true
+  },
+  {
+    "id": "compare-three-source",
+    "question": "Compare USDC supply APY across all three supported protocols.",
+    "kind": "compare_markets",
+    "input": {
+      "metric": "usdc_supply_apy",
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"]
+    }
+  },
+  {
+    "id": "research-brief-three-source",
+    "question": "Research brief comparing USDC supply APY across Aave, Compound, and Spark.",
+    "kind": "research_brief",
+    "input": {
+      "question": "Research brief comparing USDC supply APY across Aave, Compound, and Spark.",
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"]
+    }
+  },
+  {
+    "id": "research-brief-two-source",
+    "question": "Research brief comparing USDC supply APY between Aave and Spark.",
+    "kind": "research_brief",
+    "input": {
+      "question": "Research brief comparing USDC supply APY between Aave and Spark.",
+      "protocols": ["aave-v3", "spark-lend"]
+    }
+  },
+  {
+    "id": "risk-scan-basic",
+    "question": "Scan risk signals across Aave and Compound for USDC.",
+    "kind": "risk_scan",
+    "input": {
+      "protocols": ["aave-v3", "compound-v3"],
+      "assets": ["USDC"],
+      "window": "7d"
+    }
+  },
+  {
+    "id": "risk-scan-three-source",
+    "question": "Scan risk signals across all three protocols for USDC.",
+    "kind": "risk_scan",
+    "input": {
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"],
+      "assets": ["USDC"],
+      "window": "7d"
+    }
   }
 ]
 
