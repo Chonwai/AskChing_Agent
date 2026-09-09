@@ -16,12 +16,8 @@ import {
 import { researchBrief } from "../packages/mcp-server/src/tools.js";
 
 const args = process.argv.slice(2);
-const cleanArgs = args[0] === "--" ? args.slice(1) : args;
-const liveIndex = cleanArgs.indexOf("--live");
-const liveMode = liveIndex !== -1;
-if (liveMode) {
-  cleanArgs.splice(liveIndex, 1);
-}
+const liveMode = args.includes("--live");
+const cleanArgs = args.filter((arg) => arg !== "--live" && arg !== "--");
 const question =
   cleanArgs.join(" ").trim() ||
   "Compare USDC supply APY across Aave V3 and Compound V3";
