@@ -35,7 +35,9 @@ Use AskChing as the research tool layer. Treat its cited structured output as ev
 | Synthesize a question into a cited brief | `research_brief` |
 | Look for peer-relative metric changes | `risk_scan` |
 
-The implementation supports `usdc_supply_apy` research across `aave-v3`, `compound-v3`, and `spark-lend`. `risk_scan` reports peer-relative spot signals and must not be described as historical analysis.
+The implementation supports spot research across four metrics — `supply_apy`, `borrow_apy`, `tvl`, `utilization` — four assets — `USDC`, `USDT`, `DAI`, `WETH` — and six live protocols — `aave-v3`, `compound-v3`, `spark-lend`, `aave-v2`, `uwu-lend`, `zerolend`. `risk_scan` reports peer-relative spot signals and must not be described as historical analysis.
+
+Pass the asset in natural language (e.g. "Compare USDT supply APY" → `asset: "USDT"`). The legacy metric alias `usdc_supply_apy` still works and is equivalent to `supply_apy` + `asset: "USDC"`.
 
 ## Call pattern
 
@@ -50,7 +52,8 @@ Example input:
 
 ```json
 {
-  "metric": "usdc_supply_apy",
+  "metric": "supply_apy",
+  "asset": "USDC",
   "protocols": ["aave-v3", "compound-v3", "spark-lend"]
 }
 ```

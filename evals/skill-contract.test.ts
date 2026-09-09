@@ -15,4 +15,30 @@ describe("AskChing skill", () => {
     expect(skill).toContain("asOf");
     expect(skill).not.toMatch(/fetch\(|query AskChing|JCNWRy|AwoxEZ/);
   });
+
+  it("tells the model about the generalized metric/asset/protocol surface", async () => {
+    const skill = await readFile(skillUrl, "utf8");
+
+    // Metrics
+    expect(skill).toContain("supply_apy");
+    expect(skill).toContain("borrow_apy");
+    expect(skill).toContain("tvl");
+    expect(skill).toContain("utilization");
+    // Assets
+    expect(skill).toContain("USDC");
+    expect(skill).toContain("WETH");
+    // Six live protocols
+    for (const protocol of [
+      "aave-v3",
+      "compound-v3",
+      "spark-lend",
+      "aave-v2",
+      "uwu-lend",
+      "zerolend"
+    ]) {
+      expect(skill).toContain(protocol);
+    }
+    // Legacy alias still documented
+    expect(skill).toContain("usdc_supply_apy");
+  });
 });
