@@ -145,10 +145,10 @@ ln -s ../../skills/askching .agents/skills/askching
 
 ## 7. Done Contract（驗收標準）
 
-- [ ] A：`packages/mcp-server/package.json` 為 publish-ready，且已驗證 `npm pack --dry-run` OK
-- [ ] B：`skills/askching/SKILL.md` frontmatter 補齊；`agents/openai.yaml` 補 policy + dependencies.tools
-- [ ] B：`.claude/skills/askching` 與 `.agents/skills/askching` symlink 建立
-- [ ] C：`docs/cross-platform.md` 包含各平台一行 config、credential indirection 表、本地 vs npx 雙形式、發布序列
-- [ ] D：`mcp-smoke` 可運行，輸出 `mcp-smoke OK: askching`
-- [ ] 一致性：mcp-server / shared 的 version 與 serverInfo.version 皆為 0.1.0
-- [ ] 無過度設計：無引入 design pattern、無 bundler、無實際 npm publish
+- [x] A：`packages/mcp-server/package.json` 為 publish-ready，且已驗證 `npm pack --dry-run` OK
+- [x] B：`skills/askching/SKILL.md` frontmatter 補齊；`agents/openai.yaml` 補 policy + dependencies.tools
+- [x] B：`.claude/skills/askching` 與 `.agents/skills/askching` symlink 建立
+- [x] C：`docs/cross-platform.md` 包含各平台一行 config、credential indirection 表、本地 vs npx 雙形式、發布序列
+- [x] D：`mcp-smoke` 可運行，輸出 `mcp-smoke OK: askching`
+- [x] 一致性：mcp-server / shared 的 version 與 serverInfo.version 皆為 0.1.0
+- [x] 無過度設計：無引入 design pattern、無 bundler、無實際 npm publish

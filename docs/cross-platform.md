@@ -234,10 +234,10 @@ pnpm mcp:smoke
 # 完整測試套件
 pnpm test
 
-# 檢查發布 tarball 內容（含 dist/）
-npm pack --dry-run
+# 檢查發布 tarball 內容（含 dist/）— 需在 packages/mcp-server 內執行
+cd packages/mcp-server && npm pack --dry-run
 ```
 
 `mcp-smoke` 輸出 `mcp-smoke OK: askching (3 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
 
-> **⚠️ 注意**：驗證 tarball 請用 `npm pack --dry-run`（pnpm 不支援 `pack --dry-run` flag）。
+> **⚠️ 注意**：驗證 tarball 請用 `npm pack --dry-run`（pnpm 不支援 `pack --dry-run` flag），且需在 `packages/mcp-server` 目錄內執行（在 repo root 執行會 pack 整個 private workspace）。
