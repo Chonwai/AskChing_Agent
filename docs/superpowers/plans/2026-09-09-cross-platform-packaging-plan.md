@@ -145,7 +145,7 @@ ln -s ../../skills/askching .agents/skills/askching
 
 ## 7. Done Contract（驗收標準）
 
-- [ ] A：`packages/mcp-server/package.json` 為 publish-ready，且已驗證 `pnpm pack --dry-run` OK
+- [ ] A：`packages/mcp-server/package.json` 為 publish-ready，且已驗證 `npm pack --dry-run` OK
 - [ ] B：`skills/askching/SKILL.md` frontmatter 補齊；`agents/openai.yaml` 補 policy + dependencies.tools
 - [ ] B：`.claude/skills/askching` 與 `.agents/skills/askching` symlink 建立
 - [ ] C：`docs/cross-platform.md` 包含各平台一行 config、credential indirection 表、本地 vs npx 雙形式、發布序列
