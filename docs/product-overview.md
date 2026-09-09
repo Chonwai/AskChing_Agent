@@ -56,7 +56,7 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 | **Metric normalization** | 跨協議的單位對齊（APR vs APY、percent vs raw rate） | 官方不做對齊 |
 | **Citation enforcement** | 每個數字必須帶 subgraphId + block + timestamp + queryHash | 官方只返回 raw JSON |
 | **Gap detection** | 缺數據時明確標示缺口，不瞎估 | 官方不處理缺失 |
-| **Research synthesis** | Grok 寫成有洞察的 brief，不只是 print 數字 | 官方不做解讀 |
+| **Structured brief** | `research_brief` 為模板包裝（非 LLM synthesis）；Grok orchestrator 版本才是 LLM synthesis | 官方不做解讀 |
 
 ---
 
@@ -97,7 +97,7 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 
 ### 4.2 Phase 2：Cursor / Codex / Gemini 用戶（開放）
 
-Grok Bot 驗證後，AskChing MCP Server 開放給其他 AI 工具：
+Grok 推理層（CLI）驗證後，AskChing MCP Server 開放給其他 AI 工具；Grok 推理層的 MCP server 化列為 roadmap。
 
 | 工具 | 接入方式 | 用戶體驗 |
 |------|----------|---------|
@@ -202,6 +202,7 @@ Grok Bot 驗證後，AskChing MCP Server 開放給其他 AI 工具：
 | AI reasoning | ✅ Grok tool-calling | ❌ 無 | ❌ 無 |
 | Citation 結構 | ✅ subgraphId + block + ts | ❌ raw JSON | ⚠️ 部分 |
 | Gap detection | ✅ 明確標示缺口 | ❌ | ❌ |
+| Evidence invariant | ✅ schema 強制，缺 citation 就 fail | ❌ raw JSON | ⚠️ 無 |
 | 可重用性 | ✅ MCP + SKILL | ✅ MCP | ❌ 綁 UI |
 | NL 接口 | ✅ 自然語言 | ❌ 需懂 GraphQL | ⚠️ 有限搜尋 |
 
