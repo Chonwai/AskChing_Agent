@@ -16,3 +16,6 @@ dependencies:
       args:
         - "-y"
         - "@askching/mcp-server"
+      # ⚠️ ESC-VPW-002：Codex 的 dependencies.tools 若需 streamable_http 形式，
+      # 請改用 transport: "streamable_http" + url（見 docs/cross-platform.md §4）。
+      # 此處保留 stdio + command/args 作為 intended block，需在 Codex 實測驗證。

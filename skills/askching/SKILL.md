@@ -11,10 +11,15 @@ compatibility:
   - claude-code
   - codex
   - cursor
+  - vscode
+  - claude-desktop
+  - gemini-cli
 metadata:
   category: research/data
   author: "AskChing"
 ---
+
+> **⚠️ 平台命名註記（ESC-VPW-001）**：Claude Code 對 MCP tool 的 `allowed-tools` 命名慣例可能需 `mcp__askching__<tool>` 前綴（如 `mcp__askching__compare_markets`）。若裸工具名在 Claude Code 不生效，請改用前綴形式。此項需在目標平台實測驗證。
 
 # AskChing
 
