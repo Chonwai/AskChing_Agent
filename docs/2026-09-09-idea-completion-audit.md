@@ -18,7 +18,7 @@ AskChing 在原始 idea 定義的「五個可交貨差異」中**已完成 4/5**
 
 | # | Idea 項目 | 狀態 | 證據檔案 |
 |---|-----------|:----:|----------|
-| 1 | **Grok 做 brain（tool-calling）** | ✅ | `packages/grok-orchestrator/src/loop.ts`：`runGrokOrchestrator`（maxTurns=4），`ASKCHING_TOOLS` 定義 3 工具，`api.x.ai/v1`，model=`grok-4.6`（已驗證真實存在） |
+| 1 | **Grok 做 brain（tool-calling）** | ✅ | `packages/grok-orchestrator/src/loop.ts`：`runGrokOrchestrator`（maxTurns=4），`ASKCHING_TOOLS` 定義 3 工具，`api.x.ai/v1`，model=`grok-4.6`（⚠️ 尚未以真實 xAI API 驗證，見 R3 追蹤） |
 | 2 | **The Graph 做 live data** | ✅ | `packages/shared/src/graph-client.ts`：`GraphGatewayClient` 直接呼叫 Gateway（需 `GRAPH_API_KEY`）；`data-source.ts` fixture/live 雙模式 |
 | 3 | **輸出 cited research brief** | ✅ | `mcp-server/tools.ts`：`researchBrief()` 結構化輸出（conclusion + keyFigures + asOf + risks + sources）；`compareMarkets()` 強制每個 row 必帶 `subgraphId + block + timestamp + queryHash` |
 | 4 | **Multi-subgraph fan-out** | ✅ | `data-source.ts`：`Promise.allSettled` 並行 3 subgraph；`compare.ts`：`compareObservations` 要求 ≥2 distinct subgraphId |
@@ -28,7 +28,7 @@ AskChing 在原始 idea 定義的「五個可交貨差異」中**已完成 4/5**
 
 | # | 差異（vs 官方 Subgraph MCP） | 狀態 | 證據 / 缺口 |
 |---|-----------------------------|:----:|-------------|
-| D1 | **Opinionated SKILL.md**（Grok 作業程序） | ✅ | `skills/askching/SKILL.md`：105 行，工具選擇表 + call pattern（6 步）+ evidence gate（subgraphId+timestamp+queryHash 三項驗證）+ fixture/live 標註 |
+| D1 | **Opinionated SKILL.md**（Grok 作業程序） | ✅ | `skills/askching/SKILL.md`：66 行，工具選擇表 + call pattern（6 步）+ evidence gate（subgraphId+timestamp+queryHash 三項驗證）+ fixture/live 標註 |
 | D2 | **Synthesis 層**（structured brief 非 raw query） | ✅ | `researchBrief()` 結構化 `conclusion` + `keyFigures` + `asOf` + `risks` + `suggestedFollowUp`；非 raw GraphQL response |
 | D3 | **Multi-subgraph 對照**（同一問題多源橫向比較） | ✅ | `compareObservations()` + `compareMarkets()`：3 source fan-out + value ranking + distinctSources ≥2 |
 | D4 | **xAI 敘事鎖死**（Grok reasoning core） | ✅ | `DEFAULT_MODEL=grok-4.6`，README「Grok-orchestrated」，SKILL.md 作為 Grok system prompt |
@@ -144,7 +144,7 @@ AskChing 的 MCP **不是套殼**——內部包含 normalization + citation enf
 
 | Pattern | AskChing 覆蓋 | 強度 |
 |---------|:---:|:---:|
-| **Standardized schemas**（一個 query 跨多協議） | 使用 Messari lending schema（de facto standard），三源同一個 query pattern | ⚠️ 中強 |
+| **Standardized schemas**（一個 query 跨多協議） | 使用 Messari lending schema（de facto standard），三源同一個 query pattern（來源：The Graph Lisbon 2026 winners recap，thegraph.com/blog/ethglobal-lisbon-2026-winners/） | ⚠️ 中強 |
 | **Provenance / citation**（資料出處 structurally enforced） | `subgraphId + block + timestamp + queryHash` 全部 Zod 強制，缺欄位 fail-closed | **強** |
 | **Real-time streaming**（Substreams gRPC） | ❌ 目前 request-response（非 WebSocket） | 弱（v2 考慮） |
 | **MCP / SKILL 介面**（AI 與 The Graph 的介面） | AskChing MCP server（stdio）+ SKILL.md playbook（Grok system prompt） | **強** |
@@ -157,7 +157,7 @@ AskChing 的 MCP **不是套殼**——內部包含 normalization + citation enf
 1. **Citation enforcement is structural invariant** — 不是 display option，是 fail-closed gate（缺欄位直接 throw，不允許無來源數字）。這是與所有官方 Subgraph MCP 用法**最本質的差異**，評審在 demo 影片中可一目了然看到 citation 結構。
 2. **Multi-subgraph fan-out + normalization** — 同一 metric 跨三個 subgraph 並行查、統一 schema normalization、同 unit ranking，不是「接了官方 MCP 就完」。
 3. **Honest gaps** — 主動聲明限制（「no time-series data」、fixture output 標註「fixture data」），這種誠實在 hackathon 中是 trust signal。
-4. **完整工程品質** — pnpm monorepo + Zod schemas + Vitest 10/10 eval + fixture/live 雙模式 + VCS history 120+ commits（符合 From Scratch）。
+4. **完整工程品質** — pnpm monorepo + Zod schemas + Vitest 10/10 eval + fixture/live 雙模式 + VCS history 123 commits（符合 From Scratch）。
 5. **SKILL.md 是真正的 Grok system prompt** — 直接 `readFile(.../skills/askching/SKILL.md)` 作為 system prompt，真正的 SKILL-driven agent（不是獨立文件）。
 
 **⚠️ 弱項（Risk Areas）：**
@@ -229,7 +229,7 @@ Phase 4 Done Contract:
 | 檢查項 | 結果 |
 |--------|:----:|
 | First commit 日期 | 2026-09-08（hackathon 9/4 之後）✅ |
-| 全部 commits 在 hackathon 期間 | ✅ 120 commits，全部 9/8–9/9 |
+| 全部 commits 在 hackathon 期間 | ✅ 123 commits，全部 9/8–9/9 |
 | No pre-existing project-specific code | ✅ repo 从零開始 |
 | Public GitHub repo | ✅ github.com/Chonwai/AskChing_Agent |
 | git history 不 squash（inline commit） | ✅ |
