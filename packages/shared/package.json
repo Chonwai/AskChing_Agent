@@ -1,7 +1,9 @@
 {
   "name": "@askching/shared",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Shared types, schemas, and data sources for AskChing.",
+  "license": "MIT",
+  "private": false,
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,8 +13,22 @@
       "default": "./dist/index.js"
     }
   },
+  "files": ["dist"],
+  "keywords": [
+    "defi",
+    "the-graph",
+    "market-data",
+    "research"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "zod": "^3.25.76"
