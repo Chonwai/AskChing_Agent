@@ -5,10 +5,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 import {
-  CompareMarketsInputSchema,
-  ResearchBriefInputSchema,
+  CompareMarketsCoreSchema,
+  ResearchBriefCoreSchema,
   ResearchBriefResultSchema,
-  RiskScanInputSchema,
+  RiskScanCoreSchema,
   compareMarkets,
   researchBrief,
   riskScan
@@ -22,8 +22,8 @@ server.registerTool(
   {
     title: "Compare markets",
     description:
-      "Compare a normalized market metric across at least two protocols with citations and an as-of timestamp.",
-    inputSchema: CompareMarketsInputSchema.shape,
+      "Compare a market metric (supply_apy/borrow_apy/tvl/utilization) for a given asset across at least two supported protocols with citations and an as-of timestamp.",
+    inputSchema: CompareMarketsCoreSchema.shape,
     outputSchema: ComparisonSchema.shape
   },
   async (input) => {
@@ -40,8 +40,8 @@ server.registerTool(
   {
     title: "Research brief",
     description:
-      "Prepare a cited research brief: conclusion, key figures with sources, as-of time, risks, and a suggested follow-up.",
-    inputSchema: ResearchBriefInputSchema.shape,
+      "Prepare a cited research brief: conclusion, key figures with sources, as-of time, risks, and a suggested follow-up, for a given metric and asset.",
+    inputSchema: ResearchBriefCoreSchema.shape,
     outputSchema: ResearchBriefResultSchema.shape
   },
   async (input) => {
@@ -58,8 +58,8 @@ server.registerTool(
   {
     title: "Risk scan",
     description:
-      "Scan protocol metrics for peer-relative signals and explicit gaps: which peer has the highest rate, spread vs peers, and an honest time-series limitation note.",
-    inputSchema: RiskScanInputSchema.shape
+      "Scan protocol metrics for peer-relative signals and explicit gaps across one or more assets: which peer has the highest rate, spread vs peers, and an honest time-series limitation note.",
+    inputSchema: RiskScanCoreSchema.shape
   },
   async (input) => {
     const result = await riskScan(input, dataSource);

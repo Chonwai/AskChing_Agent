@@ -63,20 +63,43 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
     function: {
       name: "compare_markets",
       description:
-        "Compare USDC supply APY across at least two supported protocols with citations.",
+        "Compare a market metric (supply_apy, borrow_apy, tvl, utilization) for a given asset across at least two supported protocols with citations.",
       parameters: {
         type: "object",
         properties: {
-          metric: { type: "string", enum: ["usdc_supply_apy"] },
+          metric: {
+            type: "string",
+            description:
+              "Metric id: supply_apy | borrow_apy | tvl | utilization (legacy usdc_supply_apy also accepted)",
+            enum: ["supply_apy", "borrow_apy", "tvl", "utilization", "usdc_supply_apy"]
+          },
+          asset: {
+            type: "string",
+            description:
+              "Asset symbol, e.g. USDC, USDT, DAI, WETH. Defaults to USDC.",
+            default: "USDC"
+          },
           protocols: {
             type: "array",
             items: {
               type: "string",
-              enum: ["aave-v3", "compound-v3", "spark-lend"]
+              enum: [
+                "aave-v3",
+                "compound-v3",
+                "spark-lend",
+                "aave-v2",
+                "uwu-lend",
+                "zerolend"
+              ]
             },
-            minItems: 2
+            minItems: 2,
+            description: "At least two LIVE protocols"
           },
-          timeframe: { type: "string" }
+          timeframe: {
+            type: "string",
+            description:
+              "Optional timeframe hint (currently spot-only; will be noted as caveat)"
+          }
         },
         required: ["metric", "protocols"],
         additionalProperties: false
@@ -88,19 +111,32 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
     function: {
       name: "research_brief",
       description:
-        "Create a structured cited research brief for two or more supported protocols.",
+        "Create a structured cited research brief for two or more supported protocols, for a given metric and asset.",
       parameters: {
         type: "object",
         properties: {
-          question: { type: "string" },
+          question: { type: "string", description: "Research question" },
           protocols: {
             type: "array",
             items: {
               type: "string",
-              enum: ["aave-v3", "compound-v3", "spark-lend"]
+              enum: [
+                "aave-v3",
+                "compound-v3",
+                "spark-lend",
+                "aave-v2",
+                "uwu-lend",
+                "zerolend"
+              ]
             },
             minItems: 2
-          }
+          },
+          metric: {
+            type: "string",
+            enum: ["supply_apy", "borrow_apy", "tvl", "utilization", "usdc_supply_apy"],
+            default: "supply_apy"
+          },
+          asset: { type: "string", default: "USDC" }
         },
         required: ["question", "protocols"],
         additionalProperties: false
@@ -112,7 +148,7 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
     function: {
       name: "risk_scan",
       description:
-        "Return peer-relative spot risk signals and explicit data gaps for supported protocols.",
+        "Return peer-relative spot risk signals and explicit data gaps for supported protocols, for a given metric and asset(s).",
       parameters: {
         type: "object",
         properties: {
@@ -120,12 +156,35 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
             type: "array",
             items: {
               type: "string",
-              enum: ["aave-v3", "compound-v3", "spark-lend"]
+              enum: [
+                "aave-v3",
+                "compound-v3",
+                "spark-lend",
+                "aave-v2",
+                "uwu-lend",
+                "zerolend"
+              ]
             },
             minItems: 2
           },
-          assets: { type: "array", items: { type: "string" } },
-          window: { type: "string" }
+          metric: {
+            type: "string",
+            enum: ["supply_apy", "borrow_apy", "tvl", "utilization", "usdc_supply_apy"],
+            default: "supply_apy"
+          },
+          assets: {
+            type: "array",
+            items: { type: "string" },
+            description: "Asset symbols, defaults to [USDC]"
+          },
+          asset: {
+            type: "string",
+            description: "Single asset alias for assets"
+          },
+          window: {
+            type: "string",
+            description: "Time window hint (currently spot-only)"
+          }
         },
         required: ["protocols", "window"],
         additionalProperties: false

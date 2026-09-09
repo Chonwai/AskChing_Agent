@@ -1,4 +1,5 @@
 import {
+  AssetSymbolSchema,
   compareObservations,
   ComparisonSourceSchema,
   resolveMetricId,
@@ -8,21 +9,100 @@ import {
 } from "@askching/shared";
 import { z } from "zod";
 
-export const CompareMarketsInputSchema = z.object({
-  metric: z.string().min(1),
+export const CompareMarketsCoreSchema = z.object({
+  metric: z
+    .string()
+    .min(1)
+    .describe("MarketMetricId or legacy alias (usdc_supply_apy)"),
+  asset: z.string().min(1).optional().default("USDC"),
   protocols: z.array(ProtocolSchema).min(2),
   timeframe: z.string().min(1).optional()
 });
 
-export const ResearchBriefInputSchema = z.object({
+export const CompareMarketsInputSchema = CompareMarketsCoreSchema.superRefine(
+  (value, ctx) => {
+    try {
+      resolveMetricId(value.metric);
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: (error as Error).message,
+        path: ["metric"]
+      });
+    }
+    try {
+      AssetSymbolSchema.parse(value.asset.toUpperCase());
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: (error as Error).message,
+        path: ["asset"]
+      });
+    }
+  }
+);
+
+export const ResearchBriefCoreSchema = z.object({
   question: z.string().min(1),
-  protocols: z.array(ProtocolSchema).optional()
+  protocols: z.array(ProtocolSchema).optional(),
+  metric: z.string().min(1).optional().default("supply_apy"),
+  asset: z.string().min(1).optional().default("USDC")
 });
 
-export const RiskScanInputSchema = z.object({
+export const ResearchBriefInputSchema = ResearchBriefCoreSchema.superRefine(
+  (value, ctx) => {
+    try {
+      resolveMetricId(value.metric);
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: (error as Error).message,
+        path: ["metric"]
+      });
+    }
+    try {
+      AssetSymbolSchema.parse(value.asset.toUpperCase());
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: (error as Error).message,
+        path: ["asset"]
+      });
+    }
+  }
+);
+
+/**
+ * Core risk_scan input without transforms — its `.shape` is used for MCP
+ * registration while RiskScanInputSchema (below) carries the validation
+ * + asset normalization transform.
+ */
+export const RiskScanCoreSchema = z.object({
   protocols: z.array(ProtocolSchema).min(1),
   assets: z.array(z.string().min(1)).optional(),
+  asset: z.string().min(1).optional(),
+  metric: z.string().min(1).optional().default("supply_apy"),
   window: z.string().min(1)
+});
+
+export const RiskScanInputSchema = RiskScanCoreSchema.superRefine(
+  (value, ctx) => {
+    try {
+      resolveMetricId(value.metric);
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: (error as Error).message,
+        path: ["metric"]
+      });
+    }
+  }
+).transform((value) => {
+  const assets = value.assets ?? (value.asset ? [value.asset] : ["USDC"]);
+  return {
+    ...value,
+    assets: assets.map((asset) => AssetSymbolSchema.parse(asset.toUpperCase()))
+  };
 });
 
 export async function compareMarkets(
@@ -33,7 +113,8 @@ export async function compareMarkets(
   const { metricId } = resolveMetricId(input.metric);
   const observations = await dataSource.getObservations(
     metricId,
-    input.protocols
+    input.protocols,
+    input.asset
   );
   const comparison = compareObservations(observations, metricId);
 
@@ -102,15 +183,16 @@ export async function researchBrief(
       "research_brief requires at least two protocols for a cited comparison"
     );
   }
+  const { metricId } = resolveMetricId(input.metric);
   const comparison = await compareMarkets(
-    { metric: "supply_apy", protocols: input.protocols },
+    { metric: metricId, asset: input.asset, protocols: input.protocols },
     dataSource
   );
 
   const metric = comparison.metric;
   const best = comparison.rows[0]!;
   const second = comparison.rows[1]!;
-  const conclusion = `${best.protocol} leads ${second.protocol} on ${metric} (${best.value}% vs ${second.value}%) as of ${comparison.asOf}.`;
+  const conclusion = `${best.protocol} leads ${second.protocol} on ${metric} (${comparison.asset} ${best.value}${best.unit === "usd" ? " USD" : "%"} vs ${second.value}${second.unit === "usd" ? " USD" : "%"}) as of ${comparison.asOf}.`;
   const risks =
     comparison.caveats.length > 0
       ? comparison.caveats
@@ -138,6 +220,7 @@ export async function researchBrief(
 export interface RiskFinding {
   protocol: string;
   metric: string;
+  asset: string;
   note: string;
   value: number;
 }
@@ -154,6 +237,7 @@ const RiskScanResultSchema = z.object({
     z.object({
       protocol: z.string(),
       metric: z.string(),
+      asset: z.string(),
       note: z.string(),
       value: z.number().finite()
     })
@@ -174,37 +258,63 @@ export async function riskScan(
       "risk_scan requires at least two protocols for a peer-relative scan"
     );
   }
+  const { metricId } = resolveMetricId(input.metric);
 
-  const comparison = await compareMarkets(
-    { metric: "supply_apy", protocols },
-    dataSource
-  );
-
-  const best = comparison.rows[0]!;
-  const second = comparison.rows[1]!;
-  const spread = Math.abs(best.value - second.value);
-
-  const findings: RiskFinding[] = [
-    {
-      protocol: best.protocol,
-      metric: "supply_apy",
-      note: `Highest USDC supply APY among scanned peers (${spread.toFixed(2)}ppt spread over ${second.protocol}).`,
-      value: best.value
-    },
-    {
-      protocol: second.protocol,
-      metric: "supply_apy",
-      note: `Lower USDC supply APY than ${best.protocol} by ${spread.toFixed(2)} percentage points.`,
-      value: second.value
+  const comparisons: Comparison[] = [];
+  const gaps: string[] = [];
+  for (const asset of input.assets) {
+    try {
+      const comparison = await compareMarkets(
+        { metric: metricId, asset, protocols },
+        dataSource
+      );
+      comparisons.push(comparison);
+    } catch (error) {
+      gaps.push(`${asset}: ${(error as Error).message}`);
     }
-  ];
+  }
+
+  if (comparisons.length === 0) {
+    throw new Error(
+      `risk_scan found no comparable observations. Gaps: ${gaps.join("; ")}`
+    );
+  }
+
+  const findings: RiskFinding[] = [];
+  for (const comparison of comparisons) {
+    const best = comparison.rows[0]!;
+    const second = comparison.rows[1]!;
+    const spread = Math.abs(best.value - second.value);
+    findings.push({
+      protocol: best.protocol,
+      metric: comparison.metric,
+      asset: comparison.asset,
+      note: `Highest ${comparison.asset} ${comparison.metric} among scanned peers (${spread.toFixed(2)}${comparison.rows[0]!.unit === "usd" ? " USD" : "ppt"} spread over ${second.protocol}).`,
+      value: best.value
+    });
+    findings.push({
+      protocol: second.protocol,
+      metric: comparison.metric,
+      asset: comparison.asset,
+      note: `Lower ${comparison.asset} ${comparison.metric} than ${best.protocol} by ${spread.toFixed(2)} ${comparison.rows[0]!.unit === "usd" ? "USD" : "percentage points"}.`,
+      value: second.value
+    });
+  }
+
+  const latest = comparisons.reduce(
+    (latest, comparison) =>
+      comparison.asOf > latest ? comparison.asOf : latest,
+    comparisons[0]!.asOf
+  );
+  const sources = comparisons.flatMap((comparison) => comparison.sources);
 
   return {
     findings,
     gaps: [
+      ...gaps,
       "No time-series data is available: risk_scan currently reflects a single spot snapshot. Peer-relative change over time is not assessed."
     ],
-    asOf: comparison.asOf,
-    sources: comparison.sources
+    asOf: latest,
+    sources
   };
 }

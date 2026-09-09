@@ -55,4 +55,45 @@ describe("runGrokOrchestrator", () => {
     expect(complete.mock.calls[0]?.[0].tools.map((tool) => tool.function.name))
       .toEqual(["compare_markets", "research_brief", "risk_scan"]);
   });
+
+  it("exposes generalized metric and asset parameters on ASKCHING_TOOLS", async () => {
+    const complete = vi
+      .fn<ChatCompletionClient["complete"]>()
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "call-1",
+            type: "function",
+            function: {
+              name: "compare_markets",
+              arguments: JSON.stringify({
+                metric: "tvl",
+                asset: "WETH",
+                protocols: ["aave-v3", "compound-v3"]
+              })
+            }
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: "WETH TVL comparison complete."
+      });
+    const client: ChatCompletionClient = { complete };
+
+    const result = await runGrokOrchestrator({
+      prompt: "Compare WETH tvl across Aave and Compound.",
+      client,
+      dataSource: createMarketDataSource({ DEMO_LIVE: "0" }),
+      systemPrompt: "Use AskChing tools and preserve every citation."
+    });
+
+    expect(result.answer).toContain("WETH TVL");
+    expect(result.toolCalls[0]?.arguments).toMatchObject({
+      metric: "tvl",
+      asset: "WETH"
+    });
+  });
 });
