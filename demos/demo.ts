@@ -3,8 +3,8 @@
  * AskChing demo CLI
  *
  * Usage:
- *   npm run demo -- "Compare USDC supply APY across Aave V3 and Compound V3"
- *   npm run demo --live -- "Compare USDC supply APY"
+ *   pnpm demo -- "Compare USDC supply APY across Aave V3 and Compound V3"
+ *   pnpm demo:live -- "Compare USDC supply APY"
  *
  * Fixture mode is the default (DEMO_LIVE=0). Pass --live to use the
  * live Graph gateway with GRAPH_API_KEY from the environment.

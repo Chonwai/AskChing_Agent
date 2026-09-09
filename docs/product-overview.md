@@ -150,7 +150,7 @@ Grok Bot 驗證後，AskChing MCP Server 開放給其他 AI 工具：
 | `@askching/grok-orchestrator` | Grok tool-calling demo CLI | 演示 / 開發者 |
 | `skills/askching/SKILL.md` | Agent 操作手冊（薄 playbook） | AI agents |
 | `evals/` | 行為驗證套件 | 開發者 / CI |
-| Demo Video | 2-4 分鐘 live demo | 評審 |
+| Demo Video | 2:55 run script 已就緒，尚未錄製（Phase 4） | 評審 |
 
 ### 5.3 刻意不做
 
@@ -209,7 +209,7 @@ Grok Bot 驗證後，AskChing MCP Server 開放給其他 AI 工具：
 
 ## 8. 未來方向（Hackathon 後，簡述）
 
-Hackathon 交付 **v1.0**（Grok Bot + MCP + compare_markets + research_brief + risk_scan + demo CLI + Spark source，均已實作）。後續方向包括開放 Cursor/Codex/Gemini 接入、x402 agent payment、Standardized schema 等。詳見 `docs/engineering-spec.md` §11 Out of Scope。
+Hackathon 交付 **v1.0**：技術 + 文書 100% 交付（三 tools、Grok Orchestrator、三源、showcase 文書），均已實作；剩餘 Phase 4 錄影 + 提交。後續方向包括開放 Cursor/Codex/Gemini 接入、x402 agent payment、Standardized schema 等。詳見 `docs/engineering-spec.md` §11 Out of Scope。
 
 ---
 
@@ -223,5 +223,5 @@ Hackathon 交付 **v1.0**（Grok Bot + MCP + compare_markets + research_brief + 
 
 ---
 
-*Document version: 1.2 — 2026-09-08 (renamed AskChain → AskChing per team alignment)*  
+*Document version: 1.3 — 2026-09-09（進度更新：Phase 0-3 完成，Phase 4 進行中，總體 88%）*
 *Status: For team alignment and ETHOnline 2026 submission*
