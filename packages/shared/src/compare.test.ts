@@ -64,4 +64,46 @@ describe("compareObservations", () => {
     const result = compareObservations([compound, aave], "supply_apy");
     expect(result.asset).toBe("USDC");
   });
+
+  it("flags utilization as a risk signal rather than a better outcome", () => {
+    const utilization = {
+      metric: "utilization" as const,
+      asset: "USDC" as const,
+      value: 78.4,
+      unit: "percent" as const,
+      protocol: "aave-v3",
+      subgraphId: "aave-v3-ethereum",
+      deploymentId: "QmAaveFixture",
+      block: 21_100_100,
+      timestamp: "2026-09-08T00:05:00.000Z",
+      queryHash: "sha256:aave-utilization-fixture"
+    };
+    const utilizationPeer = {
+      ...utilization,
+      value: 55.0,
+      protocol: "compound-v3",
+      subgraphId: "compound-v3-ethereum",
+      deploymentId: "QmCompoundFixture",
+      block: 21_100_000,
+      timestamp: "2026-09-08T00:00:00.000Z",
+      queryHash: "sha256:compound-utilization-fixture"
+    };
+
+    const result = compareObservations(
+      [utilization, utilizationPeer],
+      "utilization"
+    );
+
+    // Highest utilization ranks first, but the caveat reframes it as risk.
+    expect(result.rows.map((row) => row.protocol)).toEqual([
+      "aave-v3",
+      "compound-v3"
+    ]);
+    expect(result.caveats.some((caveat) => caveat.includes("risk signal"))).toBe(
+      true
+    );
+    expect(
+      result.caveats.some((caveat) => caveat.includes("Utilization is ranked"))
+    ).toBe(true);
+  });
 });

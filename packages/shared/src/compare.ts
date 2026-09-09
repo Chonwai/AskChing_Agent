@@ -55,6 +55,11 @@ export function compareObservations(
       "TVL reflects the largest market for this asset, not total protocol TVL."
     );
   }
+  if (metric === "utilization") {
+    caveats.push(
+      "Utilization is ranked highest-first; higher utilization is a higher risk signal, not a better outcome."
+    );
+  }
 
   return ComparisonSchema.parse({
     metric,
