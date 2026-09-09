@@ -8,6 +8,7 @@ import { createMarketDataSource } from "@askching/shared";
 
 import { OpenAIChatCompletionClient } from "./client.js";
 import { runGrokOrchestrator } from "./loop.js";
+import { renderOrchestratorOutput } from "./output.js";
 
 const DEFAULT_BASE_URL = "https://api.x.ai/v1";
 const DEFAULT_MODEL = "grok-4.6";
@@ -40,7 +41,9 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     dataSource: createMarketDataSource(process.env)
   });
 
-  process.stdout.write(`${result.answer}\n`);
+  process.stdout.write(
+    renderOrchestratorOutput(result, process.env.ASKCHING_DEBUG === "1")
+  );
 }
 
 const invokedPath = process.argv[1] ? resolve(process.argv[1]) : undefined;
