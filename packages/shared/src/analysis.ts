@@ -35,8 +35,11 @@ export function analyzeMarketObservations(
     }
   }
 
-  if (input.objective !== "yield_opportunity") {
-    throw new Error(`Analysis objective not implemented: ${input.objective}`);
+  if (input.objective === "liquidity_stress") {
+    return analyzeLiquidityStress(input, observations);
+  }
+  if (input.objective === "evidence_quality") {
+    return analyzeEvidenceQuality(input, observations);
   }
 
   const supply = comparable(
@@ -82,6 +85,91 @@ export function analyzeMarketObservations(
     asOf: latest
   };
   return AnalyzeMarketsResultSchema.parse(result);
+}
+
+function analyzeLiquidityStress(
+  input: AnalyzeObservationInput,
+  observations: MarketObservation[]
+): AnalyzeMarketsResult {
+  const utilization = comparable(
+    observations.filter(item => item.metric === "utilization"),
+    "utilization"
+  ).sort((a, b) => b.value - a.value || a.protocol.localeCompare(b.protocol));
+  const context = observations.filter(item => item.metric === "tvl");
+  const confidence = determineConfidence(utilization, input.gaps);
+  const findings = utilization.map((item, index) => {
+    const severity = item.value > 90 ? "high" as const : item.value >= 80 ? "watch" as const : "info" as const;
+    const band = severity === "high" ? "above the 90% high threshold" : severity === "watch" ? "within the 80–90% watch band" : "below the 80% watch threshold";
+    const tvl = context.find(value => value.protocol === item.protocol);
+    const supportingValues = tvl ? [item, tvl] : [item];
+    return {
+      severity,
+      claim: `${item.protocol} is rank ${index + 1} of ${utilization.length} by current ${input.asset} utilization at ${item.value}%.`,
+      calculation: `${item.value}% utilization; rank ${index + 1} of ${utilization.length}; ${band}`,
+      supportingValues,
+      citations: dedupeCitations([...utilization, ...(tvl ? [tvl] : [])]),
+      confidence,
+      caveats: [
+        "Utilization is a spot heuristic signal, not a liquidation or solvency assessment.",
+        ...(tvl ? [`TVL of ${tvl.value} USD is scale context, not available liquidity.`] : [])
+      ]
+    };
+  });
+  return AnalyzeMarketsResultSchema.parse({
+    objective: input.objective,
+    asset: input.asset,
+    protocols: input.protocols,
+    metrics: input.metrics,
+    summary: `${utilization[0]!.protocol} has the highest current ${input.asset} utilization among the analyzed peers.`,
+    findings,
+    gaps: withTimeframeGap(input),
+    asOf: latestTimestamp([...utilization, ...context])
+  });
+}
+
+function analyzeEvidenceQuality(
+  input: AnalyzeObservationInput,
+  observations: MarketObservation[]
+): AnalyzeMarketsResult {
+  const citations = dedupeCitations(observations);
+  const sourceCount = new Set(observations.map(item => item.subgraphId)).size;
+  if (sourceCount < 2) {
+    throw new Error("Need at least 2 cited sources for evidence_quality");
+  }
+  const expected = input.protocols.length * input.metrics.length;
+  const covered = new Set(
+    observations.map(item => `${item.protocol}|${item.metric}`)
+  ).size;
+  const timestamps = observations.map(item => Date.parse(item.timestamp));
+  const skewMs = Math.max(...timestamps) - Math.min(...timestamps);
+  const confidence: AnalysisConfidence =
+    sourceCount >= 3 && input.gaps.length === 0 && skewMs <= 10 * 60 * 1000
+      ? "high"
+      : covered / expected < 0.5
+        ? "low"
+        : "medium";
+  return AnalyzeMarketsResultSchema.parse({
+    objective: input.objective,
+    asset: input.asset,
+    protocols: input.protocols,
+    metrics: input.metrics,
+    summary: `${covered} of ${expected} requested protocol-metric observations are supported by ${sourceCount} cited sources.`,
+    findings: [
+      {
+        severity: confidence === "low" ? "watch" : "info",
+        claim: `Evidence coverage is ${covered}/${expected} across ${sourceCount} distinct cited sources.`,
+        calculation: `${covered}/${expected} protocol-metric observations; ${sourceCount} distinct sources; ${Math.round(skewMs / 1000)} seconds timestamp skew`,
+        supportingValues: observations,
+        citations,
+        confidence,
+        caveats: [
+          "Evidence quality describes coverage and recency, not protocol safety."
+        ]
+      }
+    ],
+    gaps: withTimeframeGap(input),
+    asOf: latestTimestamp(observations)
+  });
 }
 
 function comparable(

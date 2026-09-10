@@ -124,3 +124,106 @@ describe("yield opportunity analysis", () => {
     ).toThrow("Mixed or unexpected observation");
   });
 });
+
+describe("liquidity stress analysis", () => {
+  const utilization = MARKET_FIXTURES.filter(
+    item => item.asset === "USDC" && item.metric === "utilization"
+  );
+
+  it.each([
+    [79.9, "info"],
+    [80, "watch"],
+    [90, "watch"],
+    [90.1, "high"]
+  ] as const)("classifies leader utilization %s as %s", (value, severity) => {
+    const observations = utilization.map((item, index) => ({
+      ...item,
+      value: index === 0 ? value : Math.max(1, value - (index + 1) * 10)
+    }));
+    const result = analyzeMarketObservations({
+      objective: "liquidity_stress",
+      asset: "USDC",
+      protocols: observations.map(item => item.protocol),
+      metrics: ["utilization"],
+      observations,
+      gaps: []
+    });
+
+    expect(result.findings[0]?.severity).toBe(severity);
+    expect(result.findings[0]?.calculation).toContain("rank 1 of 3");
+    expect(result.findings[0]?.caveats.join(" ")).toContain("spot heuristic");
+  });
+
+  it("cites optional TVL scale context separately from utilization", () => {
+    const result = analyzeMarketObservations({
+      objective: "liquidity_stress",
+      asset: "USDC",
+      protocols: ["aave-v3", "compound-v3", "spark-lend"],
+      metrics: ["utilization", "tvl"],
+      observations: MARKET_FIXTURES.filter(
+        item => item.asset === "USDC" && ["utilization", "tvl"].includes(item.metric)
+      ),
+      gaps: []
+    });
+
+    for (const finding of result.findings) {
+      for (const value of finding.supportingValues) {
+        expect(finding.citations).toContainEqual(
+          expect.objectContaining({ protocol: value.protocol, metric: value.metric })
+        );
+      }
+    }
+  });
+});
+
+describe("evidence quality analysis", () => {
+  const supply = MARKET_FIXTURES.filter(
+    item =>
+      item.asset === "USDC" &&
+      item.metric === "supply_apy" &&
+      ["aave-v3", "compound-v3", "spark-lend"].includes(item.protocol)
+  );
+
+  it("scores complete three-source coverage as high confidence", () => {
+    const result = analyzeMarketObservations({
+      objective: "evidence_quality",
+      asset: "USDC",
+      protocols: supply.map(item => item.protocol),
+      metrics: ["supply_apy"],
+      observations: [...supply],
+      gaps: []
+    });
+
+    expect(result.findings[0]?.confidence).toBe("high");
+    expect(result.findings[0]?.calculation).toContain("3/3 protocol-metric observations");
+  });
+
+  it("reduces confidence and preserves gaps or timestamp skew", () => {
+    const result = analyzeMarketObservations({
+      objective: "evidence_quality",
+      asset: "USDC",
+      protocols: supply.map(item => item.protocol),
+      metrics: ["supply_apy"],
+      observations: supply.slice(0, 2),
+      gaps: [{ metric: "supply_apy", protocol: "spark-lend", reason: "Source unavailable" }]
+    });
+
+    expect(result.findings[0]?.confidence).toBe("medium");
+    expect(result.gaps[0]?.reason).toContain("unavailable");
+  });
+
+  it("preserves a requested historical window as a spot-only gap", () => {
+    const result = analyzeMarketObservations({
+      objective: "yield_opportunity",
+      asset: "USDC",
+      protocols: supply.map(item => item.protocol),
+      metrics: ["supply_apy"],
+      observations: [...supply],
+      gaps: [],
+      timeframe: "7d"
+    });
+
+    expect(result.gaps.at(-1)?.reason).toContain("7d");
+    expect(result.gaps.at(-1)?.reason).toContain("spot-only");
+  });
+});
