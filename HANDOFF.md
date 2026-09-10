@@ -1,8 +1,8 @@
 ---
 title: AskChing handoff
 updated: 2026-09-10
-checkpoint: da25f8a
-status: ready-for-phase4
+checkpoint: cd5453f
+status: analyze-markets-design-review
 ---
 
 # AskChing handoff
@@ -12,13 +12,15 @@ Updated: 2026-09-10 (Asia/Hong_Kong)
 ## Current checkpoint
 
 - Branch: `main`, tracking public `origin/main`
-- Current work HEAD: `da25f8a` (`chore(state): generalize-query-system loop complete — VERIFY PASS 95`)
+- Current work HEAD: `cd5453f` (`docs: design transparent market analysis tool`)
 - Working tree clean except untracked `.edison/state/loop-handoff-update.md` (loop state for this handoff update).
 - Previous handoff checkpoint: `86d67aa` (2026-09-09) — this update supersedes it.
 
 ## Completed
 
 AskChing now ships the **generalized query system** — any supported metric, asset, and protocol combination, not just the original three-protocol USDC slice.
+
+The next analysis feature has an approved conversational design captured in `docs/superpowers/specs/2026-09-10-analyze-markets-design.md`. It adds a transparent fourth MCP tool for yield opportunity, liquidity stress, and evidence quality without black-box scores or unsupported historical claims. Implementation has not started; the written spec is awaiting John's final review.
 
 ### Generalized capabilities
 
@@ -109,7 +111,13 @@ The `askching` skill is a single source of truth in `skills/askching/SKILL.md`, 
 - AskChing remains research software: no trading, transaction execution, or large UI is in scope.
 - Credentials remain local in `.env` and must never be committed or pasted into logs.
 
-## Next action — Phase 4 (deadline 2026-09-13 12:00 PM EDT)
+## Next action — `analyze_markets` review, then Phase 4
+
+1. John reviews `docs/superpowers/specs/2026-09-10-analyze-markets-design.md` and confirms or requests changes.
+2. After approval, create the implementation plan and execute it with separate commits for schemas/tests, shared engine, MCP, Grok, evals/docs, and handoff.
+3. Keep the existing Phase 4 deadline work moving; do not claim the video or submission is complete until John confirms it.
+
+### Phase 4 manual work (deadline 2026-09-13 12:00 PM EDT)
 
 John picks up the remaining Phase 4 work:
 
