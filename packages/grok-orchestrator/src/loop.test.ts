@@ -53,7 +53,7 @@ describe("runGrokOrchestrator", () => {
     expect(result.toolCalls[0]?.name).toBe("compare_markets");
     expect(complete).toHaveBeenCalledTimes(2);
     expect(complete.mock.calls[0]?.[0].tools.map((tool) => tool.function.name))
-      .toEqual(["compare_markets", "research_brief", "risk_scan"]);
+      .toEqual(["compare_markets", "research_brief", "risk_scan", "analyze_markets"]);
   });
 
   it("exposes generalized metric and asset parameters on ASKCHING_TOOLS", async () => {
@@ -95,5 +95,43 @@ describe("runGrokOrchestrator", () => {
       metric: "tvl",
       asset: "WETH"
     });
+  });
+
+  it("executes a model-requested cited market analysis", async () => {
+    const complete = vi
+      .fn<ChatCompletionClient["complete"]>()
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: null,
+        tool_calls: [{
+          id: "analysis-1",
+          type: "function",
+          function: {
+            name: "analyze_markets",
+            arguments: JSON.stringify({
+              objective: "liquidity_stress",
+              asset: "USDC",
+              protocols: ["aave-v3", "compound-v3", "spark-lend"]
+            })
+          }
+        }]
+      })
+      .mockImplementationOnce(async (request) => {
+        const toolMessage = request.messages.find(message => message.role === "tool");
+        const analysis = JSON.parse(toolMessage!.content);
+        expect(analysis.objective).toBe("liquidity_stress");
+        expect(analysis.findings.some((finding: { severity: string }) => finding.severity === "high")).toBe(true);
+        return { role: "assistant", content: "Spark has the highest spot utilization, with cited evidence and caveats." };
+      });
+
+    const result = await runGrokOrchestrator({
+      prompt: "Analyze liquidity stress across Aave, Compound, and Spark.",
+      client: { complete },
+      dataSource: createMarketDataSource({ DEMO_LIVE: "0" }),
+      systemPrompt: "Use AskChing tools and preserve every citation."
+    });
+
+    expect(result.toolCalls[0]?.name).toBe("analyze_markets");
+    expect(result.answer).toContain("cited evidence");
   });
 });

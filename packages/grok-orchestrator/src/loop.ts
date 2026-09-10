@@ -1,4 +1,5 @@
 import {
+  analyzeMarkets,
   compareMarkets,
   researchBrief,
   riskScan
@@ -190,6 +191,53 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
         additionalProperties: false
       }
     }
+  },
+  {
+    type: "function",
+    function: {
+      name: "analyze_markets",
+      description:
+        "Analyze current cited market data for yield opportunity, liquidity stress, or evidence quality. Returns transparent calculations, supporting values, citations, confidence, caveats, gaps, and as-of time.",
+      parameters: {
+        type: "object",
+        properties: {
+          objective: {
+            type: "string",
+            enum: ["yield_opportunity", "liquidity_stress", "evidence_quality"]
+          },
+          protocols: {
+            type: "array",
+            items: {
+              type: "string",
+              enum: [
+                "aave-v3",
+                "compound-v3",
+                "spark-lend",
+                "aave-v2",
+                "uwu-lend",
+                "zerolend"
+              ]
+            },
+            minItems: 2
+          },
+          asset: { type: "string", default: "USDC" },
+          metrics: {
+            type: "array",
+            items: {
+              type: "string",
+              enum: ["supply_apy", "borrow_apy", "tvl", "utilization"]
+            },
+            description: "Optional metric override; defaults depend on the objective."
+          },
+          timeframe: {
+            type: "string",
+            description: "Optional historical intent; current data is spot-only and this becomes an explicit gap."
+          }
+        },
+        required: ["objective", "protocols"],
+        additionalProperties: false
+      }
+    }
   }
 ];
 
@@ -259,6 +307,8 @@ async function executeTool(
   dataSource: MarketDataSource
 ): Promise<unknown> {
   switch (name) {
+    case "analyze_markets":
+      return analyzeMarkets(input, dataSource);
     case "compare_markets":
       return compareMarkets(input, dataSource);
     case "research_brief":
