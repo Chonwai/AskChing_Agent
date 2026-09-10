@@ -1,8 +1,8 @@
 ---
 title: AskChing handoff
 updated: 2026-09-10
-checkpoint: cd5453f
-status: analyze-markets-design-review
+checkpoint: bd4d951
+status: analyze-markets-plan-ready
 ---
 
 # AskChing handoff
@@ -12,7 +12,7 @@ Updated: 2026-09-10 (Asia/Hong_Kong)
 ## Current checkpoint
 
 - Branch: `main`, tracking public `origin/main`
-- Current work HEAD: `cd5453f` (`docs: design transparent market analysis tool`)
+- Current work HEAD: `bd4d951` (`docs: plan evidence-first market analysis`)
 - Working tree clean except untracked `.edison/state/loop-handoff-update.md` (loop state for this handoff update).
 - Previous handoff checkpoint: `86d67aa` (2026-09-09) — this update supersedes it.
 
@@ -20,7 +20,7 @@ Updated: 2026-09-10 (Asia/Hong_Kong)
 
 AskChing now ships the **generalized query system** — any supported metric, asset, and protocol combination, not just the original three-protocol USDC slice.
 
-The next analysis feature has an approved conversational design captured in `docs/superpowers/specs/2026-09-10-analyze-markets-design.md`. It adds a transparent fourth MCP tool for yield opportunity, liquidity stress, and evidence quality without black-box scores or unsupported historical claims. Implementation has not started; the written spec is awaiting John's final review.
+The next analysis feature has an approved design in `docs/superpowers/specs/2026-09-10-analyze-markets-design.md` and an execution-ready TDD plan in `docs/superpowers/plans/2026-09-10-analyze-markets.md`. It adds a transparent fourth MCP tool for yield opportunity, liquidity stress, and evidence quality without black-box scores or unsupported historical claims. Implementation has not started.
 
 ### Generalized capabilities
 
@@ -113,8 +113,8 @@ The `askching` skill is a single source of truth in `skills/askching/SKILL.md`, 
 
 ## Next action — `analyze_markets` review, then Phase 4
 
-1. John reviews `docs/superpowers/specs/2026-09-10-analyze-markets-design.md` and confirms or requests changes.
-2. After approval, create the implementation plan and execute it with separate commits for schemas/tests, shared engine, MCP, Grok, evals/docs, and handoff.
+1. Choose the plan execution mode: subagent-driven task reviews or inline execution in the current session.
+2. Execute `docs/superpowers/plans/2026-09-10-analyze-markets.md` with separate commits for schemas/tests, shared engine, MCP, Grok, evals/docs, and handoff.
 3. Keep the existing Phase 4 deadline work moving; do not claim the video or submission is complete until John confirms it.
 
 ### Phase 4 manual work (deadline 2026-09-13 12:00 PM EDT)
