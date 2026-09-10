@@ -72,11 +72,11 @@ describe("createMarketDataSource (fixture mode)", () => {
     expect(observations.every((item) => item.unit === "usd")).toBe(true);
   });
 
-  it("returns a single utilization observation for USDC on aave-v3", async () => {
+  it("returns comparable utilization observations for requested protocols", async () => {
     const source = createMarketDataSource({ DEMO_LIVE: "0" });
 
     const observations = await source.getObservations("utilization", ["aave-v3", "compound-v3"], "USDC");
-    expect(observations).toHaveLength(1);
+    expect(observations).toHaveLength(2);
     expect(observations[0]!.metric).toBe("utilization");
   });
 });

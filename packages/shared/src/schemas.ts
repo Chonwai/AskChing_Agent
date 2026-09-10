@@ -90,3 +90,57 @@ export const ComparisonSchema = z.object({
   sources: z.array(ComparisonSourceSchema).min(2)
 });
 export type Comparison = z.infer<typeof ComparisonSchema>;
+
+// ── Analysis ──────────────────────────────────────────────────────
+export const AnalysisObjectiveSchema = z.enum([
+  "yield_opportunity",
+  "liquidity_stress",
+  "evidence_quality"
+]);
+export type AnalysisObjective = z.infer<typeof AnalysisObjectiveSchema>;
+
+export const AnalysisSeveritySchema = z.enum(["info", "watch", "high"]);
+export type AnalysisSeverity = z.infer<typeof AnalysisSeveritySchema>;
+
+export const AnalysisConfidenceSchema = z.enum(["high", "medium", "low"]);
+export type AnalysisConfidence = z.infer<typeof AnalysisConfidenceSchema>;
+
+export const AnalysisCitationSchema = ComparisonSourceSchema.extend({
+  metric: MarketMetricIdSchema
+});
+export type AnalysisCitation = z.infer<typeof AnalysisCitationSchema>;
+
+export const AnalysisSupportingValueSchema = MarketObservationSchema;
+export type AnalysisSupportingValue = z.infer<
+  typeof AnalysisSupportingValueSchema
+>;
+
+export const AnalysisFindingSchema = z.object({
+  severity: AnalysisSeveritySchema,
+  claim: z.string().min(1),
+  calculation: z.string().min(1),
+  supportingValues: z.array(AnalysisSupportingValueSchema),
+  citations: z.array(AnalysisCitationSchema).min(2),
+  confidence: AnalysisConfidenceSchema,
+  caveats: z.array(z.string())
+});
+export type AnalysisFinding = z.infer<typeof AnalysisFindingSchema>;
+
+export const AnalysisGapSchema = z.object({
+  metric: MarketMetricIdSchema.optional(),
+  protocol: ProtocolSchema.optional(),
+  reason: z.string().min(1)
+});
+export type AnalysisGap = z.infer<typeof AnalysisGapSchema>;
+
+export const AnalyzeMarketsResultSchema = z.object({
+  objective: AnalysisObjectiveSchema,
+  asset: AssetSymbolSchema,
+  protocols: z.array(ProtocolSchema).min(2),
+  metrics: z.array(MarketMetricIdSchema).min(1),
+  summary: z.string().min(1),
+  findings: z.array(AnalysisFindingSchema).min(1),
+  gaps: z.array(AnalysisGapSchema),
+  asOf: z.string().datetime()
+});
+export type AnalyzeMarketsResult = z.infer<typeof AnalyzeMarketsResultSchema>;
