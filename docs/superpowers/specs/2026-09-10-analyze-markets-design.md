@@ -85,12 +85,16 @@ interface AnalysisSupportingValue {
   queryHash: string;
 }
 
+type AnalysisCitation = ComparisonSource & {
+  metric: MarketMetricId;
+};
+
 interface AnalysisFinding {
   severity: AnalysisSeverity;
   claim: string;
   calculation: string;
   supportingValues: AnalysisSupportingValue[];
-  citations: ComparisonSource[];
+  citations: AnalysisCitation[];
   confidence: AnalysisConfidence;
   caveats: string[];
 }
