@@ -1,14 +1,20 @@
 #!/usr/bin/env node
 
-import { ComparisonSchema, createMarketDataSource } from "@askching/shared";
+import {
+  AnalyzeMarketsResultSchema,
+  ComparisonSchema,
+  createMarketDataSource
+} from "@askching/shared";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 import {
+  AnalyzeMarketsCoreSchema,
   CompareMarketsCoreSchema,
   ResearchBriefCoreSchema,
   ResearchBriefResultSchema,
   RiskScanCoreSchema,
+  analyzeMarkets,
   compareMarkets,
   researchBrief,
   riskScan
@@ -16,6 +22,24 @@ import {
 
 const dataSource = createMarketDataSource(process.env);
 const server = new McpServer({ name: "askching", version: "0.1.0" });
+
+server.registerTool(
+  "analyze_markets",
+  {
+    title: "Analyze markets",
+    description:
+      "Produce transparent, cited yield-opportunity, liquidity-stress, or evidence-quality findings from current market observations, with calculations, confidence, caveats, gaps, and an as-of timestamp.",
+    inputSchema: AnalyzeMarketsCoreSchema.shape,
+    outputSchema: AnalyzeMarketsResultSchema.shape
+  },
+  async (input) => {
+    const result = await analyzeMarkets(input, dataSource);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      structuredContent: result
+    };
+  }
+);
 
 server.registerTool(
   "compare_markets",

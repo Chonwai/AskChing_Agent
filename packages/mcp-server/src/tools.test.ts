@@ -6,13 +6,83 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import {
+  AnalyzeMarketsCoreSchema,
+  AnalyzeMarketsInputSchema,
   CompareMarketsCoreSchema,
   ResearchBriefCoreSchema,
   RiskScanCoreSchema,
+  analyzeMarkets,
   compareMarkets,
   researchBrief,
   riskScan
 } from "./tools.js";
+
+describe("analyzeMarkets", () => {
+  it.each([
+    ["yield_opportunity", ["supply_apy", "utilization"]],
+    ["liquidity_stress", ["utilization", "tvl"]],
+    ["evidence_quality", ["supply_apy", "borrow_apy", "tvl", "utilization"]]
+  ] as const)("runs the %s objective with its metric defaults", async (objective, metrics) => {
+    const result = await analyzeMarkets(
+      {
+        objective,
+        asset: "usdc",
+        protocols: ["aave-v3", "compound-v3"]
+      },
+      createMarketDataSource({ DEMO_LIVE: "0" })
+    );
+
+    expect(result.objective).toBe(objective);
+    expect(result.asset).toBe("USDC");
+    expect(result.metrics).toEqual(metrics);
+    expect(result.findings.length).toBeGreaterThan(0);
+    expect(result.findings.every((finding) => finding.citations.length >= 2)).toBe(true);
+  });
+
+  it("rejects missing primary objective metrics", () => {
+    expect(() => AnalyzeMarketsInputSchema.parse({
+      objective: "yield_opportunity",
+      metrics: ["utilization"],
+      protocols: ["aave-v3", "compound-v3"]
+    })).toThrow(/supply_apy/);
+    expect(() => AnalyzeMarketsInputSchema.parse({
+      objective: "liquidity_stress",
+      metrics: ["tvl"],
+      protocols: ["aave-v3", "compound-v3"]
+    })).toThrow(/utilization/);
+  });
+
+  it("turns missing protocol-metric coverage and timeframe intent into explicit gaps", async () => {
+    const result = await analyzeMarkets(
+      {
+        objective: "evidence_quality",
+        metrics: ["supply_apy", "tvl"],
+        timeframe: "7d",
+        protocols: ["aave-v3", "spark-lend"]
+      },
+      createMarketDataSource({ DEMO_LIVE: "0" })
+    );
+
+    expect(result.gaps).toEqual(expect.arrayContaining([
+      expect.objectContaining({ metric: "tvl", protocol: "spark-lend" }),
+      expect.objectContaining({ reason: expect.stringContaining("spot-only") })
+    ]));
+  });
+
+  it("exposes objective, metric, asset, and protocol validation in the MCP shape", () => {
+    const exposed = z.object(AnalyzeMarketsCoreSchema.shape);
+    expect(exposed.safeParse({
+      objective: "yield_opportunity",
+      metrics: ["borrow_tvl"],
+      protocols: ["aave-v3", "compound-v3"]
+    }).success).toBe(false);
+    expect(exposed.safeParse({
+      objective: "yield_opportunity",
+      asset: "ETH!!",
+      protocols: ["aave-v3", "compound-v3"]
+    }).success).toBe(false);
+  });
+});
 
 describe("compareMarkets", () => {
   it("returns a normalized comparison with two fixture citations", async () => {

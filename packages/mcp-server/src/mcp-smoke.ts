@@ -60,7 +60,12 @@ async function main() {
   const result = await request("tools/list", {});
   const tools = (result as { tools: Array<{ name: string }> }).tools;
   const names = tools.map((tool) => tool.name).sort();
-  const expected = ["compare_markets", "research_brief", "risk_scan"];
+  const expected = [
+    "analyze_markets",
+    "compare_markets",
+    "research_brief",
+    "risk_scan"
+  ];
 
   if (JSON.stringify(names) !== JSON.stringify(expected)) {
     throw new Error(

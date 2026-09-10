@@ -1,10 +1,16 @@
 import {
+  AnalysisObjectiveSchema,
+  AnalyzeMarketsResultSchema,
   AssetSymbolSchema,
+  analyzeMarketObservations,
   compareObservations,
   ComparisonSourceSchema,
   resolveMetricId,
   type Comparison,
+  type AnalysisGap,
+  type AnalyzeMarketsResult,
   type LiveDataSource,
+  type MarketMetricId,
   type MarketDataSource,
   ProtocolSchema
 } from "@askching/shared";
@@ -39,6 +45,122 @@ const AssetFieldSchema = z
     (value) => AssetSymbolSchema.safeParse(value.toUpperCase()).success,
     "Asset symbol must be 2-10 uppercase alphanumerics"
   );
+
+const DEFAULT_ANALYSIS_METRICS = {
+  yield_opportunity: ["supply_apy", "utilization"],
+  liquidity_stress: ["utilization", "tvl"],
+  evidence_quality: ["supply_apy", "borrow_apy", "tvl", "utilization"]
+} as const satisfies Record<z.infer<typeof AnalysisObjectiveSchema>, readonly MarketMetricId[]>;
+
+export const AnalyzeMarketsCoreSchema = z.object({
+  objective: AnalysisObjectiveSchema,
+  protocols: z.array(ProtocolSchema).min(2),
+  asset: AssetFieldSchema.optional().default("USDC"),
+  metrics: z.array(MetricFieldSchema).min(1).optional(),
+  timeframe: z.string().min(1).optional()
+});
+
+export const AnalyzeMarketsInputSchema = AnalyzeMarketsCoreSchema
+  .transform((value) => ({
+    ...value,
+    asset: AssetSymbolSchema.parse(value.asset.toUpperCase()),
+    metrics: (value.metrics ?? DEFAULT_ANALYSIS_METRICS[value.objective]).map(
+      metric => resolveMetricId(metric).metricId
+    )
+  }))
+  .superRefine((value, ctx) => {
+    const required = value.objective === "yield_opportunity"
+      ? "supply_apy"
+      : value.objective === "liquidity_stress"
+        ? "utilization"
+        : undefined;
+    if (required && !value.metrics.includes(required)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["metrics"],
+        message: `${value.objective} requires ${required}`
+      });
+    }
+  });
+
+export async function analyzeMarkets(
+  rawInput: unknown,
+  dataSource: MarketDataSource
+): Promise<AnalyzeMarketsResult> {
+  const input = AnalyzeMarketsInputSchema.parse(rawInput);
+  const observations = [];
+  const gaps: AnalysisGap[] = [];
+
+  for (const metric of input.metrics) {
+    try {
+      const values = await dataSource.getObservations(
+        metric,
+        input.protocols,
+        input.asset
+      );
+      observations.push(...values);
+      addLiveGaps(gaps, metric, dataSource);
+
+      const covered = new Set(values.map(value => value.protocol));
+      for (const protocol of input.protocols) {
+        const alreadyExplained = gaps.some(
+          gap => gap.metric === metric && gap.protocol === protocol
+        );
+        if (!covered.has(protocol) && !alreadyExplained) {
+          gaps.push({
+            metric,
+            protocol,
+            reason: `No ${input.asset} ${metric} observation returned for ${protocol}.`
+          });
+        }
+      }
+    } catch (error) {
+      const before = gaps.length;
+      addLiveGaps(gaps, metric, dataSource);
+      if (gaps.length === before) {
+        gaps.push({ metric, reason: (error as Error).message });
+      }
+    }
+  }
+
+  return AnalyzeMarketsResultSchema.parse(analyzeMarketObservations({
+    objective: input.objective,
+    asset: input.asset,
+    protocols: input.protocols,
+    metrics: input.metrics,
+    observations,
+    gaps: dedupeAnalysisGaps(gaps),
+    timeframe: input.timeframe
+  }));
+}
+
+function addLiveGaps(
+  gaps: AnalysisGap[],
+  metric: MarketMetricId,
+  dataSource: MarketDataSource
+): void {
+  const liveGaps = [...((dataSource as Partial<LiveDataSource>).lastGaps ?? [])];
+  for (const entry of liveGaps) {
+    const separator = entry.indexOf(": ");
+    gaps.push(separator === -1
+      ? { metric, reason: entry }
+      : {
+          metric,
+          protocol: ProtocolSchema.parse(entry.slice(0, separator)),
+          reason: entry.slice(separator + 2)
+        });
+  }
+}
+
+function dedupeAnalysisGaps(gaps: AnalysisGap[]): AnalysisGap[] {
+  const seen = new Set<string>();
+  return gaps.filter(gap => {
+    const key = `${gap.metric ?? ""}|${gap.protocol ?? ""}|${gap.reason}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 export const CompareMarketsCoreSchema = z.object({
   metric: MetricFieldSchema,
