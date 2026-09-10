@@ -1,7 +1,7 @@
 interface:
   display_name: "AskChing"
-  short_description: "Run cited multi-subgraph market research"
-  default_prompt: "Use $askching to compare USDC supply APY across supported protocols with citations."
+  short_description: "Compare and analyze cited DeFi market data"
+  default_prompt: "Use $askching to analyze current USDC yield opportunity across supported protocols with calculations, citations, confidence, gaps, and as-of time."
 
 policy:
   allow_implicit_invocation: false
@@ -10,7 +10,7 @@ dependencies:
   tools:
     - type: "mcp"
       value: "askching"
-      description: "AskChing MCP server for cited multi-subgraph market research"
+      description: "AskChing MCP server for cited multi-subgraph comparison and transparent market analysis"
       transport: "stdio"
       command: "npx"
       args:

@@ -12,6 +12,11 @@ describe("AskChing skill", () => {
     expect(skill).toContain("compare_markets");
     expect(skill).toContain("research_brief");
     expect(skill).toContain("risk_scan");
+    expect(skill).toContain("analyze_markets");
+    expect(skill).toContain("yield_opportunity");
+    expect(skill).toContain("liquidity_stress");
+    expect(skill).toContain("evidence_quality");
+    expect(skill).toContain("above 90%");
     expect(skill).toContain("asOf");
     expect(skill).not.toMatch(/fetch\(|query AskChing|JCNWRy|AwoxEZ/);
   });

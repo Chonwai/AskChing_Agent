@@ -1,10 +1,11 @@
 ---
 name: askching
-description: Use when a user asks to compare supported DeFi markets, request a cited multi-subgraph research brief, or scan supported protocols for metric-based risk signals through the AskChing MCP.
+description: Use when a user asks to compare or analyze supported DeFi markets, request a cited multi-subgraph research brief, or scan supported protocols for evidence-first market signals through the AskChing MCP.
 allowed-tools:
   - compare_markets
   - research_brief
   - risk_scan
+  - analyze_markets
 version: 0.1.0
 license: MIT
 compatibility:
@@ -34,10 +35,19 @@ Use AskChing as the research tool layer. Treat its cited structured output as ev
 | Compare the same metric across two or more protocols | `compare_markets` |
 | Synthesize a question into a cited brief | `research_brief` |
 | Look for peer-relative metric changes | `risk_scan` |
+| Explain yield opportunity, liquidity stress, or evidence quality with transparent calculations | `analyze_markets` |
 
 The implementation supports spot research across four metrics — `supply_apy`, `borrow_apy`, `tvl`, `utilization` — four assets — `USDC`, `USDT`, `DAI`, `WETH` — and six live protocols — `aave-v3`, `compound-v3`, `spark-lend`, `aave-v2`, `uwu-lend`, `zerolend`. `risk_scan` reports peer-relative spot signals and must not be described as historical analysis.
 
 Pass the asset in natural language (e.g. "Compare USDT supply APY" → `asset: "USDT"`). The legacy metric alias `usdc_supply_apy` still works and is equivalent to `supply_apy` + `asset: "USDC"`.
+
+For `analyze_markets`, choose one objective:
+
+- `yield_opportunity`: rank current supply APY and include utilization context.
+- `liquidity_stress`: rank utilization; below 80% is `info`, 80–90% inclusive is `watch`, and above 90% is `high`. TVL is scale context, never available liquidity.
+- `evidence_quality`: report coverage, distinct sources, timestamp skew, gaps, and confidence without claiming protocol safety.
+
+Every objective is spot research only. Preserve a requested historical timeframe as an explicit gap; never turn it into a forecast, risk score, trading instruction, or financial recommendation.
 
 ## Call pattern
 
@@ -58,9 +68,19 @@ Example input:
 }
 ```
 
+Analysis input:
+
+```json
+{
+  "objective": "liquidity_stress",
+  "asset": "USDC",
+  "protocols": ["aave-v3", "compound-v3", "spark-lend"]
+}
+```
+
 ## Evidence gate
 
-Before using a number, confirm its row includes `subgraphId`, `timestamp`, and `queryHash`. Confirm a comparison contains at least two distinct subgraph sources. If either check fails, report the evidence gap and do not rank or synthesize the values.
+Before using a number, confirm its row includes `subgraphId`, `timestamp`, and `queryHash`. Confirm a comparison or quantitative finding contains at least two distinct subgraph sources. If either check fails, report the evidence gap and do not rank or synthesize the values.
 
 If a tool returns an error or an explicit gap, relay that limitation. Do not replace it with remembered rates, inferred risk scores, or uncited market data.
 

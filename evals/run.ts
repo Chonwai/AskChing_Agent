@@ -2,12 +2,13 @@ import { readFile } from "node:fs/promises";
 
 import { createMarketDataSource } from "../packages/shared/src/index.js";
 import {
+  analyzeMarkets,
   compareMarkets,
   researchBrief,
   riskScan
 } from "../packages/mcp-server/src/tools.js";
 
-type EvalKind = "compare_markets" | "research_brief" | "risk_scan";
+type EvalKind = "compare_markets" | "research_brief" | "risk_scan" | "analyze_markets";
 type EvalProtocol =
   | "aave-v3"
   | "compound-v3"
@@ -28,8 +29,11 @@ interface EvalCase {
     timeframe?: string;
     assets?: string[];
     window?: string;
+    objective?: "yield_opportunity" | "liquidity_stress" | "evidence_quality";
+    metrics?: string[];
   };
   requireTimeframeCaveat?: boolean;
+  requireSpotOnlyGap?: boolean;
 }
 
 const cases = JSON.parse(
@@ -169,6 +173,43 @@ for (const testCase of cases) {
       testCase.id,
       "expected at least two sources"
     );
+  } else if (kind === "analyze_markets") {
+    const result = await analyzeMarkets(testCase.input, dataSource);
+    result.findings.flatMap(finding => finding.citations).forEach(
+      citation => sourceIds.add(citation.subgraphId)
+    );
+
+    assert(result.summary.length > 0, testCase.id, "expected a non-empty analysis summary");
+    assert(result.findings.length > 0, testCase.id, "expected at least one finding");
+    assert(
+      result.findings.every(
+        finding =>
+          finding.calculation.length > 0 &&
+          finding.citations.length >= 2 &&
+          finding.citations.every(
+            citation =>
+              Boolean(citation.metric) &&
+              Boolean(citation.subgraphId) &&
+              Boolean(citation.timestamp) &&
+              Boolean(citation.queryHash)
+          )
+      ),
+      testCase.id,
+      "expected every finding to have a calculation and at least two complete citations"
+    );
+    assert(
+      !Number.isNaN(Date.parse(result.asOf)),
+      testCase.id,
+      "expected a valid ISO as-of timestamp"
+    );
+    assert(sourceIds.size >= 2, testCase.id, "expected at least two distinct sources");
+    if (testCase.requireSpotOnlyGap) {
+      assert(
+        result.gaps.some(gap => gap.reason.includes("spot-only")),
+        testCase.id,
+        "expected an explicit spot-only historical gap"
+      );
+    }
   } else {
     throw new Error(`FAIL ${testCase.id}: unsupported kind '${kind}'`);
   }

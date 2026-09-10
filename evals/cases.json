@@ -147,6 +147,47 @@
         "zerolend"
       ]
     }
+  },
+  {
+    "id": "analyze-yield-opportunity",
+    "question": "Analyze the best current USDC supply-yield opportunity across Aave, Compound, and Spark.",
+    "kind": "analyze_markets",
+    "input": {
+      "objective": "yield_opportunity",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"]
+    }
+  },
+  {
+    "id": "analyze-liquidity-stress",
+    "question": "Analyze current USDC liquidity stress across Aave, Compound, and Spark.",
+    "kind": "analyze_markets",
+    "input": {
+      "objective": "liquidity_stress",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"]
+    }
+  },
+  {
+    "id": "analyze-evidence-quality",
+    "question": "Assess the evidence quality for current USDC data across Aave and Compound.",
+    "kind": "analyze_markets",
+    "input": {
+      "objective": "evidence_quality",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3"]
+    }
+  },
+  {
+    "id": "analyze-historical-intent-gap",
+    "question": "Analyze the best USDC yield opportunity over the last seven days.",
+    "kind": "analyze_markets",
+    "input": {
+      "objective": "yield_opportunity",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"],
+      "timeframe": "7d"
+    },
+    "requireSpotOnlyGap": true
   }
 ]
-

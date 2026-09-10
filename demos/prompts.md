@@ -20,6 +20,18 @@ Expected path: a fresh fan-out that surfaces the evidence structure for at least
 
 `risk_scan` is implemented as a peer-relative spot snapshot: it compares current USDC supply-market metrics across the three sources and flags outliers relative to peers at the current block. It does not read historical time-series, so the response must be explicit that this is a spot signal — a seven-day trend cannot be claimed, and trend/history analysis is an intentionally named gap rather than an inferred risk score.
 
+## Demo D — transparent yield-opportunity analysis
+
+> Analyze the best current USDC supply-yield opportunity across Aave V3, Compound V3, and Spark Lend. Show the APY spread calculation, utilization context, confidence, citations, caveats, and `asOf`.
+
+Expected path: Grok selects `analyze_markets` with `yield_opportunity`. The result ranks only comparable spot APY definitions, explains the leader-versus-runner-up spread, and cites at least two distinct sources. It is research, not a forecast or recommendation.
+
+## Demo E — explainable liquidity-stress analysis
+
+> Analyze current USDC liquidity-stress signals across Aave V3, Compound V3, and Spark Lend. Explain each utilization threshold, peer rank, TVL context, citations, and `asOf`.
+
+Expected path: `analyze_markets` uses `liquidity_stress`, labels utilization below 80% as `info`, 80–90% inclusive as `watch`, and above 90% as `high`. TVL is described only as scale context, never available liquidity or proof of safety.
+
 ## Locked live sources
 
 | Protocol | Network | Graph subgraph ID |
@@ -29,4 +41,3 @@ Expected path: a fresh fan-out that surfaces the evidence structure for at least
 | Spark Lend | Ethereum mainnet | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` |
 
 All three sources use the Messari lending schema and expose market input tokens plus lender rates. The IDs above match `packages/shared/src/source-config.ts`. Recheck index status in Graph Explorer before recording the demo.
-
