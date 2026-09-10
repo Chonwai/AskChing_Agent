@@ -53,6 +53,7 @@ interface AnalyzeMarketsInput {
   asset: string;       // normalized uppercase symbol
   metrics?: MarketMetricId[];
   objective: AnalysisObjective;
+  timeframe?: string;  // optional intent; current analysis remains spot-only
 }
 ```
 
@@ -155,7 +156,7 @@ interface AnalyzeMarketsResult {
 - Observations with different assets, metrics, units, or APY rate types are never ranked together.
 - Every supporting value must pass `MarketObservationSchema`; every citation must pass `ComparisonSourceSchema`.
 - Duplicate citations are deduplicated by protocol, asset, metric, subgraph ID, timestamp, and query hash.
-- Historical requests receive an explicit spot-only gap and no trend claim.
+- When `timeframe` is present, historical intent is preserved in an explicit gap stating that the requested window was not applied because the current analysis is spot-only. No trend claim is produced.
 
 ## Grok routing
 
