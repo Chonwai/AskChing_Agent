@@ -1,3 +1,4 @@
+export * from "./analysis.js";
 export * from "./compare.js";
 export * from "./data-source.js";
 export * from "./graph-client.js";
