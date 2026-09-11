@@ -112,6 +112,8 @@ AskChing 已經**功能完整、證據鏈嚴格、可跨平台部署**。剩下�
 | `flat` 判定用相對帶（0.5%） | 已文件化，但可能與直覺不符 | 加入絕對帶選項或文件更醒目 | 🟢 Low |
 | 無負載測試 | 未測併發 | remote HTTP 上線後測 50 併發 | 🟢 Low（serverless 自動擴展） |
 | HTTP 回應無快取 | 每次查 Graph | 可加短 TTL（如 60s）降低延遲與配額消耗 | 🟢 Low（但 demo 有感） |
+| `risk_scan` 未註冊 `outputSchema` | `register.ts` 中其餘 4 個 tool 都有，只有它沒有 | 補上讓 5 個 tool 的結構化輸出契約一致 | 🟢 Low（**非本次引入**，重構前即如此，經 diff 確認） |
+| 遠端錯誤路徑丟失 `structuredContent` | MCP `isError: true` 時整個結構化輸出（含 `gaps`）消失，只留一句文字 | 讓工具錯誤仍帶 `structuredContent.gaps`（保留 fail-closed 但恢復可診斷性） | 🟡 Medium（已改為文件說明實際症狀，根治留待後續） |
 
 ---
 
