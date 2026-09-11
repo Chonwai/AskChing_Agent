@@ -17,7 +17,8 @@
     "askching": "node --env-file=.env packages/grok-orchestrator/dist/index.js",
     "mcp:smoke": "pnpm -C packages/mcp-server build && tsx packages/mcp-server/src/mcp-smoke.ts",
     "mcp:serve": "pnpm -C packages/mcp-server build && node --env-file=.env packages/mcp-server/dist/serve.js",
-    "mcp:http:smoke": "pnpm -C packages/mcp-server build && tsx packages/mcp-server/src/http-smoke.ts"
+    "mcp:http:smoke": "pnpm -C packages/mcp-server build && tsx packages/mcp-server/src/http-smoke.ts",
+    "vercel:probe": "tsx demos/vercel-probe.ts"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
