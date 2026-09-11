@@ -140,6 +140,71 @@ Live protocol readings from `pnpm probe:protocols` on 2026-09-12 are in the tabl
 - Legacy alias `usdc_supply_apy` still resolves to `supply_apy` + `USDC`.
 - 9 registered-but-not-live protocols, each with a `note` giving the reason: `uwu-lend`, `zerolend`, `aave-amm`, `aave-arc`, `aave-rwa`, `compound-v2`, `rari-fuse`, `makerdao`, `euler`.
 
+## Corrections (2026-09-12) — read before trusting an older document
+
+A verification pass re-derived every checkable claim from the file system, the vendor's documentation, and the live API instead of trusting commit messages. It found **three real bugs** and **one false claim**. Full report: `docs/reviews/2026-09-12-verification-audit.md`.
+
+### Bug 1 — the `/api` functions used an export shape Vercel does not recognise
+
+Vercel accepts two shapes for a file under `/api` when no framework is detected:
+
+```ts
+export default { fetch(request) { return new Response(...) } }   // recognised
+export function POST(request) { ... }                            // recognised
+```
+
+We shipped `export default handler` — a bare `(request) => Response` function, which is **neither**. Vercel would fall back to the Node.js `(req, res)` handler path, which terminates a response by calling `res.end()`. Our handler only *returns* a `Response`, so `res.end()` is never called and the request hangs until the function times out.
+
+This is the classic "green locally, dead in production" failure, and `pnpm vercel:probe` did not catch it because the probe called the function directly and never exercised Vercel's framework detection.
+
+### Bug 2 — the output directory fell back to the repository root
+
+Vercel's documented rule for the "Other" preset: the output directory is `public` **if it exists**, otherwise `.` — the repository root.
+
+We had no `public/` directory, so every non-ignored file in the repo (`docs/`, `package.json`, the whole source tree) would have been served as static files on the public URL.
+
+Fixed by adding `public/index.html` (a landing page that doubles as a demo asset) and setting `outputDirectory` explicitly in `vercel.json`.
+
+### Bug 3 — `compound-v2` had a typo'd subgraph id
+
+```
+ours:     4TbqVA8p2DoBd5qDbPMwmDZv3CsJjWtxo8nVSqF2tA9a9a   ← trailing "9a"
+official: 4TbqVA8p2DoBd5qDbPMwmDZv3CsJjWtxo8nVSqF2tA9a
+```
+
+The gateway rejected it outright as an invalid subgraph id. Source of truth is Messari's `deployment/deployment.json`.
+
+### False claim — "6 live protocols"
+
+`uwu-lend` and `zerolend` were registered as live. Neither can serve USDC on mainnet:
+
+- **`uwu-lend`** — the mainnet markets are `sifu`, `sDAI`, `sSPELL`, `USDT`, `DUMMY`. There is no USDC market at all.
+- **`zerolend`** — every mainnet market returns `isActive: false` and `totalValueLockedUSD: 0`. ZeroLend's live deployments are on other networks.
+
+Worse, `MARKET_FIXTURES` contained USDC observations for both. **Fixture mode was returning numbers live mode could never reproduce** — which is a direct hit on the product's central claim. Both are now `live: false` with a precise `note`, and their fixtures are gone.
+
+Two related findings from the same sweep:
+
+- `aave-amm` has zero active mainnet markets; `aave-arc` and `aave-rwa` do serve USDC but at 0% APY and roughly $57k / $4.4k TVL. All three are recorded as non-live with the reason, so nobody re-investigates them.
+- The four older-schema entries fail with a precise cause: `Market has no indexLastUpdatedTimestamp field, which GET_MARKETS_QUERY selects`.
+
+### Invariants added so these cannot come back
+
+| Guard | Where |
+| --- | --- |
+| `/api` default export must be an object with a `fetch` method, and `config.runtime` must be `nodejs` | `demos/vercel-probe.ts` |
+| `vercel.json` must set `outputDirectory: "public"`, and `public/index.html` must exist | `demos/vercel-probe.ts` |
+| Every non-live registry entry must carry a `note`; live entries must not | `packages/shared/src/source-config.test.ts` |
+| Fixtures may only use registered **and live** protocols; every live protocol needs a USDC fixture and a `supply_apy` fixture | `packages/shared/src/fixture-live-consistency.test.ts` |
+| Every tool's protocol enum must equal `LIVE_PROTOCOLS` | `packages/grok-orchestrator/src/loop.test.ts` |
+
+`pnpm probe:protocols` is the live counterpart: it queries each registry entry through the same code path the server uses, fails only when a **live** entry cannot deliver, and flags a non-live entry that starts returning data as `notlive+` for re-evaluation.
+
+### Two habits worth keeping
+
+1. **Never hand-write the live protocol list.** It existed in two places and both drifted. It now lives only in `source-config.ts`; the Grok tool schema spreads it.
+2. **Do not add a protocol without probing it first.** `pnpm probe:protocols -- <subgraphId> <slug> --asset USDC`.
+
 ## Open constraints
 
 - Analysis is based on current spot observations; no historical time series is queried yet.
