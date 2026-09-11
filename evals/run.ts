@@ -3,12 +3,18 @@ import { readFile } from "node:fs/promises";
 import { createMarketDataSource } from "../packages/shared/src/index.js";
 import {
   analyzeMarkets,
+  analyzeTrends,
   compareMarkets,
   researchBrief,
   riskScan
 } from "../packages/mcp-server/src/tools.js";
 
-type EvalKind = "compare_markets" | "research_brief" | "risk_scan" | "analyze_markets";
+type EvalKind =
+  | "compare_markets"
+  | "research_brief"
+  | "risk_scan"
+  | "analyze_markets"
+  | "analyze_trends";
 type EvalProtocol =
   | "aave-v3"
   | "compound-v3"
@@ -34,6 +40,7 @@ interface EvalCase {
   };
   requireTimeframeCaveat?: boolean;
   requireSpotOnlyGap?: boolean;
+  requireWindowGap?: boolean;
 }
 
 const cases = JSON.parse(
@@ -208,6 +215,79 @@ for (const testCase of cases) {
         result.gaps.some(gap => gap.reason.includes("spot-only")),
         testCase.id,
         "expected an explicit spot-only historical gap"
+      );
+    }
+  } else if (kind === "analyze_trends") {
+    const result = await analyzeTrends(testCase.input, dataSource);
+    result.findings.flatMap(finding => finding.citations).forEach(
+      citation => sourceIds.add(citation.subgraphId)
+    );
+
+    assert(result.summary.length > 0, testCase.id, "expected a non-empty trend summary");
+    assert(
+      result.window === testCase.input.window,
+      testCase.id,
+      "expected the requested window to be echoed"
+    );
+    assert(
+      result.findings.length >= 2,
+      testCase.id,
+      "expected a trend finding for at least two protocols"
+    );
+    assert(
+      result.findings.every(
+        finding =>
+          finding.claim.length > 0 &&
+          finding.calculation.length > 0 &&
+          finding.points.length >= 2 &&
+          finding.citations.length >= 2 &&
+          ["rising", "falling", "flat"].includes(finding.stats.direction) &&
+          Number.isFinite(finding.stats.changePct) &&
+          Number.isFinite(finding.stats.slopePerDay) &&
+          Number.isFinite(finding.stats.volatility)
+      ),
+      testCase.id,
+      "expected every trend finding to carry a calculation, stats, at least two points, and at least two citations"
+    );
+    assert(
+      result.findings.every(finding =>
+        finding.points.every(
+          point =>
+            point.metric === result.metric &&
+            point.asset === result.asset &&
+            point.protocol === finding.protocol &&
+            Boolean(point.subgraphId) &&
+            Boolean(point.queryHash) &&
+            Boolean(point.timestamp) &&
+            typeof point.block === "number" &&
+            Number.isInteger(point.days)
+        )
+      ),
+      testCase.id,
+      "expected every trend point to carry a complete citation and a snapshot day"
+    );
+    assert(
+      result.findings.every(finding =>
+        finding.caveats.some(caveat => caveat.includes("descriptive, not a forecast"))
+      ),
+      testCase.id,
+      "expected the descriptive-not-a-forecast caveat on every finding"
+    );
+    assert(
+      !Number.isNaN(Date.parse(result.asOf)),
+      testCase.id,
+      "expected a valid ISO as-of timestamp"
+    );
+    assert(sourceIds.size >= 2, testCase.id, "expected at least two distinct sources");
+    if (testCase.requireWindowGap) {
+      assert(
+        result.gaps.some(
+          gap =>
+            gap.reason.includes(`Requested ${testCase.input.window} window`) &&
+            gap.reason.includes("available points")
+        ),
+        testCase.id,
+        "expected an explicit gap when the window exceeds the available snapshots"
       );
     }
   } else {

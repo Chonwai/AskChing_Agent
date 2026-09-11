@@ -189,5 +189,39 @@
       "timeframe": "7d"
     },
     "requireSpotOnlyGap": true
+  },
+  {
+    "id": "analyze-supply-trend",
+    "question": "How has USDC supply APY moved across Aave V3, Compound V3, and Spark Lend over the last seven days?",
+    "kind": "analyze_trends",
+    "input": {
+      "metric": "supply_apy",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"],
+      "window": "7d"
+    }
+  },
+  {
+    "id": "analyze-utilization-trend",
+    "question": "Is USDC utilization trending up at Aave V3, Compound V3, or Spark Lend over the last seven days?",
+    "kind": "analyze_trends",
+    "input": {
+      "metric": "utilization",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"],
+      "window": "7d"
+    }
+  },
+  {
+    "id": "analyze-trend-window-shortfall",
+    "question": "How has USDC supply APY moved over the last thirty days?",
+    "kind": "analyze_trends",
+    "input": {
+      "metric": "supply_apy",
+      "asset": "USDC",
+      "protocols": ["aave-v3", "compound-v3", "spark-lend"],
+      "window": "30d"
+    },
+    "requireWindowGap": true
   }
 ]
