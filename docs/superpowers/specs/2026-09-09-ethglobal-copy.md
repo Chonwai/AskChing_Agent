@@ -25,16 +25,16 @@ AskChing: Grok-Reasoning Agent for Multi-Subgraph DeFi Research
 
 ## Tagline / Short Description
 
-AskChing is a cited research agent that compares live DeFi lending metrics across multiple The Graph subgraphs using Grok.
+AskChing is a cited DeFi research agent that compares and analyzes live lending markets across multiple The Graph subgraphs using Grok — the pattern The Graph's own hackathon resources highlight for AI tooling.
 
-**字數檢查：** 122 chars（< 280 chars ✅）
+**字數檢查：** 196 chars（< 280 chars ✅）
 
 ### 備選
 
 | 版本 | Length | 說明 |
 | --- | --- | --- |
 | Ask one DeFi research question, get a normalized cross-protocol answer with citations back to live subgraphs. | 109 | ✅ |
-| A Grok-orchestrated research MCP that fans out across live subgraphs and returns evidence-traceable DeFi comparisons. | 117 | ✅ |
+| A Grok-orchestrated research MCP that fans out across live subgraphs and returns evidence-traceable DeFi analysis. | 118 | ✅ |
 
 ---
 
@@ -52,15 +52,15 @@ AskChing is a cited research agent that compares live DeFi lending metrics acros
 
 ### Paragraph 3 — How it works
 
-> Ask a question like "Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend." Grok reads the request, selects an AskChing research tool, and the agent fans out to three live Ethereum subgraphs using the Messari lending schema. Observations sharing the same metric definition and unit are ranked, and the answer carries the subgraph, block, query hash (the same query is run against each source, so the hash is the same across sources), and an explicit as-of time for each source. If fewer than two sources come back with full citations, the comparison fails closed instead of returning a partial answer.
+> Ask a question like "Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend" or "Analyze current USDC liquidity stress across those markets." Grok reads the request, selects one of four AskChing research tools (`compare_markets`, `research_brief`, `risk_scan`, `analyze_markets`), and the agent fans out to live Ethereum subgraphs using the Messari lending schema. Observations sharing the same metric definition and unit are ranked, and every answer carries subgraph ID, block, query hash (the same query runs against each source, so the hash matches), and an explicit as-of time. If fewer than two sources return full citations, the comparison fails closed instead of returning a partial answer.
 
 ### Paragraph 4 — Tech
 
-> Built with TypeScript in a pnpm monorepo: a shared normalization and evidence layer, an MCP server exposing `compare_markets`, `research_brief`, and `risk_scan` over stdio, and a Grok-orchestrated CLI that runs an OpenAI-compatible in-process tool-calling loop. All behavioral checks run under Vitest, and a deterministic fixture mode keeps the demo reproducible.
+> Built with TypeScript in a pnpm monorepo: a shared normalization and evidence layer, an MCP server exposing four research tools over stdio, and a Grok-orchestrated CLI that runs an OpenAI-compatible in-process tool-calling loop. `analyze_markets` turns spot observations into explainable findings — yield opportunity, liquidity stress, and evidence quality — each with its calculation, supporting values, metric-aware citations, confidence, caveats, and explicit gaps. All behavioral checks run under Vitest, and a deterministic fixture mode keeps the demo reproducible.
 
 ### Paragraph 5 — Future
 
-> The next step is real historical time-series queries so the risk scan can assess trend, not just peer-relative spot signals. The evidence-first design — citation enforcement, explicit gaps, and normalization — is built to scale to more protocols and more metrics.
+> AskChing is built for the direction The Graph is investing in for 2026: AI agents that treat subgraphs as a live, verifiable source of truth. Natural next steps on this foundation are real historical time-series queries so risk_scan assesses trend rather than only peer-relative spot signals, plus the Agent0/ERC-8004 agent economy and x402 agent payments. The evidence-first design — citation enforcement, explicit gaps, and normalization — scales to more protocols, metrics, and chains on the same standardized schema.
 
 ---
 
@@ -68,13 +68,14 @@ AskChing is a cited research agent that compares live DeFi lending metrics acros
 
 | Tech | 用途 |
 | --- | --- |
-| The Graph | Live subgraph fan-out（Aave V3 / Compound V3 / Spark Lend, Ethereum mainnet, Messari schema） |
+| The Graph | Live subgraph fan-out（Aave V3 / Compound V3 / Spark Lend, Ethereum mainnet, Messari standardized schema） |
 | xAI Grok | Natural-language reasoning + tool selection + synthesis |
-| Model Context Protocol (MCP) | `compare_markets` / `research_brief` / `risk_scan` over stdio |
+| Model Context Protocol (MCP) | `compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` over stdio |
 | TypeScript | 全端型別安全 |
 | pnpm monorepo | `packages/shared` / `packages/mcp-server` / `packages/grok-orchestrator` |
-| Vitest | 行為測試（comparison/evidence/risk 邏輯） |
+| Vitest | 行為測試（comparison/evidence/analysis/risk 邏輯） |
 | Subgraph Studio | Live gateway 存取（`GRAPH_API_KEY`） |
+| Agent0 / ERC-8004（future） | Agent economy discovery on The Graph（roadmap） |
 
 ---
 
