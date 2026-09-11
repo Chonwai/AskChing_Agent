@@ -3,7 +3,16 @@
 > AskChing 是一個 Grok-orchestrated research MCP over The Graph。  
 > 本文檔定義技術架構、API 契約、開發路線圖和驗收標準。
 
-> 📌 **進度（2026-09-09）：** Phase 0 ✅（live smoke 3-source）/ Phase 1a ✅（compare_markets, research_brief, risk_scan）/ Phase 1b ✅（Grok Orchestrator：loop.ts + client.ts + CLI）/ Phase 2 ✅（Spark 第三 source + settled fan-out）/ Phase 3 ✅（README + Showcase 文書 + SKILL.md）。**Phase 4（錄影 + 提交）進行中**：4.3/4.4 ✅，4.1/4.2/4.5/4.6 待執行。
+> ⚠️ **本文件部分內容已過時（2026-09-12 複核標註）。** 下方 §3–§8 的部分 schema / 契約 / 狀態區塊停在 v1.0（3 tools、單一 metric、Phase 4 未完成）。
+> **以此為準的最新事實**：
+> - MCP tools **5 個**：`compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` / `analyze_trends`
+> - 支援 4 assets × 4 metrics（`supply_apy` / `borrow_apy` / `tvl` / `utilization`）× **6 個 live 協議**
+> - 傳輸：**stdio + 遠端 Streamable HTTP**（可部署到 Vercel）
+> - 最新測試：`pnpm test` **167 passed (16 files)**；`pnpm eval` **23/23**
+> - 最新 API 契約：本文 §4.4（analyze_trends）
+> - 部署：`docs/deployment-vercel.md`；多平台：`docs/platform-integration.md`；改善藍圖：`docs/improvement-blueprint.md`
+
+> 📌 **進度（2026-09-09，歷史）：** Phase 0 ✅（live smoke 3-source）/ Phase 1a ✅（compare_markets, research_brief, risk_scan）/ Phase 1b ✅（Grok Orchestrator：loop.ts + client.ts + CLI）/ Phase 2 ✅（Spark 第三 source + settled fan-out）/ Phase 3 ✅（README + Showcase 文書 + SKILL.md）。**Phase 4（錄影 + 提交）進行中**：4.3/4.4 ✅，4.1/4.2/4.5/4.6 待執行。
 >
 > 📊 **完成度：約 88%**（技術實作 100%、Phase 0–3 100%、Showcase 文書 100%、Phase 4 ~17%、Open Questions 75%）。完整審計見 `docs/reviews/2026-09-09-blueprint-completion-audit.md`。
 

@@ -240,7 +240,7 @@ pnpm -C packages/mcp-server publish
 ## 8. 驗證
 
 ```bash
-# 建置 + stdio handshake smoke test（斷言 3 個 tool）
+# 建置 + stdio handshake smoke test（斷言 5 個 tool）
 pnpm mcp:smoke
 
 # 完整測試套件

@@ -1,5 +1,10 @@
 # AskChing — Product Overview
 
+> ⚠️ **本文件部分內容已過時（2026-09-12 複核標註）。** §5.1 的架構圖與 §5.2 交付物表仍只列 3 tools。
+> **最新事實**：MCP tools 共 **5 個**（`compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` / `analyze_trends`）；
+> 支援 stdio **與** 遠端 Streamable HTTP（可部署 Vercel，一行 URL 接入 7+ 平台）；
+> `docs/improvement-blueprint.md` 有最新的能力盤點與下一步。
+
 > **「有咩唔識就 Ask Ching。」**  
 > 一個 Grok-powered AI research agent，用自然語言即時查詢並分析多協議鏈上數據，背後由 The Graph 提供結構化 live data 支撐。
 
@@ -210,7 +215,7 @@ Grok 推理層（CLI）已驗證；AskChing MCP Server **現在**即可供其他
 
 ## 8. 未來方向（Hackathon 後，簡述）
 
-Hackathon 交付 **v1.0**：技術 + 文書 100% 交付（三 tools、Grok Orchestrator、三源、showcase 文書），均已實作；剩餘 Phase 4 錄影 + 提交。後續方向包括開放 Cursor/Codex/Gemini 接入、x402 agent payment、Standardized schema 等。詳見 `docs/engineering-spec.md` §11 Out of Scope。
+Hackathon 交付 **v1.0**：技術 + 文書 100% 交付（**五個 tools**、Grok Orchestrator、多源 fan-out、showcase 文書），均已實作；剩餘 Phase 4 錄影 + 提交。後續方向包括遠端 MCP 多平台接入（已實作）、Agent0 / ERC-8004、x402 agent payment、更多分析指標等。詳見 `docs/improvement-blueprint.md` 與 `docs/engineering-spec.md` §11 Out of Scope。
 
 ---
 
