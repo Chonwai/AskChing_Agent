@@ -18,7 +18,7 @@ Expected path: a fresh fan-out that surfaces the evidence structure for at least
 
 > Scan Aave V3, Compound V3, and Spark Lend for unusual USDC risk over seven days. Every result must state the `asOf` block timestamp.
 
-`risk_scan` is implemented as a peer-relative spot snapshot: it compares current USDC supply-market metrics across the three sources and flags outliers relative to peers at the current block. It does not read historical time-series, so the response must be explicit that this is a spot signal — a seven-day trend cannot be claimed, and trend/history analysis is an intentionally named gap rather than an inferred risk score.
+`risk_scan` is implemented as a peer-relative spot snapshot: it compares current USDC supply-market metrics across the three sources and flags outliers relative to peers at the current block. It does not read historical time-series, so the response must be explicit that this is a spot signal — a seven-day trend cannot be claimed. Historical time-series belongs to the dedicated `analyze_trends` tool (Demo F), not `risk_scan`.
 
 ## Demo D — transparent yield-opportunity analysis
 
@@ -31,6 +31,19 @@ Expected path: Grok selects `analyze_markets` with `yield_opportunity`. The resu
 > Analyze current USDC liquidity-stress signals across Aave V3, Compound V3, and Spark Lend. Explain each utilization threshold, peer rank, TVL context, citations, and `asOf`.
 
 Expected path: `analyze_markets` uses `liquidity_stress`, labels utilization below 80% as `info`, 80–90% inclusive as `watch`, and above 90% as `high`. TVL is described only as scale context, never available liquidity or proof of safety.
+
+## Demo F — cited historical trend analysis (v1.1)
+
+> How has USDC supply APY trended across Aave V3, Compound V3, and Spark Lend over the last seven days? Give each protocol's direction and change, cite every data point, and state the `asOf` time.
+
+Expected path: Grok selects `analyze_trends` with `metric: "supply_apy"`, `window: "7d"`, and the three protocols. The result returns, per protocol, a cited daily-snapshot series plus descriptive statistics — `earliest`/`latest`, `change`, `changePct`, `slopePerDay` (least-squares), `direction` (`rising`/`falling`/`flat`), `volatility`, `min`/`max` — each backed by at least two cited `MarketDailySnapshot` points carrying `subgraphId`, `block`, `timestamp`, and `queryHash`.
+
+A utilization variant:
+
+> Is USDC utilization trending up at Aave V3, Compound V3, or Spark Lend over the last seven days?
+
+Expected path: `analyze_trends` with `metric: "utilization"`, `window: "7d"`. When a protocol has fewer snapshots than the requested window, the result reports an explicit gap and computes the trend only from the available points — it never pads or extrapolates. The trend is descriptive; it is not a forecast or financial recommendation.
+
 
 ## Locked live sources
 
