@@ -19,7 +19,11 @@ AskChing 已經**功能完整、證據鏈嚴格、可跨平台部署**。剩下�
 
 ## 1. 🥇 最高投報率：擴大協議覆蓋（低成本、高敘事價值）
 
-**現況**：`LIVE_SOURCES` 已有 **6 個 live 協議**（aave-v3 / compound-v3 / spark-lend / aave-v2 / uwu-lend / zerolend）。`PROTOCOL_REGISTRY` 另有 4 筆（compound-v2 / rari-fuse / makerdao / euler）因 **schemaVersion 非 3.1.0** 而仍 `live: false`。
+**現況（2026-09-12 實測修正）**：`LIVE_SOURCES` 只有 **4 個 live 協議**（aave-v3 / compound-v3 / spark-lend / aave-v2），且每一個都用 `pnpm probe:protocols` 驗証過真的能供應 USDC。
+
+先前此處寫「6 個 live」是**錯的**：`uwu-lend` 的 mainnet 市場只有 sifu/sDAI/sSPELL/USDT（沒有 USDC），`zerolend` 的 mainnet 市場全部 `isActive=false`、TVL 0。兩者已改為 `live: false` 並附精確原因；對應的 fixture 也刪除。
+
+`PROTOCOL_REGISTRY` 現在共 13 筆：4 筆 live + 5 筆「可達但不可用」+ 4 筆舊 schema 過時。每一筆非 live 都帶 `note` 說明原因（由測試強制）。
 **對手**：The Graph 官方 showcase 的 `graph-lending-mcp` 覆蓋 90 個 deployments × 15 條鏈，官方 blog 專門寫了一篇。
 
 **為什麼這仍然划算**：
@@ -39,13 +43,26 @@ AskChing 已經**功能完整、證據鏈嚴格、可跨平台部署**。剩下�
 
 | 動作 | 檔案 | 預估 | 風險 |
 |---|---|---|---|
-| 逐一驗證既有 4 筆非 3.1.0 協議（compound-v2 / rari-fuse / makerdao / euler）可否升級 | 無（先讀 schema） | 60–90 分 | 中（可能全不相容） |
-| 加入 3.1.0-schema 協議（Morpho、Venus、Radiant 等，需先確認部署確為 3.1.0） | `packages/shared/src/source-config.ts` | 30–60 分／筆 | 中（須逐筆 live 驗證） |
-| 加 fixture 覆蓋 | `packages/shared/src/fixtures.ts` | 30 分 | 低 |
-| 更新 eval case（多協議排名） | `evals/cases.json` | 20 分 | 低 |
-| 文件更新（實際 live 協議數） | `README.md`、`SKILL.md` | 15 分 | 低 |
+| 定期跑 `pnpm probe:protocols` 確認 4 個 live 協議仍活著 | 無（一支指令） | 2 分 | 低 |
+| 查其他鏈（Base / Arbitrum / Polygon）的 Messari lending 部署 | 官方 `deployment.json` | 30 分 | 低（純查） |
+| 為跨鏈部署改 `network` 型別（目前是字面 `"mainnet"`） | `source-config.ts`、`graph-client.ts` | 2–3 小時 | 中 |
+| 新增跨鏈協議（需先 `pnpm probe:protocols -- <id> <slug>` 驗證） | `source-config.ts` | 30 分／筆 | 低（有驗證工具） |
 
-**建議做法**：一次只加 1–2 筆，每筆都跑 `pnpm live:smoke` 確認真的回得到資料才 commit。
+**已排除的候選（2026-09-12 實測，不需重複調查）**：
+
+| 候選 | schema | 為何不可用 |
+|---|---|---|
+| `uwu-lend` | 3.1.0 | mainnet 無 USDC 市場 |
+| `zerolend` | 3.1.0 | mainnet 全市場 `isActive=false`、TVL 0 |
+| `aave-amm` | 3.1.0 | 0 個 active markets |
+| `aave-arc` | 3.1.0 | 有 USDC 但 0% APY、TVL ~$57k |
+| `aave-rwa` | 3.1.0 | 有 USDC 但 0% APY、TVL ~$4.4k |
+| `compound-v2` / `rari-fuse` / `makerdao` | 2.0.1 | `Market` 無 `indexLastUpdatedTimestamp` 欄位 |
+| `euler` | 1.3.0 | 同上 |
+
+> 💡 **最高投報率的擴展方向不是「更多主網 lending」，而是「換鏈」**——Messari 有 27 個 Ethereum lending 部署，我們已檢查完可用的；但 Base / Arbitrum / Polygon 上的部署尚未調查。
+
+**建議做法**：用 `pnpm probe:protocols -- <subgraphId> <slug> --asset USDC` 逐一驗證後才加。
 
 > ⚠️ **務必誠實**：只加「實際查得到、schema 相容」的協議。加進去但查不到會產生一堆 explicit gaps，反而扣分。**用 `pnpm live:smoke` 逐一驗證後才加。**
 
@@ -154,7 +171,7 @@ Day 3（buffer）
 
 | 問題 | 答案 |
 |---|---|
-| 系統夠強嗎？ | **功能面夠**（5 tools、雙傳輸、嚴格證據鏈、可跨平台）。**規模面不夠**（6 個 live 協議、單鏈 vs 對手 90 deployments、15 鏈）。 |
+| 系統夠強嗎？ | **功能面夠**（5 tools、雙傳輸、嚴格證據鏈、可跨平台）。**規模面不夠**（4 個 live 協議、單鏈 vs 對手 90 deployments、15 鏈）。 |
 | 最該做的下一件事？ | **擴大協議覆蓋**（§1）——但真實空間是 6 → 10+，且每筆要過 schemaVersion 3.1.0 檢查。先驗既有 4 筆的死因，再逐筆加新協議。 |
 | 最 Wow 但費時？ | **Agent0 / ERC-8004**（§2）——不需付款，且是 The Graph 2026 主推方向。 |
 | 分析還缺什麼？ | Peer percentile、liquidation proximity、cross-protocol flow（§3）。 |

@@ -6,7 +6,7 @@
 > ⚠️ **本文件部分內容已過時（2026-09-12 複核標註）。** 下方 §3–§8 的部分 schema / 契約 / 狀態區塊停在 v1.0（3 tools、單一 metric、Phase 4 未完成）。
 > **以此為準的最新事實**：
 > - MCP tools **5 個**：`compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` / `analyze_trends`
-> - 支援 4 assets × 4 metrics（`supply_apy` / `borrow_apy` / `tvl` / `utilization`）× **6 個 live 協議**
+> - 支援 4 assets × 4 metrics（`supply_apy` / `borrow_apy` / `tvl` / `utilization`）× **4 個 live 協議**（實測驗証；`pnpm probe:protocols` 為証據）
 > - 傳輸：**stdio + 遠端 Streamable HTTP**（可部署到 Vercel）
 > - 最新測試：`pnpm test` **167 passed (16 files)**；`pnpm eval` **23/23**
 > - 最新 API 契約：本文 §4.4（analyze_trends）

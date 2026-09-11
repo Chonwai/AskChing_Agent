@@ -8,7 +8,7 @@ The repository was built from scratch for ETHOnline 2026 (first commit after the
 
 ## Built on The Graph, for the agent economy
 
-The Graph is the load-bearing data layer: AskChing queries live Messari Standardized Subgraphs through the Graph Gateway, then layers on Grok reasoning, metric normalization, cross-protocol ranking, and cited synthesis. Six protocols are live today (Aave V3, Compound V3, Spark Lend, Aave V2, UwU Lend, ZeroLend); the canonical three-source demo prompts use Aave V3, Compound V3, and Spark Lend. The same tools are exposed as a standard MCP server — over stdio **and** remote Streamable HTTP — so any MCP-compatible agent (Cursor, Claude, VS Code, Codex, Gemini CLI, Grok Bot, ChatGPT connectors) can call them.
+The Graph is the load-bearing data layer: AskChing queries live Messari Standardized Subgraphs through the Graph Gateway, then layers on Grok reasoning, metric normalization, cross-protocol ranking, and cited synthesis. Four protocols are live today (Aave V3, Compound V3, Spark Lend, Aave V2) — each verified to serve USDC through the same code path the server uses (`pnpm probe:protocols`). The same tools are exposed as a standard MCP server — over stdio **and** remote Streamable HTTP — so any MCP-compatible agent (Cursor, Claude, VS Code, Codex, Gemini CLI, Grok Bot, ChatGPT connectors) can call them.
 
 AskChing is designed to fit the direction The Graph is investing in for 2026: **AI agents that treat subgraphs as a live, verifiable source of truth** (Agent0/ERC-8004 agent economy, x402 agent payments, and standardized schemas are natural next steps on this foundation).
 
@@ -94,7 +94,7 @@ Authenticated live smoke test:
 pnpm live:smoke
 ```
 
-Live mode queries the Ethereum mainnet Messari lending subgraphs listed in `demos/prompts.md`. Six protocols are configured live; the canonical demo uses Aave V3, Compound V3, and Spark Lend. Missing credentials surface as a fail-closed evidence error on the MCP surface (`Need at least 2 cited sources ...`) rather than a credential message; the raw data source and the CLI still throw `GRAPH_API_KEY is required when DEMO_LIVE=1`. Failed sources are reported as explicit gaps only when at least two cited sources remain.
+Live mode queries the Ethereum mainnet Messari lending subgraphs listed in `demos/prompts.md`. Four protocols are configured live and verified to return USDC data; a naming of any other registered deployment fails closed and comes back as an explicit gap. Missing credentials surface as a fail-closed evidence error on the MCP surface (`Need at least 2 cited sources ...`) rather than a credential message; the raw data source and the CLI still throw `GRAPH_API_KEY is required when DEMO_LIVE=1`. Failed sources are reported as explicit gaps only when at least two cited sources remain.
 
 ## MCP client configuration
 
