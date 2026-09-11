@@ -207,33 +207,60 @@ Two related findings from the same sweep:
 
 ## Open constraints
 
-- Analysis is based on current spot observations; no historical time series is queried yet.
-- `tvl` is the largest matching market's USD scale proxy and must not be called available liquidity.
-- `utilization` is borrow divided by deposit and skips zero-deposit markets.
-- Live coverage depends on what each registered subgraph exposes for the requested asset and metric. Explicit gaps are expected and intentional.
-- Grok synthesis is a CLI layer; the MCP tool layer itself is cross-platform.
-- AskChing is research software only: no trading, transaction execution, or large UI.
-- Do not commit `.env`, expose API keys, or paste secrets into logs.
+- `analyze_markets`, `compare_markets`, `research_brief`, and `risk_scan` are spot-based. Only `analyze_trends` reads history, over a 7d or 30d window of cited daily snapshots. A requested historical window given to a spot-only tool becomes an explicit gap — it is never answered silently with current data.
+- `tvl` is the largest matching market's USD scale proxy. It must never be described as available liquidity.
+- `utilization` is borrow ÷ deposit and skips zero-deposit markets.
+- Live coverage depends on what each registered subgraph exposes for the requested asset and metric. Explicit gaps are expected and correct, not a failure.
+- Grok synthesis is a CLI layer; the MCP tool layer itself is transport-agnostic and works anywhere MCP does.
+- **When deployed, the endpoint is unauthenticated with no rate limit, in front of a billed key.** That is a deliberate trade-off so judges can connect directly. Add a guardrail before listing the URL publicly — see `docs/improvement-blueprint.md` §4.
+- AskChing is research software: no trading, no transaction execution, no large UI.
+- Never commit `.env`, expose API keys, or paste secrets into logs.
 
-## Next action
+## Next actions
 
-The build batch is complete. The highest-value next step is the manual hackathon recording and submission flow:
+### Chonwai — deploy the remote MCP server
 
-1. Run the pre-recording checklist in `docs/superpowers/specs/2026-09-09-pre-recording-checklist.md`.
-2. Record the 2–4 minute human-narrated live demo using Demo D or Demo E from `demos/prompts.md`, with `ASKCHING_DEBUG=1 DEMO_LIVE=1` so judges see the selected tool and cited result.
-3. Follow `docs/superpowers/plans/2026-09-09-showcase-run-script.md`, upload the video unlisted, and add its URL to the ETHGlobal form.
-4. Confirm the GitHub repo is public and the README renders correctly, then submit before the deadline.
+**This is the one thing that is implemented but unproven.** Everything else in this document has been run. Do this first.
 
-Do not claim the video or ETHGlobal submission is complete until John confirms it.
+1. `pnpm vercel:probe`, then `vercel --prod`. Framework Preset must be **Other** — settings table in `docs/deployment-vercel.md` §3.
+2. `curl https://<app>.vercel.app/api/health` → expect five fields with `"live": true`.
+3. `curl` `tools/list` against `/api/mcp` → expect five tool names.
+4. If it returns `500 Cannot find module`, the pnpm workspace `dist/` was not bundled. `packages/mcp-server/src/serve.ts` already works on a persistent host (Railway / Fly / Docker), which sidesteps Vercel's serverless constraints entirely.
+
+Environment: `DEMO_LIVE=1` + `GRAPH_API_KEY` on Production; `DEMO_LIVE=0` on Preview so previews stay deterministic. **Do not set `XAI_API_KEY` in the cloud** — the Grok layer is a CLI and does not run there.
+
+### John — demo video and submission
+
+1. Walk the pre-recording checklist: `docs/superpowers/specs/2026-09-09-pre-recording-checklist.md`.
+2. Record 2–4 minutes, human narration, ≥720p, live data. The three beats and shot list are in `docs/superpowers/plans/2026-09-12-demo-narrative.md`; Demo A–F prompts are in `demos/prompts.md`.
+3. Upload unlisted, add the URL to the ETHGlobal form, confirm the repo is public, submit.
+
+Two demo-specific notes: the strongest beat is the deliberate **fail-closed** demonstration (ask for one protocol and it refuses), and nothing should be claimed as live unless `curl /api/health` says `"live": true` first.
+
+Do not report the video or the submission as complete until John confirms.
+
+### Either of us — cheap wins
+
+`docs/improvement-blueprint.md` ranks what is left by value. The two with the best ratio:
+
+- **Different chain, not more mainnet.** All 27 Ethereum mainnet lending deployments have now been checked; Base / Arbitrum / Polygon have not been. This needs the literal `network: "mainnet"` type widened first, so it is real code.
+- **Rate dispersion** — the spread between protocols over time. A direct extension of the existing `analyze_trends` engine.
 
 ## Source-of-truth files
 
-- `README.md` — setup, usage, analysis examples
-- `docs/superpowers/specs/2026-09-10-analyze-markets-design.md` — approved design
-- `docs/superpowers/plans/2026-09-10-analyze-markets.md` — implementation checklist
-- `packages/shared/src/analysis.ts` — deterministic analysis engine
-- `packages/mcp-server/src/tools.ts` — MCP input resolution and data fan-out
-- `packages/grok-orchestrator/src/loop.ts` — Grok tool exposure and routing
-- `evals/cases.json` — 20 deterministic eval cases
-- `demos/prompts.md` — demo questions and expected paths
-- `skills/askching/SKILL.md` — thin evidence-preserving agent playbook
+Read these in this order when something is unclear; they disagree in places, and the earlier ones win.
+
+| File | Why |
+| --- | --- |
+| `HANDOFF.md` (this file) | Current state and corrections |
+| `docs/reviews/2026-09-12-verification-audit.md` | What was checked, how, and what was wrong |
+| `packages/shared/src/source-config.ts` | The only place the live protocol set is written down |
+| `packages/mcp-server/src/register.ts` | The only place the tool surface is written down |
+| `docs/deployment-vercel.md` | Deploy settings, both fixed pitfalls, troubleshooting |
+| `docs/platform-integration.md` | Per-platform connection config for 8 clients |
+| `docs/improvement-blueprint.md` | What is left, ranked, with the ruled-out candidates |
+| `evals/cases.json` | 23 behavioural cases |
+| `demos/prompts.md` | Demo A–F and the locked source ids |
+| `skills/askching/SKILL.md` | Thin agent playbook |
+
+Known-stale documents, kept only as history. Each carries a banner saying so: `docs/engineering-spec.md` (stops at v1.0), `docs/product-overview.md` (§5 predates the extra tools). Do not update them casually — rewrite or delete them, but do not half-edit.
