@@ -1,5 +1,6 @@
 import {
   analyzeMarkets,
+  analyzeTrends,
   compareMarkets,
   researchBrief,
   riskScan
@@ -58,6 +59,19 @@ export interface OrchestratorResult {
   toolCalls: ToolExecution[];
 }
 
+/**
+ * Single source for the protocol enum repeated by every tool definition, so
+ * adding a protocol is one edit instead of five.
+ */
+const LIVE_PROTOCOL_ENUM = [
+  "aave-v3",
+  "compound-v3",
+  "spark-lend",
+  "aave-v2",
+  "uwu-lend",
+  "zerolend"
+] as const;
+
 export const ASKCHING_TOOLS: ToolDefinition[] = [
   {
     type: "function",
@@ -84,14 +98,7 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
             type: "array",
             items: {
               type: "string",
-              enum: [
-                "aave-v3",
-                "compound-v3",
-                "spark-lend",
-                "aave-v2",
-                "uwu-lend",
-                "zerolend"
-              ]
+              enum: LIVE_PROTOCOL_ENUM
             },
             minItems: 2,
             description: "At least two LIVE protocols"
@@ -121,14 +128,7 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
             type: "array",
             items: {
               type: "string",
-              enum: [
-                "aave-v3",
-                "compound-v3",
-                "spark-lend",
-                "aave-v2",
-                "uwu-lend",
-                "zerolend"
-              ]
+              enum: LIVE_PROTOCOL_ENUM
             },
             minItems: 2
           },
@@ -157,14 +157,7 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
             type: "array",
             items: {
               type: "string",
-              enum: [
-                "aave-v3",
-                "compound-v3",
-                "spark-lend",
-                "aave-v2",
-                "uwu-lend",
-                "zerolend"
-              ]
+              enum: LIVE_PROTOCOL_ENUM
             },
             minItems: 2
           },
@@ -209,14 +202,7 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
             type: "array",
             items: {
               type: "string",
-              enum: [
-                "aave-v3",
-                "compound-v3",
-                "spark-lend",
-                "aave-v2",
-                "uwu-lend",
-                "zerolend"
-              ]
+              enum: LIVE_PROTOCOL_ENUM
             },
             minItems: 2
           },
@@ -235,6 +221,43 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
           }
         },
         required: ["objective", "protocols"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "analyze_trends",
+      description:
+        "Analyze cited daily history for a market metric over a 7d or 30d window: per-protocol change, change percent, least-squares slope per day, direction (rising/falling/flat), volatility, min/max, every cited data point, confidence, caveats, and gaps. Descriptive, not a forecast.",
+      parameters: {
+        type: "object",
+        properties: {
+          metric: {
+            type: "string",
+            description:
+              "Metric id: supply_apy | borrow_apy | tvl | utilization (legacy usdc_supply_apy also accepted)",
+            enum: ["supply_apy", "borrow_apy", "tvl", "utilization", "usdc_supply_apy"]
+          },
+          asset: { type: "string", default: "USDC" },
+          protocols: {
+            type: "array",
+            items: {
+              type: "string",
+              enum: LIVE_PROTOCOL_ENUM
+            },
+            minItems: 2,
+            description: "At least two LIVE protocols"
+          },
+          window: {
+            type: "string",
+            enum: ["7d", "30d"],
+            description:
+              "Historical window of daily snapshots. Use 7d unless the user asks for a month."
+          }
+        },
+        required: ["metric", "protocols", "window"],
         additionalProperties: false
       }
     }
@@ -309,6 +332,8 @@ async function executeTool(
   switch (name) {
     case "analyze_markets":
       return analyzeMarkets(input, dataSource);
+    case "analyze_trends":
+      return analyzeTrends(input, dataSource);
     case "compare_markets":
       return compareMarkets(input, dataSource);
     case "research_brief":

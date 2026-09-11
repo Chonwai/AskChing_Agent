@@ -53,7 +53,13 @@ describe("runGrokOrchestrator", () => {
     expect(result.toolCalls[0]?.name).toBe("compare_markets");
     expect(complete).toHaveBeenCalledTimes(2);
     expect(complete.mock.calls[0]?.[0].tools.map((tool) => tool.function.name))
-      .toEqual(["compare_markets", "research_brief", "risk_scan", "analyze_markets"]);
+      .toEqual([
+        "compare_markets",
+        "research_brief",
+        "risk_scan",
+        "analyze_markets",
+        "analyze_trends"
+      ]);
   });
 
   it("exposes generalized metric and asset parameters on ASKCHING_TOOLS", async () => {
@@ -133,5 +139,95 @@ describe("runGrokOrchestrator", () => {
 
     expect(result.toolCalls[0]?.name).toBe("analyze_markets");
     expect(result.answer).toContain("cited evidence");
+  });
+
+  it("routes a historical question to analyze_trends with a cited series", async () => {
+    const complete = vi
+      .fn<ChatCompletionClient["complete"]>()
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "trend-1",
+            type: "function",
+            function: {
+              name: "analyze_trends",
+              arguments: JSON.stringify({
+                metric: "supply_apy",
+                asset: "USDC",
+                protocols: ["aave-v3", "compound-v3", "spark-lend"],
+                window: "7d"
+              })
+            }
+          }
+        ]
+      })
+      .mockImplementationOnce(async (request) => {
+        const toolMessage = request.messages.find(
+          (message) => message.role === "tool"
+        );
+        const analysis = JSON.parse(toolMessage!.content);
+        expect(analysis.window).toBe("7d");
+        expect(analysis.findings).toHaveLength(3);
+        expect(
+          analysis.findings.every(
+            (finding: { citations: unknown[]; points: unknown[] }) =>
+              finding.citations.length >= 2 && finding.points.length === 7
+          )
+        ).toBe(true);
+        return {
+          role: "assistant",
+          content:
+            "Aave V3 supply APY rose while Compound V3 fell over the cited 7d window."
+        };
+      });
+
+    const result = await runGrokOrchestrator({
+      prompt: "How has USDC supply APY moved over the past week?",
+      client: { complete },
+      dataSource: createMarketDataSource({ DEMO_LIVE: "0" }),
+      systemPrompt: "Use AskChing tools and preserve every citation."
+    });
+
+    expect(result.toolCalls).toHaveLength(1);
+    expect(result.toolCalls[0]?.name).toBe("analyze_trends");
+    expect(result.toolCalls[0]?.arguments).toMatchObject({
+      metric: "supply_apy",
+      window: "7d"
+    });
+    expect(result.answer).toContain("7d window");
+  });
+
+  it("fails closed when analyze_trends cannot assemble two cited series", async () => {
+    const complete = vi
+      .fn<ChatCompletionClient["complete"]>()
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "trend-2",
+            type: "function",
+            function: {
+              name: "analyze_trends",
+              arguments: JSON.stringify({
+                metric: "supply_apy",
+                protocols: ["aave-v3", "zerolend"],
+                window: "7d"
+              })
+            }
+          }
+        ]
+      });
+
+    await expect(
+      runGrokOrchestrator({
+        prompt: "Trend for Aave compared with Zerolend.",
+        client: { complete },
+        dataSource: createMarketDataSource({ DEMO_LIVE: "0" }),
+        systemPrompt: "Use AskChing tools and preserve every citation."
+      })
+    ).rejects.toThrow(/at least 2 cited trend series/);
   });
 });
