@@ -16,16 +16,17 @@ Read this box, then read §Corrections before trusting any older document.
 - **5 MCP tools**, **2 transports** (local stdio + remote Streamable HTTP), **4 verified live protocols**.
 - **Remote MCP is implemented and cloud-ready** — `api/mcp.ts`, `api/health.ts`, `vercel.json`, `public/index.html`. It has **not been deployed yet**; that is Chonwai's task.
 - **42 commits** landed since the previous handoff (`9a3f592`). All pushed to `origin/main`.
-- A full independent verification pass on 2026-09-12 found and fixed **3 real bugs** and **1 false claim**. Two of the bugs would only have appeared after deployment.
+- A verification pass on 2026-09-12 re-derived every checkable claim from the file system, the vendors' documentation, and the live API instead of from commit messages. It found and fixed **3 real bugs** and **1 false claim**; two of the bugs would only have surfaced after deployment.
 - Green today: `pnpm build` 3/3, `pnpm test` **175 passed (17 files)**, `pnpm eval` **23/23**, `pnpm mcp:smoke` 5 tools, `pnpm mcp:http:smoke` 5 tools, `pnpm vercel:probe` OK, `pnpm probe:protocols` **4/4**.
 
 ## Current checkpoint
 
 - Branch `main`, tracking public `origin/main`.
-- HEAD: `40f7923` (`chore(state): record loop outcomes for the verify-and-harden batch`).
+- **`40f7923`** is the last implementation-or-state commit: `chore(state): record loop outcomes for the verify-and-harden batch`. The handoff edits you are reading follow it.
 - Previous handoff pointed at `9a3f592`; that checkpoint is superseded.
-- Working tree clean before this handoff edit. Credentials stay local in `.env` (git-ignored).
-- `.edison/state/*.md` **is tracked** in this repo, not ignored. Loop state is part of the record.
+- Working tree was clean before these handoff edits. Credentials stay local in `.env` (git-ignored).
+- `.edison/state/*.md` **is tracked** in this repo, not ignored — loop state is part of the record.
+- Full range for this handoff: `git log --oneline 9a3f592..HEAD`.
 
 ## What exists now
 
@@ -142,7 +143,7 @@ Live protocol readings from `pnpm probe:protocols` on 2026-09-12 are in the tabl
 
 ## Corrections (2026-09-12) — read before trusting an older document
 
-A verification pass re-derived every checkable claim from the file system, the vendor's documentation, and the live API instead of trusting commit messages. It found **three real bugs** and **one false claim**. Full report: `docs/reviews/2026-09-12-verification-audit.md`.
+A verification pass re-derived every checkable claim from the file system, the vendors' documentation, and the live API rather than from commit messages. That was self-review by the same agent that wrote the code, so treat the **evidence** as the source of authority, not the reviewer. It found **three real bugs** and **one false claim**. Full report: `docs/reviews/2026-09-12-verification-audit.md`.
 
 ### Bug 1 — the `/api` functions used an export shape Vercel does not recognise
 
