@@ -19,20 +19,33 @@ AskChing 已經**功能完整、證據鏈嚴格、可跨平台部署**。剩下�
 
 ## 1. 🥇 最高投報率：擴大協議覆蓋（低成本、高敘事價值）
 
-**現況**：`LIVE_SOURCES` 只有 3 個協議（aave-v3 / compound-v3 / spark-lend）。
+**現況**：`LIVE_SOURCES` 已有 **6 個 live 協議**（aave-v3 / compound-v3 / spark-lend / aave-v2 / uwu-lend / zerolend）。`PROTOCOL_REGISTRY` 另有 4 筆（compound-v2 / rari-fuse / makerdao / euler）因 **schemaVersion 非 3.1.0** 而仍 `live: false`。
 **對手**：The Graph 官方 showcase 的 `graph-lending-mcp` 覆蓋 90 個 deployments × 15 條鏈，官方 blog 專門寫了一篇。
 
-**為什麼這是最划算的一件事**：
-- Messari **標準化 schema** 的設計目的就是「同一條 query 打所有協議」——我們的 `GET_MARKETS_QUERY` 已經是協議無關的
-- 新增協議 **不需要新的查詢邏輯**，只需要：`source-config.ts` 加一筆 subgraph ID + protocol slug
-- 一次就能把「3 個協議」變成「10+ 個協議」，且**零新增程式碼路徑**
+**為什麼這仍然划算**：
+- `GET_MARKETS_QUERY` / `GET_MARKET_HISTORY_QUERY` 是**單一固定查詢**，asset / metric 都在程式碼層過濾（**非字串插值**）→ 新增同 schema 的協議**確實不需要新的查詢邏輯**
+- 變更範圍確實集中在 `packages/shared/src/source-config.ts`（`ProtocolSlug` 是開放字串 `z.string().min(1)`，`schemas.ts` 不用改）
+
+**但「只要加 subgraph ID」有兩個硬約束（實測驗證，非估計）**：
+
+| 約束 | 證據 | 影響 |
+|---|---|---|
+| 必須是 Messari **3.1.0** lending schema | `source-config.test.ts:21` 斷言 `schemaVersion === "3.1.0"` | 可擴充範圍被鎖定在這個 schema family，不是「所有協議」 |
+| `network` 目前是 **字面型別 mainnet** | `source-config.ts:6` | 跨鏈覆蓋需要改型別（＝改程式碼路徑） |
+
+> ⚠️ **佐證**：既有 4 筆非 3.1.0 條目標註「需欄位級驗證後再啟用」且至今仍 `live: false`——**10 個 ID 只活 6 個**，直接否證「加 ID 就等於覆蓋」。
+>
+> 📌 **因此真實剩餘空間是 6 → 10+（不是 3 → 10+）**，且每筆都要先通過 schemaVersion 3.1.0 + 欄位級 live 驗證。
 
 | 動作 | 檔案 | 預估 | 風險 |
 |---|---|---|---|
-| 加入 6–9 個 Messari lending 協議（Morpho、Venus、Radiant 等） | `packages/shared/src/source-config.ts` | 30–60 分 | 低（schema 相容才加；不相容就跳過） |
+| 逐一驗證既有 4 筆非 3.1.0 協議（compound-v2 / rari-fuse / makerdao / euler）可否升級 | 無（先讀 schema） | 60–90 分 | 中（可能全不相容） |
+| 加入 3.1.0-schema 協議（Morpho、Venus、Radiant 等，需先確認部署確為 3.1.0） | `packages/shared/src/source-config.ts` | 30–60 分／筆 | 中（須逐筆 live 驗證） |
 | 加 fixture 覆蓋 | `packages/shared/src/fixtures.ts` | 30 分 | 低 |
 | 更新 eval case（多協議排名） | `evals/cases.json` | 20 分 | 低 |
-| 文件更新（protocol 數量） | `README.md`、`SKILL.md` | 15 分 | 低 |
+| 文件更新（實際 live 協議數） | `README.md`、`SKILL.md` | 15 分 | 低 |
+
+**建議做法**：一次只加 1–2 筆，每筆都跑 `pnpm live:smoke` 確認真的回得到資料才 commit。
 
 > ⚠️ **務必誠實**：只加「實際查得到、schema 相容」的協議。加進去但查不到會產生一堆 explicit gaps，反而扣分。**用 `pnpm live:smoke` 逐一驗證後才加。**
 
@@ -79,8 +92,7 @@ AskChing 已經**功能完整、證據鏈嚴格、可跨平台部署**。剩下�
 | 動作 | 說明 | 預估 | 價值 |
 |---|---|---|---|
 | **發佈到 npm** | `@askching/mcp-server` 已在 `package.json` 備好 `files: ["dist"]`、`prepack`。發佈後可用 `npx -y @askching/mcp-server` | 30 分 | 🔥🔥 |
-| **提交到 MCP registry / 清單** | Smithery、`awesome-mcp-servers`、`modelcontextprotocol/servers` | 1 小時 | 🔥🔥🔥（評審可自己裝） |
-| **官網 landing page** | Vercel 上放一頁展示 5 個工具 + 一行接入 + live demo 連結 | 2–3 小時 | 🔥🔥 |
+| **提交到 MCP registry / 清單** | Smithery、`awesome-mcp-servers`、`modelcontextprotocol/servers` | 1 小時 | 🔥🔥🔥（評審可自己裝） || **官網 landing page** | Vercel 上放一頁展示 5 個工具 + 一行接入 + live demo 連結 | 2–3 小時 | 🔥🔥 |
 | **OAuth 保護 endpoint** | MCP SDK `withMcpAuth` + RFC 9728 metadata | 2–3 小時 | P2（demo 不需） |
 | **Rate limit** | Vercel Firewall 或 in-handler token bucket | 1 小時 | P2 |
 
@@ -118,16 +130,17 @@ AskChing 已經**功能完整、證據鏈嚴格、可跨平台部署**。剩下�
 ```
 Day 1（今天）
   ├─ ✅ 遠端 MCP + Vercel 部署（已完成）
-  ├─ ○ 擴大協議覆蓋（§1）← 最高投報率，先做
-  └─ ○ README / ETHGlobal copy 更新（反映 remote MCP + 協議數）
+  ├─ ○ 診斷既有 4 筆非 3.1.0 協議（§1）← 先搞清為何 10 個 ID 只活 6 個
+  └─ ○ README / ETHGlobal copy 更新（反映 remote MCP + 實際協議數）
 
 Day 2
+  ├─ ○ 逐筆新增 3.1.0-schema 協議（每筆 live:smoke 驗證後才 commit）
   ├─ ○ Rate dispersion 分析（§3，最容易的深度延伸）
   ├─ ○ npm 發佈（§4）
   └─ ○ Demo 錄影（隊友負責）
 
 Day 3（buffer）
-  ├─ ○ 提交到 MCP registry（§4）
+  ├─ ○ 提交到 MCP registry（§4）——**先加認證護欄**（見 §4 註）
   └─ ○ 最終提交
 ```
 
@@ -137,8 +150,8 @@ Day 3（buffer）
 
 | 問題 | 答案 |
 |---|---|
-| 系統夠強嗎？ | **功能面夠**（5 tools、雙傳輸、嚴格證據鏈、可跨平台）。**規模面不夠**（3 協議 vs 對手 90）。 |
-| 最該做的下一件事？ | **擴大協議覆蓋**（§1）——30–60 分鐘、零新程式碼路徑、直接縮小與官方 showcase 的差距。 |
+| 系統夠強嗎？ | **功能面夠**（5 tools、雙傳輸、嚴格證據鏈、可跨平台）。**規模面不夠**（6 個 live 協議、單鏈 vs 對手 90 deployments、15 鏈）。 |
+| 最該做的下一件事？ | **擴大協議覆蓋**（§1）——但真實空間是 6 → 10+，且每筆要過 schemaVersion 3.1.0 檢查。先驗既有 4 筆的死因，再逐筆加新協議。 |
 | 最 Wow 但費時？ | **Agent0 / ERC-8004**（§2）——不需付款，且是 The Graph 2026 主推方向。 |
 | 分析還缺什麼？ | Peer percentile、liquidation proximity、cross-protocol flow（§3）。 |
 | 有什麼是「不做也對」？ | x402、Substreams、GRC-20、自建 UI（§6）。 |
