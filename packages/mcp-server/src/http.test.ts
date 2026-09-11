@@ -136,6 +136,36 @@ describe("remote MCP transport (streamable HTTP)", () => {
     expect(response.headers.get("access-control-allow-origin")).toBe("*");
     expect(response.headers.get("access-control-allow-methods")).toContain("POST");
   });
+
+  it("rejects methods it cannot serve with 405 instead of an empty 200", async () => {
+    // GET would otherwise open a standalone SSE stream (a 200 with an empty
+    // body once the stateless transport closes) and DELETE is meaningless
+    // without sessions. Both must be refused explicitly.
+    for (const method of ["GET", "DELETE", "PUT"]) {
+      const response = await createHandler()(
+        new Request("http://localhost/api/mcp", {
+          method,
+          headers: { Accept: ACCEPT }
+        })
+      );
+
+      expect(response.status).toBe(405);
+      expect(response.headers.get("allow")).toBe("POST, OPTIONS");
+      expect(response.headers.get("access-control-allow-origin")).toBe("*");
+      await expect(response.json()).resolves.toMatchObject({
+        error: { code: -32000 }
+      });
+    }
+  });
+
+  it("does not advertise or issue a session id, and narrows CORS methods", async () => {
+    const response = await createHandler()(
+      new Request("http://localhost/api/mcp", { method: "OPTIONS" })
+    );
+
+    expect(response.headers.get("access-control-allow-methods")).toBe("POST, OPTIONS");
+    expect(response.headers.get("access-control-expose-headers")).toBeNull();
+  });
 });
 
 describe("server metadata", () => {

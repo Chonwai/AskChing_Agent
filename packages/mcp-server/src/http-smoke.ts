@@ -1,8 +1,8 @@
 import { createServer } from "node:http";
-import { Readable } from "node:stream";
 
 import { ASKCHING_TOOL_NAMES } from "./register.js";
 import { createAskChingHttpHandler, describeAskChingServer } from "./http.js";
+import { toWebRequest, writeWebResponse } from "./node-adapter.js";
 
 /**
  * End-to-end smoke test for the remote (Streamable HTTP) transport.
@@ -14,29 +14,11 @@ import { createAskChingHttpHandler, describeAskChingServer } from "./http.js";
 
 const handler = createAskChingHttpHandler({ environment: { DEMO_LIVE: "0" } });
 
-function toRequest(req: import("node:http").IncomingMessage, base: string): Request {
-  const url = new URL(req.url ?? "/", base);
-  const headers = new Headers();
-  for (const [key, value] of Object.entries(req.headers)) {
-    if (Array.isArray(value)) for (const item of value) headers.append(key, item);
-    else if (value !== undefined) headers.set(key, value);
-  }
-  const init: RequestInit = { method: req.method ?? "GET", headers };
-  if (req.method !== "GET" && req.method !== "HEAD") {
-    init.body = Readable.toWeb(req) as ReadableStream;
-    (init as RequestInit & { duplex: "half" }).duplex = "half";
-  }
-  return new Request(url, init);
-}
-
 const server = createServer((req, res) => {
   const base = `http://${req.headers.host ?? "localhost"}`;
   void (async () => {
     try {
-      const response = await handler(toRequest(req, base));
-      res.statusCode = response.status;
-      response.headers.forEach((value, key) => res.setHeader(key, value));
-      res.end(Buffer.from(await response.arrayBuffer()));
+      await writeWebResponse(await handler(toWebRequest(req, base)), res);
     } catch (error) {
       res.statusCode = 500;
       res.end((error as Error).message);

@@ -18,15 +18,19 @@ export interface HttpHandlerOptions {
   corsOrigin?: string;
 }
 
-const CORS_METHODS = "GET, POST, DELETE, OPTIONS";
-const CORS_HEADERS = "Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID, Authorization";
+// This server is stateless and answers with JSON, so POST is the only method
+// that can do useful work. GET (standalone SSE stream) and DELETE (session
+// termination) are deliberately not offered.
+const CORS_METHODS = "POST, OPTIONS";
+const ALLOWED_METHODS = "POST, OPTIONS";
+const CORS_HEADERS =
+  "Content-Type, Accept, Mcp-Protocol-Version, Authorization";
 
 function corsHeaders(origin: string): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": CORS_METHODS,
     "Access-Control-Allow-Headers": CORS_HEADERS,
-    "Access-Control-Expose-Headers": "Mcp-Session-Id",
     "Access-Control-Max-Age": "86400"
   };
 }
@@ -53,6 +57,31 @@ export function createAskChingHttpHandler(
       return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
 
+    // Only POST is supported. Without this guard the SDK would answer GET with a
+    // 200 and an open (then immediately closed) standalone SSE stream, and
+    // DELETE with an empty 200 - both meaningless for a stateless, JSON-only
+    // server. A 405 is the honest answer.
+    if (request.method !== "POST") {
+      return new Response(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: null,
+          error: {
+            code: -32000,
+            message: `Method ${request.method} is not supported; use POST.`
+          }
+        }),
+        {
+          status: 405,
+          headers: {
+            "Content-Type": "application/json",
+            Allow: ALLOWED_METHODS,
+            ...corsHeaders(origin)
+          }
+        }
+      );
+    }
+
     const dataSource = createMarketDataSource(
       options.environment ?? (process.env as AskChingEnvironment)
     );
@@ -69,9 +98,10 @@ export function createAskChingHttpHandler(
       enableJsonResponse: true
     });
 
-    await server.connect(transport);
-
     try {
+      // connect() lives inside the try so a future SDK change that makes it
+      // throw still releases the server.
+      await server.connect(transport);
       const response = await transport.handleRequest(request);
       const headers = new Headers(response.headers);
       for (const [key, value] of Object.entries(corsHeaders(origin))) {
