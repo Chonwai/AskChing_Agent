@@ -144,3 +144,75 @@ export const AnalyzeMarketsResultSchema = z.object({
   asOf: z.string().datetime()
 });
 export type AnalyzeMarketsResult = z.infer<typeof AnalyzeMarketsResultSchema>;
+
+// ── Trend Analysis (v1.1) ─────────────────────────────────────────
+// Time-series counterpart of the spot-only analysis above: every historical
+// point keeps the same citation invariant, and each finding must be backed by
+// at least two cited points.
+export const TrendWindowSchema = z.enum(["7d", "30d"]);
+export type TrendWindow = z.infer<typeof TrendWindowSchema>;
+
+/**
+ * Single source of truth for how deep a window looks back. Both the fixture
+ * and live data sources slice their history with this value, so the MCP window
+ * label and the actual query depth cannot drift apart.
+ */
+export const TREND_WINDOW_DAYS: Record<TrendWindow, number> = {
+  "7d": 7,
+  "30d": 30
+};
+
+/** A historical point = a full MarketObservation plus its snapshot day index. */
+export const TrendPointSchema = MarketObservationSchema.extend({
+  days: z.number().int().nonnegative()
+});
+export type TrendPoint = z.infer<typeof TrendPointSchema>;
+
+export const TrendSeriesSchema = z.object({
+  protocol: ProtocolSchema,
+  metric: MarketMetricIdSchema,
+  unit: UnitSchema,
+  points: z.array(TrendPointSchema).min(2)
+});
+export type TrendSeries = z.infer<typeof TrendSeriesSchema>;
+
+export const TrendDirectionSchema = z.enum(["rising", "falling", "flat"]);
+export type TrendDirection = z.infer<typeof TrendDirectionSchema>;
+
+export const TrendStatsSchema = z.object({
+  latest: z.number().finite(),
+  earliest: z.number().finite(),
+  min: z.number().finite(),
+  max: z.number().finite(),
+  change: z.number().finite(),
+  changePct: z.number().finite(),
+  slopePerDay: z.number().finite(),
+  direction: TrendDirectionSchema,
+  volatility: z.number().finite()
+});
+export type TrendStats = z.infer<typeof TrendStatsSchema>;
+
+export const TrendFindingSchema = z.object({
+  severity: AnalysisSeveritySchema,
+  protocol: ProtocolSchema,
+  claim: z.string().min(1),
+  calculation: z.string().min(1),
+  stats: TrendStatsSchema,
+  points: z.array(TrendPointSchema).min(2),
+  citations: z.array(AnalysisCitationSchema).min(2),
+  confidence: AnalysisConfidenceSchema,
+  caveats: z.array(z.string())
+});
+export type TrendFinding = z.infer<typeof TrendFindingSchema>;
+
+export const AnalyzeTrendsResultSchema = z.object({
+  metric: MarketMetricIdSchema,
+  asset: AssetSymbolSchema,
+  protocols: z.array(ProtocolSchema).min(2),
+  window: TrendWindowSchema,
+  summary: z.string().min(1),
+  findings: z.array(TrendFindingSchema).min(1),
+  gaps: z.array(AnalysisGapSchema),
+  asOf: z.string().datetime()
+});
+export type AnalyzeTrendsResult = z.infer<typeof AnalyzeTrendsResultSchema>;
