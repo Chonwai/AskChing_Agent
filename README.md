@@ -98,6 +98,26 @@ Live mode queries the Aave V3, Compound V3, and Spark Lend Ethereum subgraphs li
 
 ## MCP client configuration
 
+AskChing runs over **two transports from one shared tool registration**: local stdio, and remote **Streamable HTTP** so cloud agents (Grok Bot, ChatGPT connectors, Claude connectors) can reach it without installing anything.
+
+### Remote (deployed)
+
+Deploy with `vercel --prod` (see [`docs/deployment-vercel.md`](docs/deployment-vercel.md)), then use a URL:
+
+```json
+{
+  "mcpServers": {
+    "askching": {
+      "url": "https://<app>.vercel.app/api/mcp"
+    }
+  }
+}
+```
+
+The same URL works in Claude, Cursor, VS Code, Codex, Gemini CLI / Antigravity, Grok Bot, and ChatGPT connectors — per-platform settings are in [`docs/platform-integration.md`](docs/platform-integration.md). `stdio`-only clients can bridge it with `npx -y mcp-remote <url>`.
+
+### Local (stdio)
+
 Build first, then replace the placeholder path in this Cursor/Claude-style configuration:
 
 ```json
@@ -116,7 +136,15 @@ Build first, then replace the placeholder path in this Cursor/Claude-style confi
 }
 ```
 
-For live use, change `DEMO_LIVE` to `1` and pass `GRAPH_API_KEY` through the client’s secret environment configuration. MCP uses stdout for protocol messages; diagnostics belong on stderr.
+### Local (HTTP, no deploy)
+
+```bash
+pnpm mcp:serve        # http://localhost:8787/api/mcp  (+ GET /health)
+pnpm mcp:http:smoke   # end-to-end handshake over real HTTP
+pnpm vercel:probe     # validates api/mcp.ts the way Vercel invokes it
+```
+
+For live use, set `DEMO_LIVE=1` and pass `GRAPH_API_KEY` through the client's secret environment configuration (or the platform's environment variables). MCP uses stdout for protocol messages on stdio; diagnostics belong on stderr.
 
 ## Current scope
 
@@ -130,8 +158,12 @@ The official Subgraph MCP helps agents discover schemas and query individual sub
 
 - [Canonical three-source prompts](demos/prompts.md)
 - [2:55 recording runbook](docs/superpowers/plans/2026-09-09-showcase-run-script.md)
+- [Multi-platform demo narrative (3 wow moments)](docs/superpowers/plans/2026-09-12-demo-narrative.md)
 - [Ready-to-copy ETHGlobal submission text](docs/superpowers/specs/2026-09-09-ethglobal-copy.md)
 - [Pre-recording and pre-submission checklist](docs/superpowers/specs/2026-09-09-pre-recording-checklist.md)
+- [Deploy as a remote MCP server (Vercel)](docs/deployment-vercel.md)
+- [Connect from 7+ AI platforms](docs/platform-integration.md)
+- [Improvement blueprint](docs/improvement-blueprint.md)
 
 ## License
 

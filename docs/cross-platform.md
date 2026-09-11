@@ -1,16 +1,22 @@
 # AskChing 跨平台整合指南
 
-> 版本: v0.1.0｜ 建立日期: 2026-09-09｜ 狀態: publish-ready（未實際發布）
+> 版本: v0.2.0｜ 建立日期: 2026-09-09｜ 更新: 2026-09-12｜ 狀態: publish-ready（未實際發布）
 > 對應 Loop: loop-cross-platform-skills-packaging
+> **更新（2026-09-12）：** AskChing 現在除了 stdio，也支援**遠端 Streamable HTTP**。遠端部署見 `docs/deployment-vercel.md`，多平台接入見 `docs/platform-integration.md`。
 
 ## 1. 價值主張
 
-`@askching/mcp-server` 是一個**標準 stdio MCP server**。它不綁定任何特定平台——只要平台支援 MCP（Model Context Protocol），發布後就能用**一行 config** 接入。
+`@askching/mcp-server` 是一個**標準 MCP server**，提供**兩種傳輸**。它不綁定任何特定平台——只要平台支援 MCP（Model Context Protocol）就能接入。
+
+| 傳輸 | 適用 | 接入方式 |
+| --- | --- | --- |
+| **stdio** | 本機 client（Cursor / Claude Desktop / Codex） | 啟動子程序 |
+| **Streamable HTTP** | 雲端 client（Grok Bot、ChatGPT connectors）+ 任何支援遠端 MCP 的平台 | 一行 URL |
 
 AskChing 的「可重用性」證明分兩層：
 
-1. **Config 形狀**：同一份 MCP server，在 5+ 個 AI 平台用幾乎相同的 config 接入。
-2. **可運行驗證**：本地 `pnpm mcp:smoke` 證明 stdio handshake 與 3 個 tool 真實可用。
+1. **Config 形狀**：同一份 MCP server，在 7+ 個 AI 平台用幾乎相同的 config 接入。
+2. **可運行驗證**：`pnpm mcp:smoke`（stdio）與 `pnpm mcp:http:smoke`（HTTP）都證明 handshake 與 5 個 tool 真實可用。
 
 > ⚠️ **重要**：本文件描述的 `npx -y @askching/mcp-server` 一行 config 是**發布後**的 showcase 形式。在 `@askching/shared` 與 `@askching/mcp-server` 尚未發布前，請使用 §5 的**本地（免發布）config**。
 
@@ -25,7 +31,13 @@ AskChing 的「可重用性」證明分兩層：
 | Codex | `~/.codex/config.toml` | `[mcp_servers.*]` | ✅ |
 | Gemini CLI | `.gemini/settings.json` | `mcpServers` | ✅ |
 
-所有平台都透過 **stdio transport** 啟動同一個 `@askching/mcp-server`，因此 tool 名稱（`compare_markets` / `research_brief` / `risk_scan`）在各平台一致。
+所有平台都接入同一個 `@askching/mcp-server`，因此 tool 名稱（`compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` / `analyze_trends`）在各平台一致。
+
+> **遠端接入（v0.2.0）**：部署後可用一行 URL 取代下面的 stdio config：
+> ```json
+> { "mcpServers": { "askching": { "url": "https://<app>.vercel.app/api/mcp" } } }
+> ```
+> 各平台的 URL 欄位名稱不同（VS Code 用 `type: http`、Codex 用 `url`、Gemini CLI 用 `httpUrl`），完整對照見 `docs/platform-integration.md`。
 
 ## 3. 各平台一行 config（發布後）
 
@@ -238,7 +250,18 @@ pnpm test
 cd packages/mcp-server && npm pack --dry-run
 ```
 
-`mcp-smoke` 輸出 `mcp-smoke OK: askching (3 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
+`mcp-smoke` 輸出 `mcp-smoke OK: askching (5 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
+
+遠端（HTTP）的對應驗證：
+
+```bash
+# 本機 HTTP server + 端到端 smoke（initialize / tools/list / tools/call）
+pnpm mcp:serve
+pnpm mcp:http:smoke     # → mcp-http-smoke OK: askching (5 tools, transport=streamable-http, findings=3)
+
+# 驗證 Vercel serverless 入口（同一種 Web 簽名）
+pnpm vercel:probe       # → vercel-probe OK: api/mcp.ts and api/health.ts are deployable
+```
 
 > **⚠️ 注意**：驗證 tarball 請用 `npm pack --dry-run`（pnpm 不支援 `pack --dry-run` flag），且需在 `packages/mcp-server` 目錄內執行（在 repo root 執行會 pack 整個 private workspace）。
 
@@ -254,5 +277,5 @@ Grok orchestration（`@askching/grok-orchestrator`）目前是 **CLI**（`pnpm a
 
 | 層 | 現況 | Roadmap |
 |----|------|---------|
-| MCP server（工具層） | ✅ 跨平台可用（本文件 §3-§7） | — |
+| MCP server（工具層） | ✅ 跨平台可用（本文件 §3-§7）；**亦支援遠端 Streamable HTTP** | — |
 | Grok orchestrator（推理層） | CLI + in-process | MCP server 化，跨平台可用 |
