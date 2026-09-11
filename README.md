@@ -1,10 +1,16 @@
 # AskChing
 
-AskChing is a Grok-orchestrated research MCP for ETHOnline 2026. It fans out across live The Graph subgraphs, normalizes comparable market metrics, and returns analysis with source citations and an explicit as-of time.
+AskChing is a Grok-orchestrated research MCP for ETHOnline 2026. It fans out across live The Graph subgraphs, normalizes comparable market metrics, and returns analysis with source citations and an explicit as-of time. It follows the pattern The Graph's own hackathon resources highlight: a **DeFi research agent** that answers natural-language questions about live on-chain markets through multi-subgraph queries.
 
 ## Status
 
-The repository was built from scratch for ETHOnline 2026. Its four MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
+The repository was built from scratch for ETHOnline 2026 (first commit after the hackathon start). Its four MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
+
+## Built on The Graph, for the agent economy
+
+The Graph is the load-bearing data layer: AskChing queries live Messari Standardized Subgraphs (Aave V3, Compound V3, Spark Lend) through the Graph Gateway, then layers on Grok reasoning, metric normalization, cross-protocol ranking, and cited synthesis. The same tools are exposed as a standard stdio MCP server so any MCP-compatible agent — Cursor, Claude, Codex, or a future Grok-packaged server — can call them.
+
+AskChing is designed to fit the direction The Graph is investing in for 2026: **AI agents that treat subgraphs as a live, verifiable source of truth** (Agent0/ERC-8004 agent economy, x402 agent payments, and standardized schemas are natural next steps on this foundation).
 
 ## Evidence-first by design
 
