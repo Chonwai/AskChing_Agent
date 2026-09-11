@@ -25,6 +25,29 @@ interface JsonRpcResponse {
   error?: unknown;
 }
 
+/**
+ * Assert a module uses Vercel's documented `fetch` Web Standard export.
+ *
+ * A bare `export default function` is NOT that shape, and Vercel would then
+ * treat the file as a Node.js `(req, res)` handler that never calls `res.end()`.
+ * Checking it here keeps the failure local and obvious instead of showing up as
+ * a hung request in production.
+ */
+function requireFetchExport(module: unknown, label: string): (request: Request) => Promise<Response> {
+  const exported = (module as { default?: unknown }).default;
+  if (typeof exported !== "object" || exported === null) {
+    throw new Error(
+      `${label} must default-export an object with a fetch method; got ${typeof exported}. ` +
+        "Vercel only recognises `export default { fetch(request) { ... } }`."
+    );
+  }
+  const fetchFn = (exported as { fetch?: unknown }).fetch;
+  if (typeof fetchFn !== "function") {
+    throw new Error(`${label} default export has no fetch method`);
+  }
+  return fetchFn as (request: Request) => Promise<Response>;
+}
+
 async function callMcp(
   handler: (request: Request) => Promise<Response>,
   payload: unknown
@@ -43,7 +66,30 @@ async function callMcp(
 async function main() {
   const mcpModule = await import("../api/mcp.js");
   const healthModule = await import("../api/health.js");
-  const handler = mcpModule.default;
+
+  const handler = requireFetchExport(mcpModule, "api/mcp.ts");
+  requireFetchExport(healthModule, "api/health.ts");
+  console.log("export shape        OK  api/mcp.ts + api/health.ts use export default { fetch }");
+
+  // The MCP function must declare the Node.js runtime, and its max duration
+  // must not exceed what `vercel.json` gives it.
+  const mcpConfig = (mcpModule as { config?: { runtime?: string; maxDuration?: number } }).config;
+  if (mcpConfig?.runtime !== "nodejs") {
+    throw new Error(`api/mcp.ts config.runtime must be 'nodejs', got ${String(mcpConfig?.runtime)}`);
+  }
+  const vercelJson = JSON.parse(
+    await (await import("node:fs/promises")).readFile(
+      new URL("../vercel.json", import.meta.url),
+      "utf8"
+    )
+  ) as { functions?: Record<string, { maxDuration?: number }> };
+  const declaredMax = Object.values(vercelJson.functions ?? {})[0]?.maxDuration;
+  if (declaredMax !== undefined && (mcpConfig?.maxDuration ?? 0) > declaredMax) {
+    throw new Error(
+      `api/mcp.ts maxDuration (${String(mcpConfig?.maxDuration)}) exceeds vercel.json (${declaredMax})`
+    );
+  }
+  console.log(`config              OK  runtime=nodejs maxDuration=${String(mcpConfig?.maxDuration)}`);
 
   const initialized = await callMcp(handler, {
     jsonrpc: "2.0",
@@ -88,8 +134,10 @@ async function main() {
   }
   console.log(`tools/call          OK  analyze_trends -> ${findings.length} cited findings`);
 
-  const health = healthModule.default();
-  const info = (await health.json()) as Record<string, unknown>;
+  const info = (await (healthModule as { default: { fetch: () => Response } }).default.fetch().json()) as Record<
+    string,
+    unknown
+  >;
   console.log(`health              OK  ${JSON.stringify(info)}`);
 
   console.log("\nvercel-probe OK: api/mcp.ts and api/health.ts are deployable");
