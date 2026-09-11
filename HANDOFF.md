@@ -1,101 +1,144 @@
 ---
 title: AskChing handoff
-updated: 2026-09-11
-checkpoint: 9a3f592
-status: analyze-markets-complete
+updated: 2026-09-12
+checkpoint: 40f7923
+status: remote-mcp-shipped-protocols-verified
 ---
 
 # AskChing handoff
 
-Updated: 2026-09-11 (Asia/Hong_Kong)
+Updated: 2026-09-12 (Asia/Hong_Kong)
+
+## TL;DR for the incoming teammate
+
+Read this box, then read §Corrections before trusting any older document.
+
+- **5 MCP tools**, **2 transports** (local stdio + remote Streamable HTTP), **4 verified live protocols**.
+- **Remote MCP is implemented and cloud-ready** — `api/mcp.ts`, `api/health.ts`, `vercel.json`, `public/index.html`. It has **not been deployed yet**; that is Chonwai's task.
+- **42 commits** landed since the previous handoff (`9a3f592`). All pushed to `origin/main`.
+- A full independent verification pass on 2026-09-12 found and fixed **3 real bugs** and **1 false claim**. Two of the bugs would only have appeared after deployment.
+- Green today: `pnpm build` 3/3, `pnpm test` **175 passed (17 files)**, `pnpm eval` **23/23**, `pnpm mcp:smoke` 5 tools, `pnpm mcp:http:smoke` 5 tools, `pnpm vercel:probe` OK, `pnpm probe:protocols` **4/4**.
 
 ## Current checkpoint
 
-- Branch: `main`, tracking the public `origin/main`.
-- Published implementation HEAD: `9a3f592` (`docs: add evidence-first market analysis workflow`).
-- `origin/main` matched that implementation HEAD before this handoff-only commit.
-- Working tree was clean before editing this file; credentials remain local in `.env`.
-- This handoff supersedes the `bd4d951` plan-ready checkpoint.
+- Branch `main`, tracking public `origin/main`.
+- HEAD: `40f7923` (`chore(state): record loop outcomes for the verify-and-harden batch`).
+- Previous handoff pointed at `9a3f592`; that checkpoint is superseded.
+- Working tree clean before this handoff edit. Credentials stay local in `.env` (git-ignored).
+- `.edison/state/*.md` **is tracked** in this repo, not ignored. Loop state is part of the record.
 
-## What was built in this batch
+## What exists now
 
-AskChing now has a fourth MCP tool, `analyze_markets`, and the Grok CLI can select and execute it from natural language. It turns registered spot observations into explainable findings rather than a black-box score.
+### MCP tool surface (5 tools, one registration)
 
-### Analysis objectives
+All five are registered from a single source — `packages/mcp-server/src/register.ts` — so the stdio server and the remote HTTP server can never drift apart.
 
-- `yield_opportunity`: ranks comparable current supply APYs, calculates the leader/runner-up spread, and adds the leader's utilization context.
-- `liquidity_stress`: ranks current utilization; below 80% is `info`, 80–90% inclusive is `watch`, and above 90% is `high`. Optional TVL is explicitly scale context, not available liquidity.
-- `evidence_quality`: reports requested observation coverage, distinct cited sources, timestamp skew, explicit gaps, and `high`/`medium`/`low` confidence.
+| Tool | Answers | Time dimension |
+| --- | --- | --- |
+| `compare_markets` | Which protocol has the best rate right now | spot |
+| `research_brief` | A cited brief for one metric/asset | spot |
+| `risk_scan` | Peer-relative spot signals + explicit time-series gap | spot |
+| `analyze_markets` | `yield_opportunity` / `liquidity_stress` / `evidence_quality` | spot, with calculation + confidence + gaps |
+| `analyze_trends` | 7d / 30d daily history: change, changePct, least-squares slope, direction, volatility | **historical** |
 
-### Evidence and safety behavior
+The three-layer story the demo leans on: compare (now) → analyze (now, explained) → analyze_trends (how it got here).
 
-- Every quantitative finding contains its calculation, supporting observations, metric-aware citations, confidence, caveats, and `asOf`.
-- Quantitative comparisons require at least two distinct cited subgraph sources and reject mixed assets, units, metrics, or APY rate definitions.
-- Missing protocol/metric observations and failed live sources become explicit gaps when an analysis can still satisfy its evidence gate.
-- Historical intent such as `7d` is preserved as a `spot-only` gap. The tool never presents current observations as a trend, forecast, safety verdict, or financial recommendation.
-- The MCP server now advertises four tools: `analyze_markets`, `compare_markets`, `research_brief`, and `risk_scan`.
+### Two transports from one registration
 
-### Judge-facing additions
-
-- Four deterministic analysis evals: yield opportunity, liquidity stress, evidence quality, and historical-intent gap.
-- Two demo prompts for transparent yield and stress analysis.
-- Updated README, thin AskChing skill, and OpenAI skill metadata with analysis selection rules and guardrails.
-
-## Commits in the analysis batch
-
-- `cd5453f` docs: design transparent market analysis tool
-- `cced6ce` docs(handoff): checkpoint market analysis design
-- `e5bdef4` fix(spec): make analysis citations metric-aware
-- `cadbfe2` fix(spec): preserve historical analysis intent
-- `bd4d951` docs: plan evidence-first market analysis
-- `82ca55c` docs(handoff): checkpoint market analysis plan
-- `c9e1e99` feat(shared): add market analysis contracts
-- `8226275` feat(shared): analyze cited yield opportunities
-- `926d562` feat(shared): analyze liquidity stress and evidence quality
-- `facb4bd` feat(mcp): expose cited market analysis
-- `335a172` feat(orchestrator): route cited market analysis
-- `9a3f592` docs: add evidence-first market analysis workflow
-
-All implementation commits above were pushed separately to public `origin/main`; history was not squashed.
-
-## Fresh verification evidence
-
-Run from repository root at `9a3f592` on 2026-09-11:
-
-```text
-pnpm test      -> 99/99 passed (13 files)
-pnpm build     -> all 3 workspace packages built successfully
-pnpm eval      -> 20/20 passed
-pnpm mcp:smoke -> OK: askching (4 tools)
-git diff --check -> clean
+```
+register.ts ──┬── index.ts      stdio   → local clients (Cursor / Claude Desktop / Codex)
+              └── http.ts       Web     → api/mcp.ts → Vercel → Claude, Cursor, VS Code,
+                                         Codex, Gemini CLI/Antigravity, Grok Bot, ChatGPT
+                    └── node-adapter.ts → serve.ts (local) / http-smoke.ts
 ```
 
-Credentialed live analytical smoke also passed:
+`http.ts` uses the MCP SDK's `WebStandardStreamableHTTPServerTransport` in **stateless** mode (`sessionIdGenerator: undefined`, a fresh server + transport per request). That is not a preference — the SDK throws if a stateless transport is reused, and statelessness is what makes the server safe on a platform that may not keep the process alive.
+
+Only `POST` is served. `GET` and `DELETE` return `405` with `Allow: POST, OPTIONS`.
+
+### Verified live protocols (4)
+
+Verified on 2026-09-12 through the same code path the server uses. `pnpm probe:protocols` is the evidence.
+
+| Protocol | Subgraph id | Live USDC reading at verification |
+| --- | --- | --- |
+| `aave-v3` | `JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk` | supply 3.554%, utilization 91.85% |
+| `compound-v3` | `AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9` | supply 4.249%, utilization 90.32% |
+| `spark-lend` | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` | supply 3.542%, utilization 92.21% |
+| `aave-v2` | `C2zniPn45RnLDGzVeGZCx2Sw3GXrbc9gL4ZfL8B8Em2j` | supply 0.502%, utilization 30.08% |
+
+`PROTOCOL_REGISTRY` holds 13 entries: 4 live, 5 reachable-but-unusable, 4 on an older schema. **Every non-live entry must carry a `note` explaining why** — enforced by test. The registry is the only place the live set is written down; the Grok tool schema derives its protocol enum from it.
+
+### Historical note: the analyze_markets batch
+
+Kept for context only. The previous handoff described this batch as the current state; it is now several batches behind.
+
+- Fourth tool added (`analyze_markets`) with objectives `yield_opportunity`, `liquidity_stress`, and `evidence_quality`. Each finding carries its calculation, supporting observations, metric-aware citations, confidence, caveats, and `asOf`.
+- Historical intent such as `7d` is preserved as a **spot-only gap** rather than being quietly answered with current data.
+- Quantitative comparisons require ≥2 distinct cited subgraph sources and reject mixed assets, units, metrics, or APY rate definitions.
+
+That behaviour is unchanged today. What changed since: a fifth tool (`analyze_trends`), the remote HTTP transport, the Vercel entry points, and the protocol correction described in §Corrections.
+
+## Commit history since the previous handoff
+
+**42 commits** from `904a680` to `40f7923`. Full list: `git log --oneline 9a3f592..HEAD`. Grouped by batch:
+
+| Batch | Range | What it did |
+| --- | --- | --- |
+| Competitive research | `06bc1fa` → `beb6edd` | ETHOnline prize structure, past winners, and the differentiation read against the official `graph-lending-mcp` showcase |
+| Historical trends | `fddd0aa` → `60634c7` | Messari `MarketDailySnapshot` feasibility research, then the `analyze_trends` tool |
+| Remote MCP + Vercel | `d3d6b47` → `a9a11d3` | second transport, deploy entry points, multi-platform guide, demo narrative |
+| Verification + repair | `b0460a5` → `0a08721` | the three bug fixes and the protocol correction in §Corrections |
+| State | `c580088`, `40f7923` | loop state files |
+
+History was not squashed. Every batch was pushed to `origin/main`.
+
+## Verification evidence
+
+Re-run from the repository root at `40f7923` on 2026-09-12. These are the numbers to expect; treat anything else as a real signal.
+
+```text
+pnpm build          -> 3 of 4 workspace projects built
+pnpm test           -> 175 passed (17 files)
+pnpm eval           -> 23/23 passed
+pnpm mcp:smoke      -> mcp-smoke OK: askching (5 tools)
+pnpm mcp:http:smoke -> mcp-http-smoke OK: askching (5 tools, transport=streamable-http, findings=3)
+pnpm vercel:probe   -> vercel-probe OK: export shape, config, initialize, tools/list, tools/call, health
+pnpm probe:protocols -> 4/4 live protocols returned data
+```
+
+`pnpm live:smoke` and `pnpm askching` need `GRAPH_API_KEY` (and `XAI_API_KEY` for the latter); `pnpm probe:protocols` needs `GRAPH_API_KEY`.
+
+### Credentialed live evidence
+
+Last full live analytical run, 2026-09-11 at `9a3f592`:
 
 ```text
 ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching --
   "Analyze the best current USDC supply-yield opportunity across Aave V3,
    Compound V3, and Spark Lend. Explain utilization context and cite every source."
 
-Selected tool: analyze_markets
-Objective: yield_opportunity
+Selected tool: analyze_markets (yield_opportunity)
 Live sources: Aave V3, Compound V3, Spark Lend (3 distinct subgraphs)
-Observed leader: Compound V3, 5.556442694112% supply APY
+Leader: Compound V3, 5.556442694112% supply APY
 Runner-up: Aave V3, 3.7134735741102136%
-Calculated spread: 1.84 percentage points
+Spread: 1.84 percentage points
 Leader utilization context: 90.72479433698581%
 asOf: 2026-09-10T16:12:11.000Z, block 25948103
-Grok output included source IDs, deployment IDs, blocks, timestamps, query hashes,
-spot-only caveats, and stated that the result was not a forecast or recommendation.
 ```
 
-## Existing generalized surface
+Grok's output carried source ids, deployment ids, blocks, timestamps, query hashes, and the spot-only caveat, and stated it was not a forecast or recommendation.
 
-- 6 live protocols: `aave-v3`, `compound-v3`, `spark-lend`, `aave-v2`, `uwu-lend`, `zerolend`.
-- 4 metrics: `supply_apy`, `borrow_apy`, `tvl`, `utilization`.
-- 4 fixture/demo assets: `USDC`, `USDT`, `DAI`, `WETH`.
-- Legacy alias: `usdc_supply_apy` maps to `supply_apy` plus `USDC`.
-- 4 deferred protocols remain disabled pending field-level schema verification: `compound-v2`, `rari-fuse`, `makerdao`, `euler`.
+Live protocol readings from `pnpm probe:protocols` on 2026-09-12 are in the table in §What exists now.
+
+## Supported surface
+
+- **4 live protocols** — see the table above. Verified, not asserted.
+- **4 metrics**: `supply_apy`, `borrow_apy`, `tvl`, `utilization`.
+- **4 fixture/demo assets**: `USDC`, `USDT`, `DAI`, `WETH`.
+- **2 transports**: stdio and remote Streamable HTTP.
+- Legacy alias `usdc_supply_apy` still resolves to `supply_apy` + `USDC`.
+- 9 registered-but-not-live protocols, each with a `note` giving the reason: `uwu-lend`, `zerolend`, `aave-amm`, `aave-arc`, `aave-rwa`, `compound-v2`, `rari-fuse`, `makerdao`, `euler`.
 
 ## Open constraints
 
