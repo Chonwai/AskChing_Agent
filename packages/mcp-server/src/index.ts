@@ -2,6 +2,7 @@
 
 import {
   AnalyzeMarketsResultSchema,
+  AnalyzeTrendsResultSchema,
   ComparisonSchema,
   createMarketDataSource
 } from "@askching/shared";
@@ -10,11 +11,13 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 import {
   AnalyzeMarketsCoreSchema,
+  AnalyzeTrendsCoreSchema,
   CompareMarketsCoreSchema,
   ResearchBriefCoreSchema,
   ResearchBriefResultSchema,
   RiskScanCoreSchema,
   analyzeMarkets,
+  analyzeTrends,
   compareMarkets,
   researchBrief,
   riskScan
@@ -34,6 +37,24 @@ server.registerTool(
   },
   async (input) => {
     const result = await analyzeMarkets(input, dataSource);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      structuredContent: result
+    };
+  }
+);
+
+server.registerTool(
+  "analyze_trends",
+  {
+    title: "Analyze trends",
+    description:
+      "Analyze cited daily history for a market metric over a 7d or 30d window: per-protocol change, change percent, least-squares slope per day, direction, volatility, min/max, every cited data point, confidence, caveats, gaps, and an as-of timestamp. Descriptive, not a forecast.",
+    inputSchema: AnalyzeTrendsCoreSchema.shape,
+    outputSchema: AnalyzeTrendsResultSchema.shape
+  },
+  async (input) => {
+    const result = await analyzeTrends(input, dataSource);
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
       structuredContent: result

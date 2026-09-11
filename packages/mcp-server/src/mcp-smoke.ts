@@ -62,6 +62,7 @@ async function main() {
   const names = tools.map((tool) => tool.name).sort();
   const expected = [
     "analyze_markets",
+    "analyze_trends",
     "compare_markets",
     "research_brief",
     "risk_scan"

@@ -8,10 +8,13 @@ import { z } from "zod";
 import {
   AnalyzeMarketsCoreSchema,
   AnalyzeMarketsInputSchema,
+  AnalyzeTrendsCoreSchema,
+  AnalyzeTrendsInputSchema,
   CompareMarketsCoreSchema,
   ResearchBriefCoreSchema,
   RiskScanCoreSchema,
   analyzeMarkets,
+  analyzeTrends,
   compareMarkets,
   researchBrief,
   riskScan
@@ -326,6 +329,167 @@ describe("researchBrief", () => {
         dataSource
       )
     ).rejects.toThrow(/at least two protocols/);
+  });
+});
+
+describe("analyzeTrends", () => {
+  const fixtureSource = () => createMarketDataSource({ DEMO_LIVE: "0" });
+
+  it("returns one cited trend finding per protocol over the fixture window", async () => {
+    const result = await analyzeTrends(
+      {
+        metric: "supply_apy",
+        asset: "usdc",
+        protocols: ["aave-v3", "compound-v3", "spark-lend"],
+        window: "7d"
+      },
+      fixtureSource()
+    );
+
+    expect(result.metric).toBe("supply_apy");
+    expect(result.asset).toBe("USDC");
+    expect(result.window).toBe("7d");
+    expect(result.findings).toHaveLength(3);
+    expect(result.gaps).toEqual([]);
+    expect(result.asOf).toBe("2026-09-08T00:05:00.000Z");
+
+    const aave = result.findings.find((finding) => finding.protocol === "aave-v3")!;
+    expect(aave.stats.direction).toBe("rising");
+    expect(aave.stats.change).toBe(0.45);
+    expect(aave.stats.slopePerDay).toBeGreaterThan(0);
+    expect(aave.severity).toBe("info");
+    expect(aave.confidence).toBe("high");
+    expect(aave.points).toHaveLength(7);
+    expect(aave.citations.length).toBeGreaterThanOrEqual(2);
+    expect(aave.caveats).toContain(
+      "Historical trend is descriptive, not a forecast or financial recommendation."
+    );
+
+    const spark = result.findings.find((finding) => finding.protocol === "spark-lend")!;
+    expect(spark.stats.direction).toBe("flat");
+  });
+
+  it("raises severity for a utilization trend that moves far enough", async () => {
+    const result = await analyzeTrends(
+      {
+        metric: "utilization",
+        protocols: ["aave-v3", "compound-v3", "spark-lend"],
+        window: "7d"
+      },
+      fixtureSource()
+    );
+
+    const spark = result.findings.find((finding) => finding.protocol === "spark-lend")!;
+    expect(spark.stats.changePct).toBeCloseTo(18.589744, 6);
+    expect(spark.severity).toBe("watch");
+    expect(result.metric).toBe("utilization");
+  });
+
+  it("resolves the legacy alias and defaults the asset to USDC", () => {
+    const parsed = AnalyzeTrendsInputSchema.parse({
+      metric: "usdc_supply_apy",
+      protocols: ["aave-v3", "compound-v3"],
+      window: "7d"
+    });
+
+    expect(parsed.metric).toBe("supply_apy");
+    expect(parsed.asset).toBe("USDC");
+  });
+
+  it("turns a window wider than the available history into explicit gaps", async () => {
+    const result = await analyzeTrends(
+      {
+        metric: "supply_apy",
+        protocols: ["aave-v3", "compound-v3", "spark-lend"],
+        window: "30d"
+      },
+      fixtureSource()
+    );
+
+    expect(result.window).toBe("30d");
+    expect(result.gaps).toHaveLength(3);
+    expect(
+      result.gaps.every((gap) => gap.reason.includes("Requested 30d window has 7 usable"))
+    ).toBe(true);
+    expect(result.findings.every((finding) => finding.confidence === "medium")).toBe(true);
+  });
+
+  it("reports a requested protocol without history as an explicit gap", async () => {
+    const result = await analyzeTrends(
+      {
+        metric: "supply_apy",
+        protocols: ["aave-v3", "compound-v3", "zerolend"],
+        window: "7d"
+      },
+      fixtureSource()
+    );
+
+    expect(result.findings.map((finding) => finding.protocol)).toEqual([
+      "aave-v3",
+      "compound-v3"
+    ]);
+    expect(result.gaps).toEqual([
+      expect.objectContaining({
+        metric: "supply_apy",
+        protocol: "zerolend",
+        reason: expect.stringContaining("No USDC supply_apy history returned for zerolend")
+      })
+    ]);
+    expect(result.findings.every((finding) => finding.confidence === "medium")).toBe(true);
+  });
+
+  it("fails closed when fewer than two cited series survive", async () => {
+    await expect(
+      analyzeTrends(
+        {
+          metric: "supply_apy",
+          protocols: ["aave-v3", "zerolend"],
+          window: "7d"
+        },
+        fixtureSource()
+      )
+    ).rejects.toThrow(/at least 2 cited trend series.*zerolend/s);
+  });
+
+  it("rejects fewer than two protocols before data access", async () => {
+    const dataSource: MarketDataSource = {
+      async getObservations() {
+        throw new Error("data source should not be called");
+      },
+      async getHistory() {
+        throw new Error("data source should not be called");
+      }
+    };
+
+    await expect(
+      analyzeTrends(
+        { metric: "supply_apy", protocols: ["aave-v3"], window: "7d" },
+        dataSource
+      )
+    ).rejects.toThrow(/at least 2/);
+  });
+
+  it("exposes window, metric, and asset validation in the MCP shape", () => {
+    const exposed = z.object(AnalyzeTrendsCoreSchema.shape);
+    const protocols = ["aave-v3", "compound-v3"];
+
+    expect(
+      exposed.safeParse({ metric: "borrow_tvl", protocols, window: "7d" }).success
+    ).toBe(false);
+    expect(
+      exposed.safeParse({ metric: "supply_apy", protocols, window: "90d" }).success
+    ).toBe(false);
+    expect(
+      exposed.safeParse({
+        metric: "supply_apy",
+        asset: "ETH!!",
+        protocols,
+        window: "7d"
+      }).success
+    ).toBe(false);
+    expect(
+      exposed.safeParse({ metric: "supply_apy", protocols, window: "7d" }).success
+    ).toBe(true);
   });
 });
 

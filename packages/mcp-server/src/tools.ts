@@ -1,14 +1,18 @@
 import {
   AnalysisObjectiveSchema,
   AnalyzeMarketsResultSchema,
+  AnalyzeTrendsResultSchema,
   AssetSymbolSchema,
+  TrendWindowSchema,
   analyzeMarketObservations,
+  analyzeTrendSeries,
   compareObservations,
   ComparisonSourceSchema,
   resolveMetricId,
   type Comparison,
   type AnalysisGap,
   type AnalyzeMarketsResult,
+  type AnalyzeTrendsResult,
   type LiveDataSource,
   type MarketMetricId,
   type MarketDataSource,
@@ -160,6 +164,66 @@ function dedupeAnalysisGaps(gaps: AnalysisGap[]): AnalysisGap[] {
     seen.add(key);
     return true;
   });
+}
+
+// ── analyze_trends (v1.1) ──────────────────────────────────────────
+export const AnalyzeTrendsCoreSchema = z.object({
+  metric: MetricFieldSchema,
+  asset: AssetFieldSchema.optional().default("USDC"),
+  protocols: z.array(ProtocolSchema).min(2),
+  window: TrendWindowSchema
+});
+
+export const AnalyzeTrendsInputSchema = AnalyzeTrendsCoreSchema.transform(
+  (value) => ({
+    ...value,
+    asset: AssetSymbolSchema.parse(value.asset.toUpperCase()),
+    metric: resolveMetricId(value.metric).metricId
+  })
+);
+
+/**
+ * Time-series counterpart of `analyzeMarkets`: fetch cited history, turn
+ * coverage holes into explicit gaps, and let the analysis layer fail closed
+ * when fewer than two distinct cited series survive.
+ */
+export async function analyzeTrends(
+  rawInput: unknown,
+  dataSource: MarketDataSource
+): Promise<AnalyzeTrendsResult> {
+  const input = AnalyzeTrendsInputSchema.parse(rawInput);
+  const gaps: AnalysisGap[] = [];
+
+  const series = await dataSource.getHistory(
+    input.metric,
+    input.window,
+    input.protocols,
+    input.asset
+  );
+  addLiveGaps(gaps, input.metric, dataSource);
+
+  const covered = new Set(series.map(item => item.protocol));
+  for (const protocol of input.protocols) {
+    const alreadyExplained = gaps.some(
+      gap => gap.metric === input.metric && gap.protocol === protocol
+    );
+    if (!covered.has(protocol) && !alreadyExplained) {
+      gaps.push({
+        metric: input.metric,
+        protocol,
+        reason: `No ${input.asset} ${input.metric} history returned for ${protocol}.`
+      });
+    }
+  }
+
+  return AnalyzeTrendsResultSchema.parse(analyzeTrendSeries({
+    metric: input.metric,
+    asset: input.asset,
+    protocols: input.protocols,
+    window: input.window,
+    series,
+    gaps: dedupeAnalysisGaps(gaps)
+  }));
 }
 
 export const CompareMarketsCoreSchema = z.object({
