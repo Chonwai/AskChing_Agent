@@ -49,15 +49,79 @@
 
 ---
 
-## 3. 部署到 Vercel（3 步）
+## 3. Vercel 專案設定該怎麼選（重點）
 
-### 3.1 前置
+> 這是「NodeJS？Next.js？還是 Other？」的答案。
+
+### 3.1 一句話答案
+
+**Framework Preset 選 `Other`。不是 Next.js，也不是 `Node`。**
+
+理由：AskChing 不是前端框架專案，它是 **pnpm monorepo + `/api` 目錄函式**。
+- 選 **Next.js** → Vercel 會找 `next build`，直接失敗
+- 選 **Node** → 那是給 `server.ts` / `server.js` 進入點的（用自己的 HTTP server 監聽）
+- 選 **`Other`** → Vercel 把 `/api/` 底下每個檔案部署成一個 Function ✅
+
+實際上 Vercel 會**自動偵測**：repo 裡沒有 `next.config.*`、`vite.config.*` 等，
+所以它本來就會選 `Other`。你只要**不要手動改掉**即可。
+
+### 3.2 設定對照表
+
+到 Vercel Project → **Settings → Build and Deployment**：
+
+| 設定項 | 應該填什麼 | 為什麼 |
+|---|---|---|
+| **Framework Preset** | `Other`（自動偵測） | 我們只有 `/api` 函式 + 靜態檔，沒有前端框架 |
+| **Root Directory** | **留空**（= repo 根） | `api/`、`vercel.json`、`pnpm-workspace.yaml` 都在根目錄 |
+| **Build Command** | `pnpm build`（或用 Override 留空，讓 `vercel.json` 決定） | `vercel.json` 已指定 `buildCommand` |
+| **Output Directory** | `public` | `vercel.json` 已指定；**不可留空**（見 §3.4） |
+| **Install Command** | `pnpm install --frozen-lockfile` | `vercel.json` 已指定；Vercel 會從 `pnpm-lock.yaml` 自動偵測 pnpm |
+| **Node.js Version** | **20.x 或 22.x** | 根 `package.json` 的 `engines.node` 是 `>=20`；建議 22 LTS |
+
+到 **Settings → Environment Variables**：
+
+| 變數 | Production | Preview | 說明 |
+|---|---|---|---|
+| `DEMO_LIVE` | `1` | `0` | Production 走真數據；Preview 用 fixture 保持穩定 |
+| `GRAPH_API_KEY` | `<your key>` | 可留空 | 只有 `DEMO_LIVE=1` 時需要 |
+
+> 💡 **不需要**設定 `XAI_API_KEY`。Grok orchestrator 是 CLI，不參與遠端 MCP 服務。
+> 少一個 secret 在雲端，就少一個外洩面。
+
+### 3.3 為什麼不用 `Node` preset 或 `server.ts`
+
+Vercel 也支援「零設定 Node server」——在根目錄放 `server.ts`／`server.js`，
+Vercel 偵測到 `server.listen()` 就把整個專案變成一個 Function，接管所有路由。
+
+我們**刻意不走這條路**：
+- 一旦 Vercel 偵測到 `server.ts`，它會接管**所有**路由，`/api/*` 反而可能被蓋掉，行為變得不明確
+- `api/` 形式可以 per-route 設定（我們用 `maxDuration: 60`、`memory: 1024`）
+- `api/` 是 Vercel 的慣例寫法，除錯資源最多
+
+`packages/mcp-server/src/serve.ts` 仍然是**本機**與**常駐部署**（Railway / Fly / Docker）用的入口，不會被刪。
+
+### 3.4 ⚠️ 兩個已修正的部署坑（重要）
+
+這兩點在 2026-09-12 的複核中發現並修好，若你自己重寫部署檔請務必注意：
+
+| # | 坑 | 症狀 | 修正 |
+|---|---|---|---|
+| 1 | **`/api` 函式匯出格式錯誤** | 請求 **hang 到 timeout** | 必須是 `export default { fetch(request) { ... } }`。裸的 `export default handler`（純函式）會被當成 Node.js `(req, res)` handler，而它永遠不會呼叫 `res.end()` |
+| 2 | **Output Directory 落回 repo 根目錄** | 整個 repo（含 `docs/`、`package.json`）被**當靜態檔公開** | Vercel 的 `Other` preset 規則：有 `public/` 就用它，沒有就用 `.`。所以**必須有 `public/`**，並在 `vercel.json` 明寫 `outputDirectory` |
+
+兩個坑都已由 `pnpm vercel:probe` 斷言保護，無法回歸。
+
+---
+
+## 4. 部署到 Vercel（實際步驟）
+
+### 4.1 前置
 
 - Vercel 帳號
 - GitHub repo（本 repo）
 - （可選，live 模式）The Graph Studio 的 `GRAPH_API_KEY`
 
-### 3.2 部署
+### 4.2 部署
 
 ```bash
 # 方式 A：CLI
@@ -79,9 +143,9 @@ repo 內已備妥：
 | `api/health.ts` | 免憑證的 metadata endpoint（`/api/health`） |
 | `vercel.json` | `buildCommand: pnpm build`、`includeFiles` 打包 workspace `dist/`、`/mcp` rewrite |
 
-### 3.3 環境變數
+### 4.3 環境變數
 
-到 Vercel Project → Settings → Environment Variables：
+到 Vercel Project → Settings → Environment Variables（詳見 §3.2 對照表）：
 
 | 變數 | 值 | 說明 |
 |---|---|---|
@@ -94,7 +158,7 @@ repo 內已備妥：
 
 ---
 
-## 4. 驗證部署
+## 5. 驗證部署
 
 ```bash
 # 1) metadata（免憑證）
@@ -119,11 +183,11 @@ pnpm vercel:probe
 > ⚠️ **這個 probe 驗什麼、不驗什麼**：
 > - ✅ 驗證 handler 的**簽名語意與邏輯**（Vercel 用同一種 Web `Request`/`Response` 簽名）
 > - ❌ **不驗證部署目標的模組解析與打包**。probe 経 `tsx` 執行，會做 `.js → .ts` 重映射並用本機 workspace symlink；Vercel 上 `@askching/shared` 與 `@modelcontextprotocol/sdk` 必須能從打包的 bundle 解析得到
-> - 因此**唯一有效的部署後驗證是打 `/api/health` 與 `tools/list`**（見 §4 步驟 1–2）。若 bundle 少了相依模組，會是 §6 的 `500 Cannot find module` 而 probe 看不到。
+> - 因此**唯一有效的部署後驗証是打 `/api/health` 與 `tools/list`**（見 §5 步驟 1–2）。若 bundle 少了相依模組，會是 §7 的 `500 Cannot find module` 而 probe 看不到。
 
 ---
 
-## 5. 本機開發（不部署也能測遠端）
+## 6. 本機開發（不部署也能測遠端）
 
 ```bash
 # 啟動本機 HTTP MCP server（預設 http://localhost:8787/api/mcp）
@@ -138,7 +202,7 @@ pnpm mcp:http:smoke
 
 ---
 
-## 6. 疑難排解
+## 7. 疑難排解
 
 | 症狀 | 原因 | 解法 |
 |---|---|---|
@@ -148,11 +212,11 @@ pnpm mcp:http:smoke
 | `405 Method Not Allowed` on GET | 預期行為 | 本 server 為 stateless JSON-only，只支援 POST（standalone SSE 與 session 終止不提供）；帶 `Allow: POST, OPTIONS` |
 | 回應是 SSE 而非 JSON | client 設定了 `Accept: text/event-stream` 且強制串流 | 本 server 以 `enableJsonResponse: true` 回應 JSON；client 請帶 `Accept: application/json, text/event-stream` |
 | 首次呼叫很慢 | serverless cold start + live Graph 查詢 | 可接受；demo 前先跑一次 `curl` 預熱 |
-| 逾時 | Vercel `maxDuration` 限制 | `vercel.json` 已設 60s；若仍不足，考慮常駐部署（見 §8） |
+| 逾時 | Vercel `maxDuration` 限制 | `vercel.json` 已設 60s；若仍不足，考慮常駐部署（見 §9） |
 
 ---
 
-## 7. 安全性
+## 8. 安全性
 
 | 項目 | 現況 |
 |---|---|
@@ -169,11 +233,11 @@ pnpm mcp:http:smoke
 > - **但若要把 endpoint 提交到公開 MCP registry 清單，請先加一道極低成本護欄**（單一 bearer token 檢查，或 Vercel Firewall rate limit），否則「公開」會從 demo 便利變成**長期暴露**。
 > - 另：請勿用高配額或高權限的 key 部署公開 endpoint。
 
-> ⚠️ **Hackathon 現況**：endpoint 目前公開、無認證。這對 demo 是優點（評審可直接連），但若要用於生產需加 OAuth（見 §9 Roadmap）。
+> ⚠️ **Hackathon 現況**：endpoint 目前公開、無認證。這對 demo 是優點（評審可直接連），但若要用於生產需加 OAuth（見 §10 Roadmap）。
 
 ---
 
-## 8. 替代部署目標
+## 9. 替代部署目標
 
 同一份 `createAskChingHttpHandler()` 可移植到任何支援 Web `Request`/`Response` 的地方：
 
@@ -188,7 +252,7 @@ pnpm mcp:http:smoke
 
 ---
 
-## 9. Roadmap
+## 10. Roadmap
 
 | 項目 | 優先級 | 說明 |
 |---|---|---|
@@ -200,7 +264,7 @@ pnpm mcp:http:smoke
 
 ---
 
-## 10. 相關文件
+## 11. 相關文件
 
 | 文件 | 用途 |
 |---|---|
