@@ -22,18 +22,19 @@
 
 ## Stage Round Counters
 
-| Stage | Current Round | Max Rounds (Stop Rule) | Status |
-|---|---|---|---|
-| DISCOVER（Vercel + 平台研究） | 1 | 2 (strict) | active |
-| PLAN（部署架構 + 藍圖） | 1 | 2 (strict) | active |
-| EXECUTE（HTTP transport + 文件） | 0 | 2 (strict) | pending |
-| VERIFY（build/test/smoke + 獨立審查） | 0 | 2 (strict) | pending |
+| Stage                                 | Current Round | Max Rounds (Stop Rule) | Status  |
+| ------------------------------------- | ------------- | ---------------------- | ------- |
+| DISCOVER（Vercel + 平台研究）         | 1             | 2 (strict)             | active  |
+| PLAN（部署架構 + 藍圖）               | 1             | 2 (strict)             | active  |
+| EXECUTE（HTTP transport + 文件）      | 0             | 2 (strict)             | pending |
+| VERIFY（build/test/smoke + 獨立審查） | 0             | 2 (strict)             | pending |
 
 ## Iterations
 
 ### Iteration 0 - DISCOVER（研究結論）
 
 **Vercel 部署**
+
 - 官方路徑：`mcp-handler`（Web Request/Response 適配器）+ Next.js route handler `app/api/mcp/route.ts`
 - 傳輸：**Streamable HTTP**（非 stdio）；MCP 2026-07-28 stateless + 2025-era fallback
 - 客戶端設定：`{ "url": "https://<app>.vercel.app/api/mcp" }`
@@ -54,6 +55,7 @@
 | Gemini API / AI Studio | ✅ | Function calling（tools）— 可用 AI SDK 接 MCP |
 
 **順帶解決的懸案**
+
 - ✅ **Q1 解決**：`grok-4.6` 已由 xAI 官方文件確認為現行 model（`docs.x.ai` 範例全用 `grok-4.6`），API base `https://api.x.ai/v1` 正確
 - Grok Bot 支援 connectors/MCP → 可直接掛 AskChing 遠端 MCP server（demo 賣點）
 
@@ -61,17 +63,17 @@
 
 **技術路徑決策**：不用 `mcp-handler`（會引入 MCP SDK v2 與專案 v1.30.0 衝突），改用 SDK 自帶的 **`WebStandardStreamableHTTPServerTransport`** — Web 標準 Request/Response，Vercel / Workers / Deno / Bun 通用，且零新依賴。
 
-| # | Commit | 內容 |
-|---|---|---|
-| 1 | `d3d6b47` | refactor(mcp): 抽出 `register.ts`（stdio 與 HTTP 共用單一註冊來源） |
-| 2 | `7d8bc10` | feat(mcp): `http.ts`（Web handler）+ `serve.ts`（本機 host）+ `http-smoke.ts` |
-| 3 | `03fa61a` | feat(deploy): `api/mcp.ts` + `api/health.ts` + `vercel.json` + `demos/vercel-probe.ts` |
-| 4 | `968a4dc` | test(mcp): 7 個 HTTP transport 測試 |
-| 5–9 | `916e1e4`→`a9a11d3` | docs: Vercel 部署 / 多平台接入 / 改善藍圖 / demo 敘事 / README+cross-platform |
-| 10 | `8e7a462` | **fix**（REPAIR）: M1 405 + M6 node-adapter + L1/L4/L5 |
-| 11 | `522a519` | **docs**（REPAIR）: M2 基線修正 + L2 |
-| 12 | `b0460a5` | **docs+deploy**（REPAIR）: M3/M4/M5 + 收窄 includeFiles |
-| 13 | `f6af8dd` | docs: 殘留技術債（L3 + error-path structuredContent） |
+| #   | Commit              | 內容                                                                                   |
+| --- | ------------------- | -------------------------------------------------------------------------------------- |
+| 1   | `d3d6b47`           | refactor(mcp): 抽出 `register.ts`（stdio 與 HTTP 共用單一註冊來源）                    |
+| 2   | `7d8bc10`           | feat(mcp): `http.ts`（Web handler）+ `serve.ts`（本機 host）+ `http-smoke.ts`          |
+| 3   | `03fa61a`           | feat(deploy): `api/mcp.ts` + `api/health.ts` + `vercel.json` + `demos/vercel-probe.ts` |
+| 4   | `968a4dc`           | test(mcp): 7 個 HTTP transport 測試                                                    |
+| 5–9 | `916e1e4`→`a9a11d3` | docs: Vercel 部署 / 多平台接入 / 改善藍圖 / demo 敘事 / README+cross-platform          |
+| 10  | `8e7a462`           | **fix**（REPAIR）: M1 405 + M6 node-adapter + L1/L4/L5                                 |
+| 11  | `522a519`           | **docs**（REPAIR）: M2 基線修正 + L2                                                   |
+| 12  | `b0460a5`           | **docs+deploy**（REPAIR）: M3/M4/M5 + 收窄 includeFiles                                |
+| 13  | `f6af8dd`           | docs: 殘留技術債（L3 + error-path structuredContent）                                  |
 
 ### Iteration 2 - VERIFY（smith 獨立審查，Round 1）
 
@@ -88,6 +90,7 @@
 - M1–M6 + L1/L2/L4/L5 全部修復；L3 記入技術債（pre-existing，非本次引入）
 
 **Neo 獨立探針實證（取代無法 dispatch 的 Round-2 re-review）**：
+
 ```
 GET     405 allow=POST, OPTIONS ctype=application/json   ← 原為 200 空 SSE（M1 根治）
 DELETE  405 allow=POST, OPTIONS
@@ -102,12 +105,14 @@ POST tools: 200 5
 ## 最終結論
 
 **PASS** — AskChing 從「本機 stdio」升級為「雲端遠端 MCP + 本機 stdio 雙傳輸」：
+
 - 同一份工具註冊（`register.ts`）驅動兩種傳輸，工具面永遠一致
 - `api/mcp.ts` + `vercel.json` 可直接 `vercel --prod` 部署
 - 7+ 平台一行 URL 接入（含 **Grok Bot** 的 connectors/MCP、Gemini CLI / Antigravity 的 `httpUrl`）
 - 13 個 hackathon commits；六個 gate 全綠
 
 **流程誠實揭露（重要）**：
+
 1. **EXECUTE 階段由 Neo 直接執行**（trinity dispatch 因 `net::ERR_NETWORK_CHANGED` 失敗）。這違反「Neo 不做開發」的原則，屬網路故障下的降級執行。
 2. Round-1 獨立審查（smith）**成功**執行並發現 6 個真實 Medium（含一個真協定缺陷）——Maker ≠ Checker 在該輪成立。
 3. Round-2 re-review 因 proxy 中斷**無法 dispatch**，改由 Neo 執行 reviewer 上輪用過的相同探針。**驗證是實證的，但不是獨立第三方的**。
@@ -120,9 +125,9 @@ POST tools: 200 5
 
 ## 殘留風險（誠實標記）
 
-| 風險 | 說明 |
-|---|---|
-| Vercel bundle 解析未實證 | `includeFiles` 已收窄，但**只有實際部署後打 `/api/health` + `tools/list` 才能確認**（文件已明示，不再宣稱本地 probe 可證） |
-| Round-2 未經獨立審查 | 修復已用實證探針驗證，但缺第三方確認 |
-| endpoint 公開無認證 | 刻意的 demo 取捨，README 已揭露；registry 上架前須加護欄 |
-| MCP `isError` 丟失 `structuredContent` | 已記錄於藍圖技術債，未根治 |
+| 風險                                   | 說明                                                                                                                       |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Vercel bundle 解析未實證               | `includeFiles` 已收窄，但**只有實際部署後打 `/api/health` + `tools/list` 才能確認**（文件已明示，不再宣稱本地 probe 可證） |
+| Round-2 未經獨立審查                   | 修復已用實證探針驗證，但缺第三方確認                                                                                       |
+| endpoint 公開無認證                    | 刻意的 demo 取捨，README 已揭露；registry 上架前須加護欄                                                                   |
+| MCP `isError` 丟失 `structuredContent` | 已記錄於藍圖技術債，未根治                                                                                                 |

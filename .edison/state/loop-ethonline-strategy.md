@@ -12,21 +12,23 @@
 
 ## Stage Round Counters
 
-| Stage | Current Round | Max Rounds (Stop Rule) | Status |
-|---|---|---|---|
-| DISCOVER（深度研究） | 1 | 2 (strict) | active |
-| PLAN（策略提案） | 0 | 2 (strict) | pending |
-| EXECUTE（文件 + commit） | 0 | 2 (strict) | pending |
-| VERIFY（品質審查） | 0 | 2 (strict) | pending |
+| Stage                    | Current Round | Max Rounds (Stop Rule) | Status  |
+| ------------------------ | ------------- | ---------------------- | ------- |
+| DISCOVER（深度研究）     | 1             | 2 (strict)             | active  |
+| PLAN（策略提案）         | 0             | 2 (strict)             | pending |
+| EXECUTE（文件 + commit） | 0             | 2 (strict)             | pending |
+| VERIFY（品質審查）       | 0             | 2 (strict)             | pending |
 
 ## Iterations
 
 ### Iteration 0 - Init
+
 - Status: loop state established
 - DISCOVER 已完成（web 研究：ETHOnline 2026 async Sep 4-16 $100K+、The Graph $15K 三 track、Cannes GRC-20 得獎者、Agent0/x402/GRC-20 生態熱點）
 - 工作區 9 dirty files 已還原 → test 99/99 + eval 20/20 恢復
 
 ### Iteration 1 - EXECUTE（docs 強化）
+
 - Agent: Neo 直接執行（研究報告 + 提案 + README + ETHGlobal copy）
 - Commits:
   - `06bc1fa` docs: ETHOnline 2026 prize research（201 行研究報告）

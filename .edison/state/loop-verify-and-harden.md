@@ -14,11 +14,11 @@
 
 ## Stage Round Counters
 
-| Stage | Round | Max (Stop Rule) | Status |
-|---|---|---|---|
-| DISCOVER（Vercel 非 Next.js 部署規格） | 1 | 2 | active |
-| VERIFY（複核先前宣稱） | 1 | 2 | active |
-| EXECUTE（修正 + 改善） | 0 | 2 | pending |
+| Stage                                  | Round | Max (Stop Rule) | Status  |
+| -------------------------------------- | ----- | --------------- | ------- |
+| DISCOVER（Vercel 非 Next.js 部署規格） | 1     | 2               | active  |
+| VERIFY（複核先前宣稱）                 | 1     | 2               | active  |
+| EXECUTE（修正 + 改善）                 | 0     | 2               | pending |
 
 ## Iteration 0 - 重大發現（Vercel 部署坑）
 
@@ -38,6 +38,7 @@ export default handler   // 裸函式 (request) => Promise<Response>
 導致 `res.end()` 從未被呼叫 → 請求 hang 到 timeout。這是使用者擔心的「坑」，且是**真實存在的**。
 
 **其他確認的官方要求**：
+
 - 非框架專案必須有 `"type": "module"` 或使用 `.mjs` ✅（我們已有 `"type": "module"`）
 - 可用 `export const config = { runtime: 'nodejs', maxDuration: N }` 做 per-function 設定
 - `maxDuration` 也可在 `vercel.json` 的 `functions` 區塊設定 ✅（我們已設）
@@ -55,11 +56,13 @@ export default handler   // 裸函式 (request) => Promise<Response>
 方法：每個可用檔案系統／官方文件／真實 API 查證的事實都重跑，不採信 commit message。
 
 **發現 3 個真實 bug**：
+
 1. `/api` 函式匯出格式錯誤（`export default handler` 而非 `export default { fetch }`）→ 部署後請求會 hang 到 timeout
 2. 無 `public/` → Vercel 的 `Other` preset 把輸出目錄設為 repo 根 → 整個 repo 被當靜態檔公開
 3. `compound-v2` subgraph ID 尾巴多 `9a` → gateway 回 `invalid subgraph ID`
 
 **發現 1 個重大錯誤宣稱**：「6 個 live 協議」實為 4 個
+
 - `uwu-lend`：mainnet 市場是 sifu/sDAI/sSPELL/USDT，**沒有 USDC**
 - `zerolend`：mainnet 全市場 `isActive:false`、TVL 0
 - 且 `MARKET_FIXTURES` 有兩筆造假的 USDC 記錄 → **fixture 回傳 live 永遠無法產生的數字**
@@ -69,16 +72,16 @@ export default handler   // 裸函式 (request) => Promise<Response>
 
 ### Iteration 1 - EXECUTE（8 commits）
 
-| # | Commit | 內容 |
-|---|---|---|
-| 1 | `b7e199f` | fix(deploy): Vercel fetch Web Standard 匯出格式 + 探針斷言 |
-| 2 | `00d7873` | fix(deploy): 釘住輸出目錄 + `public/index.html` landing page |
-| 3 | `670117c` | docs: 回答 Vercel 專案設定問題（Framework Preset = Other） |
-| 4 | `eb13503` | docs: 修正 walkthrough 等過時數字與工具清單 |
-| 5 | `ad339e8` | **fix(shared): 修正 live 協議宣稱 + fixture + 兩個新不變量測試** |
-| 6 | `7f83cb7` | docs: 同步所有協議數宣稱 |
-| 7 | `34cc44c` | fix(orchestrator): enum 改為從註冊表衍生 |
-| 8 | `0a08721` | docs: 複核報告 |
+| #   | Commit    | 內容                                                             |
+| --- | --------- | ---------------------------------------------------------------- |
+| 1   | `b7e199f` | fix(deploy): Vercel fetch Web Standard 匯出格式 + 探針斷言       |
+| 2   | `00d7873` | fix(deploy): 釘住輸出目錄 + `public/index.html` landing page     |
+| 3   | `670117c` | docs: 回答 Vercel 專案設定問題（Framework Preset = Other）       |
+| 4   | `eb13503` | docs: 修正 walkthrough 等過時數字與工具清單                      |
+| 5   | `ad339e8` | **fix(shared): 修正 live 協議宣稱 + fixture + 兩個新不變量測試** |
+| 6   | `7f83cb7` | docs: 同步所有協議數宣稱                                         |
+| 7   | `34cc44c` | fix(orchestrator): enum 改為從註冊表衍生                         |
+| 8   | `0a08721` | docs: 複核報告                                                   |
 
 ### 最終驗證
 
@@ -97,6 +100,7 @@ probe:protocols  4/4 live protocols returned data
 **PASS** — 先前內容大體正確，但**外部宣稱有兩處嚴重不實**（部署方式、協議數），且這兩處正是評審與部署最會踩到的。全部已修正並加上防回歸的不變量測試。
 
 **新增的防護（無法再回歸）**：
+
 - `requireFetchExport()`：`/api` 必須是 `export default { fetch }`
 - outputDirectory + `public/` 必須存在
 - 非 live 條目必須有 `note`；live 條目不得有
@@ -104,6 +108,7 @@ probe:protocols  4/4 live protocols returned data
 - tool enum 必須等於 `LIVE_PROTOCOLS`
 
 **殘留風險**（誠實標記）：
+
 1. **仍未實際部署** → workspace 模組解析只有部署後打 `/api/health` 才能確認
 2. 跨鏈覆蓋是最高價值的擴展方向，但需先放寬字面型別 `network: "mainnet"`
 3. 遠端 `isError` 丟失 `structuredContent`（含 gaps）
