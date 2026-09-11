@@ -148,3 +148,51 @@ The Graph 官方 Hackathon Resources 頁面明示「AI Tooling」track 的獲獎
 - 🔥 要補：歷史時序分析（最 wow）+ Agent0/x402/GRC-20 風口敘事（最對齊官方）
 - 🏆 分析確實值錢：跨協議 + 跨時間的比較分析是 The Graph 評審最認可的價值
 - 📋 Finalist：ETHGlobal 官方有 Finalist 制度（獨立於 sponsor prize），值得拼
+
+---
+
+## 7. ⚠️ 關鍵競爭情報：PaulieB 的 `graph-lending-mcp`（必須差異化）
+
+**來源**：[The Graph 官方 Blog](https://thegraph.com/blog/community-builder-queried-defi-lending-protocols-subgraphs-mcp/)
+
+### 7.1 這是什麼
+
+The Graph 官方 blog（2026 早期）大篇幅推廣的 community builder PaulieB 的開源專案 `graph-lending-mcp`：
+
+- 用 **Messari 標準化 subgraphs + MCP server** 讓 AI agent 用自然語言查詢 DeFi lending 數據
+- **90 個 protocol deployments × 15 chains**
+- 19 個 tools：按 TVL 列協議、查利率、並排比較、清算事件、每日快照、錢包持倉
+- 一個 GraphQL query fan-out 到所有 subgraph endpoints
+
+### 7.2 對 AskChing 的影響（⚠️ 嚴重）
+
+**這個專案與 AskChing 高度重疊**：Messari standardized subgraphs + MCP + 自然語言 + cross-protocol fan-out。如果評審看過官方 blog 的這篇（很可能，因為這是 The Graph 官方自己推的 showcase），AskChing 會被認為是「graph-lending-mcp 的 rehash」。
+
+### 7.3 差異化策略（必須立即行動）
+
+AskChing 必須強調 graph-lending-mcp **沒有**而我們**有**的：
+
+| 面向 | graph-lending-mcp | AskChing | 差異點 |
+|---|---|---|---|
+| 覆蓋範圍 | 90 protocols × 15 chains | 6 protocols × 1 chain | ⚠️ 我們輸 |
+| 引用/證據（citation） | ❌ 無（回 raw comparable data） | ✅ **每個數字帶 subgraphId+block+timestamp+queryHash** | 🔥 我們贏 |
+| 分析層 | 19 個查詢型 tools | ✅ `analyze_markets`（yield/liquidity/evidence quality + calculation + confidence + gaps） | 🔥 我們贏 |
+| Gap detection | ❌ 無 | ✅ 缺資料轉 explicit gap、spot-only 誠實標示 | 🔥 我們贏 |
+| Fail-closed | ❌ 無 | ✅ <2 cited sources 直接 fail | 🔥 我們贏 |
+| AI 推理 | 靠 host LLM（Claude 等） | ✅ **Grok orchestrator 自帶 tool-calling loop** | 🔥 我們贏 |
+| 歷史數據 | 每日快照（有） | ❌ spot-only（弱點） | ⚠️ 待補 |
+| Agent 生態 | ❌ | ✅ roadmap：Agent0/ERC-8004 | 🔥 願景 |
+
+### 7.4 定位修正
+
+**AskChing 的新定位：不是「另一個 lending MCP」，而是「最誠實、最可驗證的 DeFi research agent」——evidence-first 是我們的核心護城河。**
+
+> 「graph-lending-mcp 讓你『問得到』，AskChing 讓你『信得過』——每個數字都可追溯到 subgraph + block + query hash，缺資料就誠實說缺，絕不編造。」
+
+Demo video 必須加入「vs graph-lending-mcp」的差異化敘事（30 秒）：展示 citation + fail-closed + gap 報告，這是對手沒有的。
+
+### 7.5 需驗證的問題
+
+- [ ] 評審是否會用 graph-lending-mcp 對比？（很可能，因為官方 blog 推過）
+- [ ] 我們是否需要加入「橫向擴展」能力（更多 protocols）來對抗 90 protocols 的覆蓋差距？→ 我們的架構設計上可以（PROTOCOL_REGISTRY 擴展），但 demo 只需展示 3-6 個就夠——覆蓋廣度不是賣點，**證據深度才是**
+- [ ] x402 + ERC-8004 整合是否值得做（對手沒有，是差異化機會）？→ 是，這是 P2 最高價值項
