@@ -6,6 +6,7 @@ import {
   riskScan
 } from "@askching/mcp-server/tools.js";
 import type { MarketDataSource } from "@askching/shared";
+import { LIVE_PROTOCOLS } from "@askching/shared";
 
 export interface FunctionToolCall {
   id: string;
@@ -60,17 +61,14 @@ export interface OrchestratorResult {
 }
 
 /**
- * Single source for the protocol enum repeated by every tool definition, so
- * adding a protocol is one edit instead of five.
+ * Single source for the protocol enum repeated by every tool definition.
+ *
+ * Derived from the registry rather than written out by hand: the hand-written
+ * copy had drifted and still advertised `uwu-lend` and `zerolend`, which are
+ * not live (neither can serve USDC). Deriving means the model can never be told
+ * a protocol is usable when `assertLiveProtocols` would reject it.
  */
-const LIVE_PROTOCOL_ENUM = [
-  "aave-v3",
-  "compound-v3",
-  "spark-lend",
-  "aave-v2",
-  "uwu-lend",
-  "zerolend"
-] as const;
+const LIVE_PROTOCOL_ENUM: readonly string[] = [...LIVE_PROTOCOLS];
 
 export const ASKCHING_TOOLS: ToolDefinition[] = [
   {

@@ -1,7 +1,8 @@
-import { createMarketDataSource } from "@askching/shared";
+import { createMarketDataSource, LIVE_PROTOCOLS } from "@askching/shared";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  ASKCHING_TOOLS,
   runGrokOrchestrator,
   type ChatCompletionClient
 } from "./loop.js";
@@ -229,5 +230,34 @@ describe("runGrokOrchestrator", () => {
         systemPrompt: "Use AskChing tools and preserve every citation."
       })
     ).rejects.toThrow(/at least 2 cited trend series/);
+  });
+});
+
+describe("ASKCHING_TOOLS protocol enum", () => {
+  it("is derived from the registry, not hand-written", () => {
+    // A hand-written copy had drifted and still advertised uwu-lend and
+    // zerolend, which are not live. The model must never be offered a protocol
+    // that assertLiveProtocols would reject.
+    for (const tool of ASKCHING_TOOLS) {
+      const protocols =
+        (tool.function.parameters as { properties?: Record<string, { items?: { enum?: unknown } }> })
+          .properties?.protocols?.items?.enum;
+      if (protocols === undefined) continue;
+      expect(protocols).toEqual([...LIVE_PROTOCOLS]);
+    }
+  });
+
+  it("offers no protocol that is not live", () => {
+    const union = new Set<string>();
+    for (const tool of ASKCHING_TOOLS) {
+      const protocols =
+        (tool.function.parameters as { properties?: Record<string, { items?: { enum?: string[] } }> })
+          .properties?.protocols?.items?.enum ?? [];
+      for (const protocol of protocols) union.add(protocol);
+    }
+    expect(union.size).toBeGreaterThan(0);
+    for (const protocol of union) {
+      expect(LIVE_PROTOCOLS).toContain(protocol);
+    }
   });
 });
