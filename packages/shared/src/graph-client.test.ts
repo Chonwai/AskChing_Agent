@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { GET_MARKETS_QUERY, GraphGatewayClient } from "./graph-client.js";
+import {
+  GET_MARKET_HISTORY_QUERY,
+  GET_MARKETS_QUERY,
+  GraphGatewayClient
+} from "./graph-client.js";
 import { LIVE_SOURCES } from "./source-config.js";
 
 const AAVE_V3 = LIVE_SOURCES[0]!;
@@ -425,3 +429,324 @@ describe("GET_MARKETS_QUERY", () => {
     expect(GET_MARKETS_QUERY).toContain("_meta");
   });
 });
+
+const HISTORY_BASE_TIMESTAMP = 1_788_825_600; // 2026-09-08T00:00:00.000Z
+const HISTORY_BASE_BLOCK = 22_100_123;
+
+function snapshot(
+  days: number,
+  rate: string,
+  extra: Record<string, unknown> = {}
+) {
+  const offset = 6 - days;
+  return {
+    days: String(days),
+    timestamp: String(HISTORY_BASE_TIMESTAMP - offset * 86_400),
+    blockNumber: String(HISTORY_BASE_BLOCK - offset * 7_200),
+    rates: [{ rate, side: "LENDER", type: "VARIABLE" }],
+    totalDepositBalanceUSD: "1000000000",
+    totalBorrowBalanceUSD: "784000000",
+    totalValueLockedUSD: "1250000000",
+    ...extra
+  };
+}
+
+function historyEnvelope(
+  dailySnapshots: unknown[],
+  options: { inputToken?: Record<string, unknown>; isActive?: boolean } = {}
+) {
+  return {
+    data: {
+      markets: [
+        {
+          inputToken: { symbol: "USDC", decimals: 6, ...options.inputToken },
+          isActive: options.isActive ?? true,
+          dailySnapshots
+        }
+      ],
+      _meta: {
+        deployment: "QmLiveDeployment",
+        block: { number: "22100123", timestamp: String(HISTORY_BASE_TIMESTAMP) }
+      }
+    }
+  } as unknown;
+}
+
+describe("GraphGatewayClient.getMarketHistory", () => {
+  const RATES = ["3.80", "3.86", "3.95", "4.02", "4.10", "4.18", "4.25"];
+
+  it("returns a cited daily series ordered oldest to newest", async () => {
+    const fetchImpl = mockFetch(
+      historyEnvelope(RATES.map((rate, days) => snapshot(days, rate)))
+    );
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    const points = await client.getMarketHistory(
+      AAVE_V3,
+      "supply_apy",
+      "USDC",
+      7
+    );
+
+    expect(points).toHaveLength(7);
+    expect(points.map((point) => point.days)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(points.map((point) => point.value)).toEqual([
+      3.8, 3.86, 3.95, 4.02, 4.1, 4.18, 4.25
+    ]);
+    expect(points.every((point) => point.metric === "supply_apy")).toBe(true);
+    expect(points.every((point) => point.asset === "USDC")).toBe(true);
+    expect(points.every((point) => point.unit === "percent")).toBe(true);
+    expect(points.every((point) => point.rateType === "variable")).toBe(true);
+    expect(points.every((point) => point.protocol === "aave-v3")).toBe(true);
+
+    // Every point must carry a complete citation, and blocks must increase.
+    for (const point of points) {
+      expect(point.subgraphId).toBe(AAVE_V3.subgraphId);
+      expect(point.deploymentId).toBe("QmLiveDeployment");
+      expect(point.queryHash).toMatch(/^sha256:[a-f0-9]{64}$/);
+      expect(point.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+    }
+    for (let index = 1; index < points.length; index += 1) {
+      expect(points[index]!.block!).toBeGreaterThan(points[index - 1]!.block!);
+      expect(points[index]!.timestamp > points[index - 1]!.timestamp).toBe(true);
+    }
+  });
+
+  it("slices the series to the requested window", async () => {
+    const fetchImpl = mockFetch(
+      historyEnvelope(RATES.map((rate, days) => snapshot(days, rate)))
+    );
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    const points = await client.getMarketHistory(
+      AAVE_V3,
+      "supply_apy",
+      "USDC",
+      3
+    );
+
+    expect(points.map((point) => point.days)).toEqual([4, 5, 6]);
+    expect(points.map((point) => point.value)).toEqual([4.1, 4.18, 4.25]);
+  });
+
+  it("derives utilization snapshots from borrow/deposit balances", async () => {
+    const fetchImpl = mockFetch(
+      historyEnvelope([
+        snapshot(0, "0", {
+          rates: null,
+          totalDepositBalanceUSD: "1000000000",
+          totalBorrowBalanceUSD: "780000000"
+        }),
+        snapshot(1, "0", {
+          rates: null,
+          totalDepositBalanceUSD: "1000000000",
+          totalBorrowBalanceUSD: "925000000"
+        })
+      ])
+    );
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    const points = await client.getMarketHistory(
+      AAVE_V3,
+      "utilization",
+      "USDC",
+      7
+    );
+
+    expect(points.map((point) => point.value)).toEqual([78, 92.5]);
+    expect(points.every((point) => point.unit === "percent")).toBe(true);
+    expect(points.every((point) => point.rateType === undefined)).toBe(true);
+  });
+
+  it("skips snapshots whose rates are empty instead of inventing a value", async () => {
+    const fetchImpl = mockFetch(
+      historyEnvelope([
+        snapshot(0, "3.80"),
+        snapshot(1, "3.86", { rates: [] }),
+        snapshot(2, "3.95", { rates: null }),
+        snapshot(3, "4.02", { rates: [] }),
+        snapshot(4, "4.10"),
+        snapshot(5, "4.18", { rates: [] })
+      ])
+    );
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    const points = await client.getMarketHistory(
+      AAVE_V3,
+      "supply_apy",
+      "USDC",
+      7
+    );
+
+    // days 1, 2, 3 and 5 carried no rates, so only days 0 and 4 are citable.
+    expect(points).toHaveLength(2);
+    expect(points.map((point) => point.days)).toEqual([0, 4]);
+    expect(points.map((point) => point.value)).toEqual([3.8, 4.1]);
+  });
+
+  it("fails closed when fewer than two usable snapshots survive", async () => {
+    const fetchImpl = mockFetch(
+      historyEnvelope([
+        snapshot(0, "3.80", { rates: [] }),
+        snapshot(1, "3.86"),
+        snapshot(2, "3.95", { rates: [] })
+      ])
+    );
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    await expect(
+      client.getMarketHistory(AAVE_V3, "supply_apy", "USDC", 7)
+    ).rejects.toThrow(/at least 2 are required for a trend/);
+  });
+
+  it("fails closed when a snapshot has no citation timestamp or block", async () => {
+    const fetchImpl = mockFetch(
+      historyEnvelope([
+        snapshot(0, "3.80", { timestamp: null }),
+        snapshot(1, "3.86", { blockNumber: null }),
+        snapshot(2, "3.95")
+      ])
+    );
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    await expect(
+      client.getMarketHistory(AAVE_V3, "supply_apy", "USDC", 7)
+    ).rejects.toThrow(/at least 2 are required for a trend/);
+  });
+
+  it("rejects a window that cannot produce a trend", async () => {
+    const fetchImpl = mockFetch(historyEnvelope([snapshot(6, "4.25")]));
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    await expect(
+      client.getMarketHistory(AAVE_V3, "supply_apy", "USDC", 1)
+    ).rejects.toThrow(/at least 2 days/);
+    await expect(
+      client.getMarketHistory(AAVE_V3, "supply_apy", "USDC", 7.5)
+    ).rejects.toThrow(/at least 2 days/);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("keeps each day's winning value paired with its own block and timestamp", async () => {
+    const fetchImpl = mockFetch({
+      data: {
+        markets: [
+          {
+            inputToken: { symbol: "USDC", decimals: 6 },
+            isActive: true,
+            dailySnapshots: [snapshot(0, "3.80"), snapshot(1, "3.86")]
+          },
+          {
+            inputToken: { symbol: "USDC", decimals: 6 },
+            isActive: true,
+            dailySnapshots: [
+              { ...snapshot(0, "5.00"), blockNumber: "9000001", timestamp: "1788307200" },
+              { ...snapshot(1, "5.10"), blockNumber: "9000002", timestamp: "1788393600" }
+            ]
+          }
+        ],
+        _meta: {
+          deployment: "QmLiveDeployment",
+          block: { number: "22100123", timestamp: String(HISTORY_BASE_TIMESTAMP) }
+        }
+      }
+    } as unknown);
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    const points = await client.getMarketHistory(
+      AAVE_V3,
+      "supply_apy",
+      "USDC",
+      7
+    );
+
+    // supply_apy keeps the highest rate, and with it that market's own citation.
+    expect(points.map((point) => point.value)).toEqual([5, 5.1]);
+    expect(points.map((point) => point.block)).toEqual([9_000_001, 9_000_002]);
+    expect(points.map((point) => point.timestamp)).toEqual([
+      "2026-09-02T00:00:00.000Z",
+      "2026-09-03T00:00:00.000Z"
+    ]);
+  });
+
+  it("ignores inactive markets and fails closed when no market matches the asset", async () => {
+    const inactive = mockFetch(
+      historyEnvelope([snapshot(6, "4.25")], { isActive: false })
+    );
+    const inactiveClient = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: inactive as typeof fetch
+    });
+
+    await expect(
+      inactiveClient.getMarketHistory(AAVE_V3, "supply_apy", "USDC", 7)
+    ).rejects.toThrow(/No USDC market found for aave-v3/);
+
+    const other = mockFetch(historyEnvelope([snapshot(6, "4.25")]));
+    const otherClient = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: other as typeof fetch
+    });
+
+    await expect(
+      otherClient.getMarketHistory(AAVE_V3, "supply_apy", "WETH", 7)
+    ).rejects.toThrow(/No WETH market found for aave-v3/);
+  });
+
+  it("sends the fixed history query with the named operation", async () => {
+    const fetchImpl = mockFetch(historyEnvelope([snapshot(0, "3.80"), snapshot(1, "3.86")]));
+    const client = new GraphGatewayClient({
+      apiKey: "test-graph-key",
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    await client.getMarketHistory(AAVE_V3, "supply_apy", "USDC", 7);
+
+    const [, request] = fetchImpl.mock.calls[0]!;
+    const body = JSON.parse(String(request?.body));
+    expect(body.operationName).toBe("AskChingMarketHistory");
+    expect(body.query).toContain("dailySnapshots(first: 31");
+    expect(body.query).toContain("orderBy: days");
+    expect(body.query).toContain("blockNumber");
+  });
+});
+
+describe("GET_MARKET_HISTORY_QUERY", () => {
+  it("is a single fixed nested-snapshot query covering every metric field", () => {
+    expect(GET_MARKET_HISTORY_QUERY).toContain("AskChingMarketHistory");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("dailySnapshots");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("days");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("blockNumber");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("rates { rate side type }");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("totalValueLockedUSD");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("totalDepositBalanceUSD");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("totalBorrowBalanceUSD");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("isActive");
+    expect(GET_MARKET_HISTORY_QUERY).toContain("_meta");
+  });
+});
+
