@@ -1,7 +1,7 @@
 {
   "name": "@askching/mcp-server",
   "version": "0.1.0",
-  "description": "AskChing MCP server: cited multi-subgraph DeFi market research over stdio.",
+  "description": "AskChing MCP server: cited multi-subgraph DeFi market research over stdio or remote Streamable HTTP.",
   "license": "MIT",
   "private": false,
   "type": "module",
@@ -15,10 +15,15 @@
     "./tools.js": {
       "types": "./dist/tools.d.ts",
       "default": "./dist/tools.js"
+    },
+    "./http.js": {
+      "types": "./dist/http.d.ts",
+      "default": "./dist/http.js"
     }
   },
   "bin": {
-    "askching-mcp": "dist/index.js"
+    "askching-mcp": "dist/index.js",
+    "askching-mcp-http": "dist/serve.js"
   },
   "files": ["dist"],
   "keywords": [
@@ -38,7 +43,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "start:http": "node dist/serve.js"
   },
   "dependencies": {
     "@askching/shared": "workspace:*",

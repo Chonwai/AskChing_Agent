@@ -15,7 +15,9 @@
     "demo": "DEMO_LIVE=0 tsx --env-file=.env demos/demo.ts",
     "demo:live": "DEMO_LIVE=1 tsx --env-file=.env demos/demo.ts --live",
     "askching": "node --env-file=.env packages/grok-orchestrator/dist/index.js",
-    "mcp:smoke": "pnpm -C packages/mcp-server build && tsx packages/mcp-server/src/mcp-smoke.ts"
+    "mcp:smoke": "pnpm -C packages/mcp-server build && tsx packages/mcp-server/src/mcp-smoke.ts",
+    "mcp:serve": "pnpm -C packages/mcp-server build && node --env-file=.env packages/mcp-server/dist/serve.js",
+    "mcp:http:smoke": "pnpm -C packages/mcp-server build && tsx packages/mcp-server/src/http-smoke.ts"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
