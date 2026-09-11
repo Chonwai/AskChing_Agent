@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AskChing — cited DeFi research over The Graph</title>
+    <meta
+      name="description"
+      content="AskChing is a remote MCP server for cited, multi-subgraph DeFi research. Five tools, one URL, works in Claude, Cursor, VS Code, Codex, Gemini CLI, and Grok Bot."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0e14;
+        --panel: #141922;
+        --border: #232a36;
+        --text: #e6e9ef;
+        --muted: #98a2b3;
+        --accent: #6ee7b7;
+        --warn: #fbbf24;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 3rem 1.25rem 4rem;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.65 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      main { max-width: 46rem; margin: 0 auto; }
+      h1 { font-size: 1.9rem; margin: 0 0 .4rem; letter-spacing: -.02em; }
+      .tag { color: var(--muted); margin: 0 0 2rem; }
+      .lead { font-size: 1.05rem; margin: 0 0 2rem; }
+      .lead strong { color: var(--accent); }
+      h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 2.25rem 0 .75rem; }
+      ul.tools { list-style: none; padding: 0; margin: 0; }
+      ul.tools li {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: .6rem;
+        padding: .7rem .9rem;
+        margin-bottom: .5rem;
+        display: flex;
+        gap: .75rem;
+        align-items: baseline;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+        font-size: .875em;
+        background: #1b212c;
+        border: 1px solid var(--border);
+        border-radius: .35rem;
+        padding: .1rem .35rem;
+      }
+      pre {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: .6rem;
+        padding: 1rem;
+        overflow-x: auto;
+        margin: 0 0 .75rem;
+      }
+      pre code { background: none; border: 0; padding: 0; }
+      .muted { color: var(--muted); }
+      .note { border-left: 3px solid var(--warn); padding-left: .9rem; color: var(--muted); }
+      a { color: var(--accent); }
+      footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .875rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>AskChing</h1>
+      <p class="tag">Cited DeFi research over The Graph — as a remote MCP server.</p>
+
+      <p class="lead">
+        AskChing answers natural-language DeFi questions across multiple live subgraphs and returns every number
+        with its provenance. <strong>If it cannot cite at least two sources, it refuses to answer.</strong>
+      </p>
+
+      <h2>Five tools</h2>
+      <ul class="tools">
+        <li><code>compare_markets</code><span class="muted">Ranked cross-protocol metric comparison</span></li>
+        <li><code>analyze_markets</code><span class="muted">Yield, liquidity stress, evidence quality</span></li>
+        <li><code>analyze_trends</code><span class="muted">7d / 30d cited daily history with slope and volatility</span></li>
+        <li><code>research_brief</code><span class="muted">Conclusion, key figures, risks, follow-up</span></li>
+        <li><code>risk_scan</code><span class="muted">Peer-relative spot signals with explicit gaps</span></li>
+      </ul>
+
+      <h2>Connect any MCP client</h2>
+      <pre><code>{
+  "mcpServers": {
+    "askching": {
+      "url": "https://YOUR-DEPLOYMENT.vercel.app/api/mcp"
+    }
+  }
+}</code></pre>
+      <p class="muted">
+        VS Code uses <code>type: "http"</code>, Codex uses <code>url</code>, Gemini CLI / Antigravity uses
+        <code>httpUrl</code>. stdio-only clients can bridge with <code>npx -y mcp-remote &lt;url&gt;</code>.
+      </p>
+
+      <h2>Health</h2>
+      <pre><code>curl https://YOUR-DEPLOYMENT.vercel.app/api/health
+# {"name":"askching","version":"0.1.0","transport":"streamable-http","endpoint":"/api/mcp","live":true}</code></pre>
+
+      <h2>Endpoints</h2>
+      <ul class="tools">
+        <li><code>POST /api/mcp</code><span class="muted">MCP endpoint (Streamable HTTP, stateless)</span></li>
+        <li><code>GET /api/health</code><span class="muted">Credential-free metadata</span></li>
+        <li><code>POST /mcp</code><span class="muted">Alias of <code>/api/mcp</code></span></li>
+      </ul>
+
+      <p class="note">
+        This endpoint is intentionally unauthenticated so reviewers can connect directly. Only
+        <code>POST</code> is served; <code>GET</code> and <code>DELETE</code> return <code>405</code>.
+      </p>
+
+      <footer>
+        AskChing is research software: descriptive, cited, and explicit about what it does not know. It is not a
+        forecast, a trading bot, or a transaction executor.
+      </footer>
+    </main>
+  </body>
+</html>

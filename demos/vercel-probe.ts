@@ -82,7 +82,7 @@ async function main() {
       new URL("../vercel.json", import.meta.url),
       "utf8"
     )
-  ) as { functions?: Record<string, { maxDuration?: number }> };
+  ) as { functions?: Record<string, { maxDuration?: number }>; outputDirectory?: string };
   const declaredMax = Object.values(vercelJson.functions ?? {})[0]?.maxDuration;
   if (declaredMax !== undefined && (mcpConfig?.maxDuration ?? 0) > declaredMax) {
     throw new Error(
@@ -90,6 +90,23 @@ async function main() {
     );
   }
   console.log(`config              OK  runtime=nodejs maxDuration=${String(mcpConfig?.maxDuration)}`);
+
+  // The "Other" framework preset sets the output directory to `public` if it
+  // exists, otherwise to the repository root. Without a public/ directory the
+  // whole repo would be served as static files, so assert both the setting and
+  // the directory.
+  const fs = await import("node:fs/promises");
+  if (vercelJson.outputDirectory !== "public") {
+    throw new Error("vercel.json must set outputDirectory to 'public'");
+  }
+  const publicIndex = await fs
+    .stat(new URL("../public/index.html", import.meta.url))
+    .then(() => true)
+    .catch(() => false);
+  if (!publicIndex) {
+    throw new Error("public/index.html must exist so the output directory never falls back to the repo root");
+  }
+  console.log("output directory    OK  vercel.json -> public/, public/index.html present");
 
   const initialized = await callMcp(handler, {
     jsonrpc: "2.0",
