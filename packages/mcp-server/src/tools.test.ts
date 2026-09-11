@@ -156,6 +156,9 @@ describe("compareMarkets", () => {
     const dataSource: MarketDataSource = {
       async getObservations() {
         throw new Error("data source should not be called");
+      },
+      async getHistory() {
+        throw new Error("data source should not be called");
       }
     };
 
@@ -170,6 +173,9 @@ describe("compareMarkets", () => {
   it("rejects an unknown metric with a registry hint", async () => {
     const dataSource: MarketDataSource = {
       async getObservations() {
+        throw new Error("data source should not be called");
+      },
+      async getHistory() {
         throw new Error("data source should not be called");
       }
     };
@@ -308,6 +314,9 @@ describe("researchBrief", () => {
     const dataSource: MarketDataSource = {
       async getObservations() {
         throw new Error("data source should not be called");
+      },
+      async getHistory() {
+        throw new Error("data source should not be called");
       }
     };
 
@@ -387,6 +396,9 @@ describe("riskScan", () => {
   it("rejects fewer than two protocols", async () => {
     const dataSource: MarketDataSource = {
       async getObservations() {
+        throw new Error("data source should not be called");
+      },
+      async getHistory() {
         throw new Error("data source should not be called");
       }
     };

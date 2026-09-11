@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createMarketDataSource } from "./data-source.js";
+import { createMarketDataSource, type LiveDataSource } from "./data-source.js";
 import { LIVE_SOURCES } from "./source-config.js";
 
 describe("createMarketDataSource (fixture mode)", () => {
@@ -195,5 +195,218 @@ describe("createMarketDataSource (live mode)", () => {
     expect(observations.every((item) => item.metric === "tvl")).toBe(true);
     expect(observations.every((item) => item.unit === "usd")).toBe(true);
     expect(observations.every((item) => item.asset === "USDC")).toBe(true);
+  });
+});
+
+describe("createMarketDataSource.getHistory (fixture mode)", () => {
+  it("returns one cited series per protocol without fetching", async () => {
+    const fetchImpl = vi.fn(() => {
+      throw new Error("fixture mode must not fetch");
+    });
+    const source = createMarketDataSource(
+      { DEMO_LIVE: "0" },
+      fetchImpl as unknown as typeof fetch
+    );
+
+    const series = await source.getHistory("supply_apy", "7d", [
+      "aave-v3",
+      "compound-v3",
+      "spark-lend"
+    ]);
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(series).toHaveLength(3);
+    expect(series.map((item) => item.protocol).sort()).toEqual([
+      "aave-v3",
+      "compound-v3",
+      "spark-lend"
+    ]);
+    expect(
+      series.every(
+        (item) =>
+          item.metric === "supply_apy" &&
+          item.unit === "percent" &&
+          item.points.length === 7
+      )
+    ).toBe(true);
+    expect(
+      series.every((item) =>
+        item.points.every(
+          (point) =>
+            point.protocol === item.protocol &&
+            point.metric === "supply_apy" &&
+            point.asset === "USDC" &&
+            point.unit === "percent" &&
+            point.queryHash.length > 0 &&
+            point.block !== undefined
+        )
+      )
+    ).toBe(true);
+    expect(
+      series[0]!.points.map((point) => point.days)
+    ).toEqual([0, 1, 2, 3, 4, 5, 6]);
+  });
+
+  it("filters the series by the requested protocols and asset", async () => {
+    const source = createMarketDataSource({ DEMO_LIVE: "0" });
+
+    const filtered = await source.getHistory("supply_apy", "7d", [
+      "aave-v3",
+      "compound-v3"
+    ]);
+    expect(filtered.map((item) => item.protocol)).toEqual([
+      "aave-v3",
+      "compound-v3"
+    ]);
+
+    const weth = await source.getHistory("supply_apy", "7d", [
+      "aave-v3",
+      "compound-v3"
+    ], "WETH");
+    expect(weth).toEqual([]);
+  });
+
+  it("returns no series for a protocol without history fixtures", async () => {
+    const source = createMarketDataSource({ DEMO_LIVE: "0" });
+
+    const series = await source.getHistory("supply_apy", "7d", ["zerolend"]);
+    expect(series).toEqual([]);
+  });
+
+  it("keeps only the available points when the window is wider than the fixture", async () => {
+    const source = createMarketDataSource({ DEMO_LIVE: "0" });
+
+    const series = await source.getHistory("utilization", "30d", [
+      "aave-v3",
+      "spark-lend"
+    ]);
+
+    expect(series).toHaveLength(2);
+    // 7 fixture days exist; nothing is padded or extrapolated to 30.
+    expect(series.every((item) => item.points.length === 7)).toBe(true);
+    expect(
+      series.every((item) => item.points.every((point) => point.unit === "percent"))
+    ).toBe(true);
+  });
+
+  it("resolves the legacy alias and slices to the requested window", async () => {
+    const source = createMarketDataSource({ DEMO_LIVE: "0" });
+
+    const series = await source.getHistory("usdc_supply_apy", "7d", [
+      "aave-v3",
+      "compound-v3"
+    ]);
+
+    expect(series.every((item) => item.metric === "supply_apy")).toBe(true);
+    expect(
+      series.every((item) => item.points.every((point) => point.asset === "USDC"))
+    ).toBe(true);
+  });
+});
+
+describe("createMarketDataSource.getHistory (live mode)", () => {
+  it("fails clearly when live mode has no Graph API key", async () => {
+    const source = createMarketDataSource({ DEMO_LIVE: "1" });
+
+    await expect(
+      source.getHistory("supply_apy", "7d", ["aave-v3", "compound-v3"])
+    ).rejects.toThrow("GRAPH_API_KEY is required when DEMO_LIVE=1");
+  });
+
+  it("rejects a deferred protocol in live mode", async () => {
+    const source = createMarketDataSource({
+      DEMO_LIVE: "1",
+      GRAPH_API_KEY: "test-graph-key"
+    });
+
+    await expect(
+      source.getHistory("supply_apy", "7d", ["aave-v3", "compound-v2"])
+    ).rejects.toThrow(/Protocols not yet live: compound-v2/);
+  });
+
+  it("collects per-source gaps when one subgraph fails instead of failing the fan-out", async () => {
+    const [first, second] = LIVE_SOURCES;
+    const firstUrl = `https://gateway.thegraph.com/api/subgraphs/id/${first!.subgraphId}`;
+    const secondUrl = `https://gateway.thegraph.com/api/subgraphs/id/${second!.subgraphId}`;
+
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === firstUrl) {
+        return new Response("boom", { status: 500 });
+      }
+      if (url === secondUrl) {
+        return new Response(
+          JSON.stringify({
+            data: {
+              markets: [
+                {
+                  inputToken: { symbol: "USDC" },
+                  isActive: true,
+                  dailySnapshots: [
+                    {
+                      days: "0",
+                      timestamp: "1788307200",
+                      blockNumber: "22100000",
+                      rates: [{ rate: "3.30", side: "LENDER", type: "VARIABLE" }],
+                      totalDepositBalanceUSD: "1000000000",
+                      totalBorrowBalanceUSD: "784000000",
+                      totalValueLockedUSD: "1250000000"
+                    },
+                    {
+                      days: "1",
+                      timestamp: "1788393600",
+                      blockNumber: "22107200",
+                      rates: [{ rate: "3.14", side: "LENDER", type: "VARIABLE" }],
+                      totalDepositBalanceUSD: "1000000000",
+                      totalBorrowBalanceUSD: "786000000",
+                      totalValueLockedUSD: "1250000000"
+                    }
+                  ]
+                }
+              ],
+              _meta: {
+                deployment: "QmSecondDeployment",
+                block: { number: "22100123", timestamp: "1788825600" }
+              }
+            }
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      throw new Error(`unexpected URL: ${url}`);
+    });
+
+    const source = createMarketDataSource(
+      { DEMO_LIVE: "1", GRAPH_API_KEY: "test-graph-key" },
+      fetchImpl as unknown as typeof fetch
+    );
+
+    const series = await source.getHistory("supply_apy", "7d", [
+      "aave-v3",
+      "compound-v3"
+    ]);
+
+    expect(series).toHaveLength(1);
+    expect(series[0]!.protocol).toBe(second!.protocol);
+    expect(series[0]!.points.map((point) => point.value)).toEqual([3.3, 3.14]);
+    expect((source as LiveDataSource).lastGaps).toEqual([
+      expect.stringMatching(/^aave-v3: .*HTTP 500/)
+    ]);
+  });
+
+  it("returns an empty series list when every source fails, leaving gaps for the analysis layer", async () => {
+    const fetchImpl = vi.fn(async () => new Response("boom", { status: 500 }));
+    const source = createMarketDataSource(
+      { DEMO_LIVE: "1", GRAPH_API_KEY: "test-graph-key" },
+      fetchImpl as unknown as typeof fetch
+    );
+
+    const series = await source.getHistory("supply_apy", "7d", [
+      "aave-v3",
+      "compound-v3"
+    ]);
+
+    expect(series).toEqual([]);
+    expect((source as LiveDataSource).lastGaps).toHaveLength(2);
   });
 });
