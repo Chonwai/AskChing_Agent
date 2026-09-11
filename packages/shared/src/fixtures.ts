@@ -30,9 +30,12 @@ export const MARKET_FIXTURES: readonly MarketObservation[] = [
 
   { metric: "supply_apy", asset: "USDC", rateType: "variable", value: 3.55, unit: "percent", protocol: "aave-v2", subgraphId: "C2zniPn45RnLDGzVeGZCx2Sw3GXrbc9gL4ZfL8B8Em2j", deploymentId: "fixture:aave-v2-mainnet", block: 21_100_070, timestamp: "2026-09-08T00:03:30.000Z", queryHash: "sha256:fixture-aave-v2-usdc-supply-apy" },
 
-  { metric: "supply_apy", asset: "USDC", rateType: "variable", value: 4.10, unit: "percent", protocol: "uwu-lend", subgraphId: "CZBD7e8VGvNa6WkBHZAaC688bsZ35UvAM1AuDdVng2aE", deploymentId: "fixture:uwu-lend-mainnet", block: 21_100_080, timestamp: "2026-09-08T00:04:00.000Z", queryHash: "sha256:fixture-uwu-usdc-supply-apy" },
-
-  { metric: "supply_apy", asset: "USDC", rateType: "variable", value: 3.72, unit: "percent", protocol: "zerolend", subgraphId: "4Zf4doH54RDit9KVsfCp3MkjrP3szhJZwvw2z5PHczx9", deploymentId: "fixture:zerolend-mainnet", block: 21_100_090, timestamp: "2026-09-08T00:04:30.000Z", queryHash: "sha256:fixture-zerolend-usdc-supply-apy" },
+  // NOTE: uwu-lend and zerolend fixtures were removed on 2026-09-12.
+  // Both claimed USDC observations that the live deployments cannot serve:
+  // uwu-lend's mainnet markets list sifu/sDAI/sSPELL/USDT (no USDC), and every
+  // zerolend mainnet market is isActive=false with TVL 0. Keeping fixture rows
+  // that live mode can never reproduce made the fixture set a false promise.
+  // `pnpm probe:protocols` records the evidence.
 
   // ── USDT ────────────────────────────────────────────────────────
   { metric: "supply_apy", asset: "USDT", rateType: "variable", value: 4.05, unit: "percent", protocol: "aave-v3", subgraphId: "JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk", deploymentId: "fixture:aave-v3-mainnet", block: 21_100_110, timestamp: "2026-09-08T00:06:00.000Z", queryHash: "sha256:fixture-aave-usdt-supply-apy" },

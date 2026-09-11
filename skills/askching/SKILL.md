@@ -39,7 +39,7 @@ Use AskChing as the research tool layer. Treat its cited structured output as ev
 | Explain yield opportunity, liquidity stress, or evidence quality with transparent calculations | `analyze_markets` |
 | Ask how a metric moved over the last 7 or 30 days | `analyze_trends` |
 
-The implementation supports four metrics — `supply_apy`, `borrow_apy`, `tvl`, `utilization` — four assets — `USDC`, `USDT`, `DAI`, `WETH` — and six live protocols — `aave-v3`, `compound-v3`, `spark-lend`, `aave-v2`, `uwu-lend`, `zerolend`. `compare_markets`, `research_brief`, `risk_scan`, and `analyze_markets` answer from a current snapshot, so `risk_scan` must never be described as historical analysis. Only `analyze_trends` carries the time dimension, over a `7d` or `30d` window of daily snapshots.
+The implementation supports four metrics — `supply_apy`, `borrow_apy`, `tvl`, `utilization` — four assets — `USDC`, `USDT`, `DAI`, `WETH` — and four live protocols — `aave-v3`, `compound-v3`, `spark-lend`, `aave-v2`. Older deployments (`uwu-lend`, `zerolend`, `compound-v2`, `rari-fuse`, `makerdao`, `euler`) are registered but not live: they either lack a USDC market or predate the shared schema, so a request naming them fails closed and comes back as an explicit gap. `compare_markets`, `research_brief`, `risk_scan`, and `analyze_markets` answer from a current snapshot, so `risk_scan` must never be described as historical analysis. Only `analyze_trends` carries the time dimension, over a `7d` or `30d` window of daily snapshots.
 
 Pass the asset in natural language (e.g. "Compare USDT supply APY" → `asset: "USDT"`). The legacy metric alias `usdc_supply_apy` still works and is equivalent to `supply_apy` + `asset: "USDC"`.
 

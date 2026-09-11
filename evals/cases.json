@@ -133,8 +133,8 @@
     }
   },
   {
-    "id": "compare-six-protocol",
-    "question": "Compare USDC supply APY across all six live protocols.",
+    "id": "compare-four-protocol",
+    "question": "Compare USDC supply APY across all four live protocols.",
     "input": {
       "metric": "supply_apy",
       "asset": "USDC",
@@ -142,9 +142,7 @@
         "aave-v3",
         "compound-v3",
         "spark-lend",
-        "aave-v2",
-        "uwu-lend",
-        "zerolend"
+        "aave-v2"
       ]
     }
   },

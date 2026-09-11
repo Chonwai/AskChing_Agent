@@ -8,11 +8,17 @@ export interface SubgraphSource {
   subgraphId: string;
   explorerUrl: string;
   schemaVersion: string;
+  /**
+   * True only when a live USDC request for this protocol has been observed to
+   * return a cited observation. `pnpm probe:protocols` is the evidence.
+   */
   live: boolean;
+  /** Why a non-live entry is not live. Required whenever `live` is false. */
+  note?: string;
 }
 
 export const PROTOCOL_REGISTRY: readonly SubgraphSource[] = [
-  // ── LIVE (schema 3.1.0, verified) ──────────────────────────────
+  // ── LIVE (schema 3.1.0, verified returning USDC data on mainnet) ──
   {
     protocol: "aave-v3",
     network: "mainnet",
@@ -49,6 +55,10 @@ export const PROTOCOL_REGISTRY: readonly SubgraphSource[] = [
     schemaVersion: "3.1.0",
     live: true
   },
+  // ── VERIFIED REACHABLE BUT NOT USABLE AS LIVE USDC SOURCES ───────
+  // Confirmed on 2026-09-12 with the Graph gateway. These stay in the registry
+  // as a record so the investigation is not repeated, but they are not live:
+  // every USDC query would fail closed and only produce gaps.
   {
     protocol: "uwu-lend",
     network: "mainnet",
@@ -56,7 +66,8 @@ export const PROTOCOL_REGISTRY: readonly SubgraphSource[] = [
     explorerUrl:
       "https://thegraph.com/explorer/subgraphs/CZBD7e8VGvNa6WkBHZAaC688bsZ35UvAM1AuDdVng2aE",
     schemaVersion: "3.1.0",
-    live: true
+    live: false,
+    note: "Reachable and schema-compatible, but the mainnet deployment has no USDC market (it lists sifu, sDAI, sSPELL, USDT, DUMMY). Any USDC request fails closed."
   },
   {
     protocol: "zerolend",
@@ -65,17 +76,49 @@ export const PROTOCOL_REGISTRY: readonly SubgraphSource[] = [
     explorerUrl:
       "https://thegraph.com/explorer/subgraphs/4Zf4doH54RDit9KVsfCp3MkjrP3szhJZwvw2z5PHczx9",
     schemaVersion: "3.1.0",
-    live: true
+    live: false,
+    note: "Every mainnet market returns isActive=false with totalValueLockedUSD=0. ZeroLend's live deployments are on other networks."
   },
-  // ── DEFERRED (需欄位級驗證後再啟用) ────────────────────────────
+  {
+    protocol: "aave-amm",
+    network: "mainnet",
+    subgraphId: "41ooPWnDYKwckqyG1mvg7ZEndy5zMemXinx6uQxscrBS",
+    explorerUrl:
+      "https://thegraph.com/explorer/subgraphs/41ooPWnDYKwckqyG1mvg7ZEndy5zMemXinx6uQxscrBS",
+    schemaVersion: "3.1.0",
+    live: false,
+    note: "Schema 3.1.0 and reachable, but the mainnet deployment reports zero active markets."
+  },
+  {
+    protocol: "aave-arc",
+    network: "mainnet",
+    subgraphId: "5hyqnEzjZbwFBU1rk4JBknCeiF2Mj93qBzsyQfpAa3QA",
+    explorerUrl:
+      "https://thegraph.com/explorer/subgraphs/5hyqnEzjZbwFBU1rk4JBknCeiF2Mj93qBzsyQfpAa3QA",
+    schemaVersion: "3.1.0",
+    live: false,
+    note: "Schema 3.1.0 with a USDC market, but ~$57k TVL and 0% APY: technically queryable, analytically worthless."
+  },
+  {
+    protocol: "aave-rwa",
+    network: "mainnet",
+    subgraphId: "C8ynQrjVKcmqxb9fWrLvSCBFNf2ChFkxCg7Q8gknJrza",
+    explorerUrl:
+      "https://thegraph.com/explorer/subgraphs/C8ynQrjVKcmqxb9fWrLvSCBFNf2ChFkxCg7Q8gknJrza",
+    schemaVersion: "3.1.0",
+    live: false,
+    note: "Schema 3.1.0 with a USDC market, but ~$4.4k TVL and 0% supply APY: technically queryable, analytically worthless."
+  },
+  // ── DEFERRED (older schema; the shared query needs fields they lack) ──
   {
     protocol: "compound-v2",
     network: "mainnet",
-    subgraphId: "4TbqVA8p2DoBd5qDbPMwmDZv3CsJjWtxo8nVSqF2tA9a9a",
+    subgraphId: "4TbqVA8p2DoBd5qDbPMwmDZv3CsJjWtxo8nVSqF2tA9a",
     explorerUrl:
-      "https://thegraph.com/explorer/subgraphs/4TbqVA8p2DoBd5qDbPMwmDZv3CsJjWtxo8nVSqF2tA9a9a",
+      "https://thegraph.com/explorer/subgraphs/4TbqVA8p2DoBd5qDbPMwmDZv3CsJjWtxo8nVSqF2tA9a",
     schemaVersion: "2.0.1",
-    live: false
+    live: false,
+    note: "Schema 2.0.1. Market has no indexLastUpdatedTimestamp field, which GET_MARKETS_QUERY selects."
   },
   {
     protocol: "rari-fuse",
@@ -84,7 +127,8 @@ export const PROTOCOL_REGISTRY: readonly SubgraphSource[] = [
     explorerUrl:
       "https://thegraph.com/explorer/subgraphs/kecp6SPMvbB4GTqg9r5PXvztYriexj5F3ZCaATpjmb2",
     schemaVersion: "2.0.1",
-    live: false
+    live: false,
+    note: "Schema 2.0.1. Market has no indexLastUpdatedTimestamp field, which GET_MARKETS_QUERY selects."
   },
   {
     protocol: "makerdao",
@@ -93,7 +137,8 @@ export const PROTOCOL_REGISTRY: readonly SubgraphSource[] = [
     explorerUrl:
       "https://thegraph.com/explorer/subgraphs/8sE6rTNkPhzZXZC6c8UQy2ghFTu5PPdGauwUBm4t7HZ1",
     schemaVersion: "2.0.1",
-    live: false
+    live: false,
+    note: "Schema 2.0.1. Market has no indexLastUpdatedTimestamp field, which GET_MARKETS_QUERY selects."
   },
   {
     protocol: "euler",
@@ -102,7 +147,8 @@ export const PROTOCOL_REGISTRY: readonly SubgraphSource[] = [
     explorerUrl:
       "https://thegraph.com/explorer/subgraphs/95nyAWFFaiz6gykko3HtBCyhRuP5vZzuKYsZiLxHxLhr",
     schemaVersion: "1.3.0",
-    live: false
+    live: false,
+    note: "Schema 1.3.0. Market has no indexLastUpdatedTimestamp field, which GET_MARKETS_QUERY selects."
   }
 ] as const;
 

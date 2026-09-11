@@ -33,17 +33,17 @@ describe("AskChing skill", () => {
     // Assets
     expect(skill).toContain("USDC");
     expect(skill).toContain("WETH");
-    // Six live protocols
+    // Four live protocols (verified with pnpm probe:protocols on 2026-09-12)
     for (const protocol of [
       "aave-v3",
       "compound-v3",
       "spark-lend",
-      "aave-v2",
-      "uwu-lend",
-      "zerolend"
+      "aave-v2"
     ]) {
       expect(skill).toContain(protocol);
     }
+    // The skill must not claim a live protocol that cannot serve USDC.
+    expect(skill).not.toMatch(/six live protocols/);
     // Legacy alias still documented
     expect(skill).toContain("usdc_supply_apy");
   });
