@@ -116,6 +116,8 @@ Deploy with `vercel --prod` (see [`docs/deployment-vercel.md`](docs/deployment-v
 
 The same URL works in Claude, Cursor, VS Code, Codex, Gemini CLI / Antigravity, Grok Bot, and ChatGPT connectors — per-platform settings are in [`docs/platform-integration.md`](docs/platform-integration.md). `stdio`-only clients can bridge it with `npx -y mcp-remote <url>`.
 
+> ⚠️ **The deployed endpoint ships unauthenticated, with no rate limit, in front of a billed Graph API key.** That is a deliberate hackathon trade-off so judges can connect directly — but it means anyone with the URL can spend your quota. Use a low-quota key for a public deployment, and add a bearer-token check or a Vercel Firewall rate limit before listing the URL publicly. Only `POST` is served; `GET` and `DELETE` return `405`.
+
 ### Local (stdio)
 
 Build first, then replace the placeholder path in this Cursor/Claude-style configuration:

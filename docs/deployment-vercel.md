@@ -109,12 +109,17 @@ curl -s https://<app>.vercel.app/api/mcp \
 # → analyze_markets / analyze_trends / compare_markets / research_brief / risk_scan
 ```
 
-**部署前在本機先驗證**（同一份 serverless 檔案，同一種 Web 簽名）：
+**部署前在本機先驗證 handler 邏輯**（`api/mcp.ts` 與 `api/health.ts` 會被真的載入，驅動真的 MCP 握手）：
 
 ```bash
 pnpm vercel:probe
 # → vercel-probe OK: api/mcp.ts and api/health.ts are deployable
 ```
+
+> ⚠️ **這個 probe 驗什麼、不驗什麼**：
+> - ✅ 驗證 handler 的**簽名語意與邏輯**（Vercel 用同一種 Web `Request`/`Response` 簽名）
+> - ❌ **不驗證部署目標的模組解析與打包**。probe 経 `tsx` 執行，會做 `.js → .ts` 重映射並用本機 workspace symlink；Vercel 上 `@askching/shared` 與 `@modelcontextprotocol/sdk` 必須能從打包的 bundle 解析得到
+> - 因此**唯一有效的部署後驗證是打 `/api/health` 與 `tools/list`**（見 §4 步驟 1–2）。若 bundle 少了相依模組，會是 §6 的 `500 Cannot find module` 而 probe 看不到。
 
 ---
 
@@ -138,8 +143,9 @@ pnpm mcp:http:smoke
 | 症狀 | 原因 | 解法 |
 |---|---|---|
 | `404` on `/api/mcp` | 函式未被偵測 | 確認 `api/mcp.ts` 存在且 `vercel.json` 的 `functions` 有 `api/*.ts` |
-| `500 Cannot find module '@askching/shared'` | workspace `dist/` 未被打包 | 確認 `vercel.json` 的 `includeFiles: "packages/**/dist/**"`，且 `buildCommand` 有跑 `pnpm build` |
-| 工具回 `GRAPH_API_KEY is required` | 未設環境變數或 `DEMO_LIVE` 為 `0` | 設定 `DEMO_LIVE=1` + `GRAPH_API_KEY`，重新部署 |
+| `500 Cannot find module '@askching/shared'` | workspace `dist/` 未被打包 | 確認 `vercel.json` 的 `includeFiles` 涵蓋 `packages/shared/dist/**` 與 `packages/mcp-server/dist/**`，且 `buildCommand` 有跑 `pnpm build`。注意：本機 `pnpm vercel:probe` **無法**偵測此類失敗 |
+| 工具回 `Need at least 2 cited sources ...` 且 `structuredContent` 缺席 | 未設 `GRAPH_API_KEY`，或 `DEMO_LIVE` 不為 `1` | 這**就是**憑證缺失在 MCP 表面的症狀——底層原因被 fail-closed 轉譯成證據不足。設定 `DEMO_LIVE=1` + `GRAPH_API_KEY` 後重新部署 |
+| `405 Method Not Allowed` on GET | 預期行為 | 本 server 為 stateless JSON-only，只支援 POST（standalone SSE 與 session 終止不提供）；帶 `Allow: POST, OPTIONS` |
 | 回應是 SSE 而非 JSON | client 設定了 `Accept: text/event-stream` 且強制串流 | 本 server 以 `enableJsonResponse: true` 回應 JSON；client 請帶 `Accept: application/json, text/event-stream` |
 | 首次呼叫很慢 | serverless cold start + live Graph 查詢 | 可接受；demo 前先跑一次 `curl` 預熱 |
 | 逾時 | Vercel `maxDuration` 限制 | `vercel.json` 已設 60s；若仍不足，考慮常駐部署（見 §8） |
@@ -154,7 +160,14 @@ pnpm mcp:http:smoke
 | 日誌 | `ASKCHING_DEBUG` 只印 tool name + arguments，永不印 key 或 raw tool result |
 | CORS | 目前 `Access-Control-Allow-Origin: *`（MCP client 非瀏覽器） |
 | 認證 | **尚未實作 OAuth**。若要保護 endpoint，MCP SDK / `mcp-handler` 支援 `withMcpAuth` + RFC 9728 metadata |
+| CORS | `Access-Control-Allow-Origin: *`，只開放 `POST, OPTIONS`（GET/DELETE 回 405） |
 | 速率 | 未限流。公開 demo 建議加 Vercel Firewall 或 rate limit |
+
+> ⚠️ **這是刻意的 hackathon 取捨，但它是真風險**：endpoint 公開、無認證、無限流，後面掛著一個**計費的** Graph API key。任何知道 URL 的人（包含訪客瀏覽器發出的跨域請求）都能驅動部署並消耗你的 Graph 配額與 Vercel invocation。
+>
+> - 對 demo：這是優點（評審可直接連）
+> - **但若要把 endpoint 提交到公開 MCP registry 清單，請先加一道極低成本護欄**（單一 bearer token 檢查，或 Vercel Firewall rate limit），否則「公開」會從 demo 便利變成**長期暴露**。
+> - 另：請勿用高配額或高權限的 key 部署公開 endpoint。
 
 > ⚠️ **Hackathon 現況**：endpoint 目前公開、無認證。這對 demo 是優點（評審可直接連），但若要用於生產需加 OAuth（見 §9 Roadmap）。
 

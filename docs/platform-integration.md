@@ -228,7 +228,8 @@ pnpm -C packages/mcp-server build
 |---|---|---|
 | 平台顯示未連線 | URL 錯或部署失敗 | 先 `curl .../api/health` 確認 |
 | 工具列表是空的 | 函式未正確打包 | 見 `docs/deployment-vercel.md` §6 |
-| 回 `GRAPH_API_KEY is required` | 部署在 fixture 模式卻要求 live | 設 `DEMO_LIVE=1` + `GRAPH_API_KEY` |
+| 回 `Need at least 2 cited sources ...`（`structuredContent` 缺席） | 部署在 fixture 模式卻要求 live，或未設 `GRAPH_API_KEY` | 底層原因被 fail-closed 轉譯成「證據不足」。設 `DEMO_LIVE=1` + `GRAPH_API_KEY` |
+| `405 Method Not Allowed` | 用 GET/DELETE 打 endpoint | 預期行為：只支援 POST（stateless、JSON-only） |
 | 工具名有奇怪前綴 | 平台的命名空間規則 | Gemini CLI 用 `mcp_<server>_<tool>`；VS Code 用 `#` 引用 |
 | Claude Desktop 連不上 | 舊版不支援 remote | 更新 Claude Desktop；或改用 §10 的 `mcp-remote` 橋接 |
 

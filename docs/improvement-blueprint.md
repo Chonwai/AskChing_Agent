@@ -92,7 +92,9 @@ AskChing 已經**功能完整、證據鏈嚴格、可跨平台部署**。剩下�
 | 動作 | 說明 | 預估 | 價值 |
 |---|---|---|---|
 | **發佈到 npm** | `@askching/mcp-server` 已在 `package.json` 備好 `files: ["dist"]`、`prepack`。發佈後可用 `npx -y @askching/mcp-server` | 30 分 | 🔥🔥 |
-| **提交到 MCP registry / 清單** | Smithery、`awesome-mcp-servers`、`modelcontextprotocol/servers` | 1 小時 | 🔥🔥🔥（評審可自己裝） || **官網 landing page** | Vercel 上放一頁展示 5 個工具 + 一行接入 + live demo 連結 | 2–3 小時 | 🔥🔥 |
+| **提交到 MCP registry / 清單** | Smithery、`awesome-mcp-servers`、`modelcontextprotocol/servers` | 1 小時 | 🔥🔥🔥（評審可自己裝） |
+
+> ⚠️ **§4 註：提交到公開清單前必須先加護欄。** 目前 endpoint 公開、無認證、無限流，後面是**計費的** Graph API key。demo 階段公開是刻意的（評審可直接連），但一旦列到 registry，曝光就從「demo 便利」變成「長期無人監管」。最小可行護欄（任一即可）：單一 bearer token 檢查（`Authorization` header，MCP client 都支援）、或 Vercel Firewall rate limit、或改用低配額專用 key。| **官網 landing page** | Vercel 上放一頁展示 5 個工具 + 一行接入 + live demo 連結 | 2–3 小時 | 🔥🔥 |
 | **OAuth 保護 endpoint** | MCP SDK `withMcpAuth` + RFC 9728 metadata | 2–3 小時 | P2（demo 不需） |
 | **Rate limit** | Vercel Firewall 或 in-handler token bucket | 1 小時 | P2 |
 

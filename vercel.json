@@ -4,7 +4,10 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "functions": {
     "api/*.ts": {
-      "includeFiles": "packages/**/dist/**",
+      "includeFiles": [
+        "packages/shared/dist/**",
+        "packages/mcp-server/dist/**"
+      ],
       "memory": 1024,
       "maxDuration": 60
     }

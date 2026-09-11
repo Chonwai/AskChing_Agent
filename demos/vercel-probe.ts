@@ -3,8 +3,13 @@
  *
  * Loads the real serverless files (`api/mcp.ts`, `api/health.ts`) in-process
  * and drives the MCP handshake over real Web `Request`/`Response` objects.
- * If this passes locally, the deployed function behaves the same way, because
- * Vercel uses the same Web-standard signature.
+ *
+ * Verified here: the handler signature and logic, which matter because Vercel
+ * invokes these files with the same Web-standard signature.
+ * NOT verified here: the deployment target's module resolution and bundling.
+ * This runs through tsx, which remaps `.js` to `.ts` and resolves workspace
+ * symlinks; Vercel builds a bundle instead. Treat `/api/health` and
+ * `tools/list` against the deployed URL as the authoritative post-deploy check.
  *
  * Run: pnpm vercel:probe
  */
