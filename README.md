@@ -4,7 +4,7 @@ AskChing is a Grok-orchestrated research MCP for ETHOnline 2026. It fans out acr
 
 ## Status
 
-The repository was built from scratch for ETHOnline 2026 (first commit after the hackathon start). Its four MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
+The repository was built from scratch for ETHOnline 2026 (first commit after the hackathon start). Its five MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
 
 ## Built on The Graph, for the agent economy
 
@@ -20,6 +20,7 @@ AskChing treats provenance as a structural invariant, not a display option:
 - A comparison without at least two distinct cited sources **fails closed** — no partial credit.
 - `risk_scan` reports peer-relative spot signals and explicitly states it is **not** historical time-series analysis.
 - `analyze_markets` exposes every finding's calculation, supporting values, metric-aware citations, confidence, caveats, gaps, and `asOf` instead of hiding them behind a score.
+- `analyze_trends` reads cited daily history over a `7d` or `30d` window and reports per-protocol change, change percent, least-squares slope per day, direction, and volatility. Every daily point ships with its own citation, and a window wider than the sources can cover becomes an explicit gap instead of padded data.
 
 This means AskChing refuses to fabricate. When it cannot verify, it says so.
 
@@ -71,6 +72,12 @@ Credentialed live analysis example:
 ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching -- "Analyze the best current USDC supply-yield opportunity across Aave V3, Compound V3, and Spark Lend; cite every source"
 ```
 
+Trend analysis example (fixture mode):
+
+```bash
+DEMO_LIVE=0 pnpm askching -- "Is USDC utilization trending up across Aave V3, Compound V3, and Spark Lend over the last 7 days?"
+```
+
 > The Grok reasoning layer is currently a CLI. Packaging it as an MCP server is on the roadmap — once there, any MCP-compatible agent can call Grok-driven AskChing reasoning directly. The MCP tool layer is already cross-platform today (see `docs/cross-platform.md`).
 
 ## Run the comparison
@@ -113,7 +120,7 @@ For live use, change `DEMO_LIVE` to `1` and pass `GRAPH_API_KEY` through the cli
 
 ## Current scope
 
-`compare_markets`, `research_brief`, `risk_scan`, and `analyze_markets` are implemented. The analysis tool supports `yield_opportunity`, `liquidity_stress`, and `evidence_quality`; it uses current observations and marks historical intent as an explicit spot-only gap. AskChing supports registered metrics and assets where the selected live subgraphs expose comparable data. It is research software, not a forecast, trading bot, or transaction executor.
+`compare_markets`, `research_brief`, `risk_scan`, `analyze_markets`, and `analyze_trends` are implemented. The analysis tools support `yield_opportunity`, `liquidity_stress`, and `evidence_quality`; `analyze_markets` reads current observations and marks historical intent as an explicit spot-only gap, while `analyze_trends` reads cited `7d`/`30d` daily history and stays descriptive — it never forecasts. AskChing supports registered metrics and assets where the selected live subgraphs expose comparable data. It is research software, not a forecast, trading bot, or transaction executor.
 
 ## Why not just official Subgraph MCP?
 

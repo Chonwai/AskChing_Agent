@@ -366,6 +366,111 @@ const ComparisonSchema = z.object({
 }
 ```
 
+### 4.4 `analyze_trends`（✅ 已實作 2026-09-11 — v1.1 時間序列）
+
+> 補上時間維度。`compare_markets`（現況比較）／`analyze_markets`（現況判讀）／`analyze_trends`（歷史趨勢）三層敘事。
+> 對應計畫：`docs/superpowers/plans/2026-09-11-historical-trend-analysis.md`
+
+**Input:**
+
+```json
+{
+  "metric": "supply_apy",
+  "asset": "USDC",
+  "protocols": ["aave-v3", "compound-v3", "spark-lend"],
+  "window": "7d"
+}
+```
+
+`window` ∈ `{ "7d", "30d" }`；`asset` 預設 `USDC`；`protocols` ≥ 2；`metric` 接受 `MarketMetricId` 或 legacy alias。
+
+**Output:**
+
+```json
+{
+  "metric": "supply_apy",
+  "asset": "USDC",
+  "protocols": ["aave-v3", "compound-v3", "spark-lend"],
+  "window": "7d",
+  "summary": "USDC supply_apy over 7d: aave-v3 rising (+11.842105%), compound-v3 falling (-4.848485%), spark-lend flat (+1.724138%) across 3 cited source(s).",
+  "findings": [
+    {
+      "severity": "info",
+      "protocol": "aave-v3",
+      "claim": "aave-v3 USDC supply_apy is rising over 7d: 3.8% to 4.25% (+11.842105%).",
+      "calculation": "change = 4.25 - 3.8 = 0.45; changePct = 11.842105%; slopePerDay = 0.076429 (least squares over 7 points on snapshot days 0-6); direction = rising; volatility = 0.009574; min = 3.8; max = 4.25",
+      "stats": {
+        "latest": 4.25,
+        "earliest": 3.8,
+        "min": 3.8,
+        "max": 4.25,
+        "change": 0.45,
+        "changePct": 11.842105,
+        "slopePerDay": 0.076429,
+        "direction": "rising",
+        "volatility": 0.009574
+      },
+      "points": [
+        {
+          "days": 0,
+          "value": 3.8,
+          "metric": "supply_apy",
+          "asset": "USDC",
+          "unit": "percent",
+          "rateType": "variable",
+          "protocol": "aave-v3",
+          "subgraphId": "JCNWRypm7...",
+          "deploymentId": "fixture:aave-v3-mainnet",
+          "block": 21056900,
+          "timestamp": "2026-09-02T00:05:00.000Z",
+          "queryHash": "sha256:..."
+        },
+        { "days": 6, "value": 4.25, "...": "same shape, block 21100100" }
+      ],
+      "citations": [{ "metric": "supply_apy", "protocol": "aave-v3", "...": "..." }],
+      "confidence": "high",
+      "caveats": [
+        "Historical trend is descriptive, not a forecast or financial recommendation.",
+        "Trend computed from 7 cited daily snapshot(s) spanning snapshot days 0-6."
+      ]
+    }
+  ],
+  "gaps": [],
+  "asOf": "2026-09-08T00:05:00.000Z"
+}
+```
+
+**驗收標準（testable）：**
+
+- ✅ `findings` ≥ 1，且 ≤ 請求的協議數（未取得資料的協議轉為 `gaps`）
+- ✅ 每個 finding 的 `points` ≥ 2、`citations` ≥ 2（fail-closed）
+- ✅ 每個 point 帶完整 citation（`subgraphId` + `block` + `timestamp` + `queryHash`）+ `days`
+- ✅ 少於 2 條 cited series → error（fail-closed），不得回傳部分結果
+- ✅ `window` 大於可用 snapshot 數 → 每協議一筆 explicit gap；不以補值或外推填滿
+- ✅ `severity`：`|changePct|` ≥ 30 → `high`；≥ 15 → `watch`；否則 `info`
+- ✅ `confidence`：≥ 3 來源 + 0 gaps + 每協議 ≥ 5 點 → `high`；否則 `medium`
+- ✅ `caveats` 固定含 `"Historical trend is descriptive, not a forecast or financial recommendation."`
+
+**統計定義：**
+
+| 統計 | 定義 |
+| --- | --- |
+| `earliest` / `latest` | 依 `days` 遞增排序後的首／末點值 |
+| `change` / `changePct` | `latest - earliest`；`((latest - earliest) / earliest) * 100`（`earliest = 0` 時為 0） |
+| `slopePerDay` | 最小平方線性回歸，x 採用真實 `days`（非陣列索引，避免缺日失真） |
+| `direction` | `\|slopePerDay\|` ≤ 序列平均值 × 0.5% → `flat`；> 0 → `rising`；< 0 → `falling` |
+| `volatility` | 每日差值（`value[i] - value[i-1]`）的母體標準差 |
+| `min` / `max` | 序列值的極值 |
+
+Derived statistics（`change` / `changePct` / `slopePerDay` / `volatility`）四捨六入至 6 位小數，避免 float artifact 進入 MCP 輸出；citation-backed values（`latest` / `earliest` / `min` / `max`）保持原值。
+
+**Data source：** `MarketDataSource.getHistory(metric, window, protocols?, asset?)` → `TrendSeries[]`
+
+| 模式 | 行為 |
+| --- | --- |
+| fixture | 由 `MARKET_HISTORY_FIXTURES` 分組（USDC × 3 協議 × 7 天 × `{supply_apy, utilization}` = 42 點），取最新 `TREND_WINDOW_DAYS[window]` 點 |
+| live | `GraphGatewayClient.getMarketHistory()` → `GET_MARKET_HISTORY_QUERY`（嵌套 `dailySnapshots(first: 31, orderBy: days, orderDirection: desc)`），`Promise.allSettled` fan-out，失敗記入 `lastGaps`（`protocol: reason`） |
+
 ---
 
 ## 5. Graph Gateway Client

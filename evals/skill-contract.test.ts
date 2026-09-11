@@ -13,6 +13,7 @@ describe("AskChing skill", () => {
     expect(skill).toContain("research_brief");
     expect(skill).toContain("risk_scan");
     expect(skill).toContain("analyze_markets");
+    expect(skill).toContain("analyze_trends");
     expect(skill).toContain("yield_opportunity");
     expect(skill).toContain("liquidity_stress");
     expect(skill).toContain("evidence_quality");
