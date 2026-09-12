@@ -129,3 +129,13 @@ Status: HEALTHY
 - `docs/reviews/2026-09-12-johnku-morning-update-analysis.md` — johnku 更新分析 + 比賽進展報告
 - `docs/superpowers/plans/2026-09-12-competition-finish-line.md` — 收尾執行計畫
 - 本 loop state 更新 + HANDOFF 更新
+
+---
+
+## Phase 3 小修完成（2026-09-13，2 commits）
+
+- **F2（`11aff9b`）**：`windowKey` 的 `Math.round` → `Math.floor`，與 adapters 的 `utcDayStart` 一致。測試 fixtures 皆整 UTC 午夜 → 行為不變，209/209 全綠。
+- **F1 + F3（`a5a8cd5`）**：HANDOFF checkpoint 前進至 `11aff9b`；correction log 追加 F2 說明 + R1 probe flakiness 重跑指示。
+- **Gates 全綠**：build 3/3、test 209/209 (21 files)、eval 27/27、mcp:smoke 6 tools、probe:protocols 4/4。
+- **Live 驗證**：`probe:yields` 首跑 0/2（R1 gateway 暫態，已知 flakiness）→ 重跑 **2/2 OK**（readings 與 HANDOFF 逐字吻合：UNI USDC/DAI TVL $1.22M APR 4.63%、Curve 3pool TVL $154.47M APR 0.17%，window 皆 `2026-09-11T00:00:00Z → 2026-09-12T00:00:00Z`）。
+- **Phase 3 完成。** 下一步：用户轉向 Vercel 部署研究（新 Loop 或直接研究）。錄影前務必重跑 probe（R1）。
