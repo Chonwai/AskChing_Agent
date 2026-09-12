@@ -70,3 +70,5 @@ The lending sources use the Messari lending schema. The DEX rows in `packages/sh
 Expected path: Grok answers the USDC leg with cited lending/DEX readings (Compound V3 supply APY highest among live lending; Uniswap DAI/USDC 4.63% historical fee APR is the standing LP leader). For the ETH staking leg it must **fail closed honestly**: Lido / Rocket Pool are not in the live coverage set, so there is no cited staking rate — the output explicitly labels this a gap, not a zero yield, and does not invent a number.
 
 This is a deliberate evidence-first beat: AskChing would rather say "I cannot cite it" than guess. The `compare_staking` feature (Lido official subgraph verified live, `apr` 2.315% at block 25961308) is designed but not yet wired; see `docs/superpowers/specs/2026-09-13-compare-staking-design.md`. If Lido has been added by demo time, re-run the question and expect a cited single-source answer with an explicit cross-protocol limitation note.
+
+> ⚠️ **錄影前重跑**：`pnpm probe:protocols`（確認 Compound V3 等 4/4 live + supply APY 仍是實時值）與 `pnpm probe:yields`（確認 Uniswap DAI/USDC 4.63% 仍可取）。這些數字是 live 觀測，gateway 暫態抖動可能讓某次 probe 0/2 — 重跑即過。

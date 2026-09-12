@@ -15,7 +15,7 @@
 | Messari lido | `F7qb71hWab6SuRL5sf6LQLTpNahmqMsBnnweYHzLGUyG` | Messari generic | protocols/pools（無 APY 欄位，需自行推算） | ✅ live（fallback） |
 | Rocket Pool | 社群 ID 失效 / Messari 無 allocations | — | — | ❌ 不可用 |
 
-**Citation 保證**：Lido 官方源提供 `block`（subgraph 區塊高度）+ subgraph ID → 完全符合 AskChing 的 citation 結構（subgraphId + block + timestamp + queryHash）。但**只有 1 個可用源**，需決定是否放寬 ≥2 sources 保證（見 §5）。
+**Citation 保證**：Lido 官方源提供 `block`（subgraph 區塊高度）+ `blockTime`（unix seconds）→ 構成完整 citation：`subgraphId + block + timestamp + queryHash`，其中 `timestamp = new Date(blockTime * 1000).toISOString()`（`CitationSchema.timestamp` 是 required，smith 實測 `TotalReward` 有 `blockTime` 欄位 — 見 `schemas.ts:48-59`）。但**只有 1 個可用源**，需決定是否放寬 ≥2 sources 保證（見 §5）。
 
 ## 3. 實作零件（走現有模式）
 
