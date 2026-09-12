@@ -1,8 +1,8 @@
 ---
 title: AskChing handoff
 updated: 2026-09-12
-checkpoint: da2b40c
-status: discover-yields-complete
+checkpoint: 24f7b34
+status: competition-finish-line-ready
 ---
 
 # AskChing handoff
@@ -45,9 +45,10 @@ Read this box, then read §Corrections before trusting any older document.
 ## Current checkpoint
 
 - Branch `main`, tracking public `origin/main`.
-- **`da2b40c`** is the latest pushed commit before this handoff refresh: `docs: clarify live DEX verification`. The handoff commit follows it.
-- The previous yield handoff pointed at `66d7d5a`; that checkpoint is superseded.
-- Working tree was clean before these handoff edits. Credentials stay local in `.env` (git-ignored). `stash@{0}` is a retained autostash safety copy from the resolved partner rebase; do not apply it because its old Uniswap replacement-ID edits are superseded.
+- **`24f7b34`** is the latest pushed commit: `docs(handoff): record verified yield discovery release` (johnku, 2026-09-12 19:44).
+- The previous handoff pointed at `da2b40c`; superseded by johnku's post-integration commits `1e69e05` → `24f7b34`.
+- Working tree clean; credentials stay local in `.env` (git-ignored).
+- **Competition finish-line plan** is at `docs/superpowers/plans/2026-09-12-competition-finish-line.md` (Phase 0 freeze → Phase 1 record → Phase 2 submit → Phase 3 optional fixes). ETHOnline deadline: 2026-09-13 12:00 PM EDT (HK 09-14 00:00).
 - `.edison/state/*.md` **is tracked** in this repo, not ignored — loop state is part of the record.
 - Yield batch range so far: `git log --oneline 40f7923..HEAD`. History is incremental and unsquashed.
 
@@ -117,7 +118,7 @@ That behaviour is unchanged today. What changed since: a fifth tool (`analyze_tr
 
 ## Commit history since the previous handoff
 
-**42 commits** from `904a680` to `40f7923`. Full list: `git log --oneline 9a3f592..HEAD`. Grouped by batch:
+**63 commits** from `904a680` to `24f7b34`. Full list: `git log --oneline 9a3f592..HEAD`. Grouped by batch:
 
 | Batch | Range | What it did |
 | --- | --- | --- |
@@ -126,6 +127,10 @@ That behaviour is unchanged today. What changed since: a fifth tool (`analyze_tr
 | Remote MCP + Vercel | `d3d6b47` → `a9a11d3` | second transport, deploy entry points, multi-platform guide, demo narrative |
 | Verification + repair | `b0460a5` → `0a08721` | the three bug fixes and the protocol correction in §Corrections |
 | State | `c580088`, `40f7923` | loop state files |
+| Yield discovery (johnku) | `051a91a` → `8a986d1` | cross-venue USDC yield discovery design → Task 7 (13 commits, John Ku) |
+| DEX fix + Task 8 (chonwai) | `a745f67` → `6a36b96` | probe, Messari-schema rewrite, two-phase lookup, live flip, UTC-day bucket |
+| Yield release (johnku) | `1e69e05` → `24f7b34` | probe cleanup, adapter UTC-day normalization, docs alignment, handoff rewrite (5 commits) |
+| Competition finish-line | `docs/superpowers/plans/2026-09-12-competition-finish-line.md` | Phase 0 freeze → Phase 1 record → Phase 2 submit → Phase 3 optional fixes |
 
 History was not squashed. Every batch was pushed to `origin/main`.
 
@@ -236,6 +241,18 @@ Two related findings from the same sweep:
 | Every tool's protocol enum must equal `LIVE_PROTOCOLS` | `packages/grok-orchestrator/src/loop.test.ts` |
 
 `pnpm probe:protocols` is the live counterpart: it queries each registry entry through the same code path the server uses, fails only when a **live** entry cannot deliver, and flags a non-live entry that starts returning data as `notlive+` for re-evaluation.
+
+### Post-integration batch (johnku `1e69e05` → `24f7b34`, 2026-09-12 evening)
+
+Reviewed by smith (strict, measured 95/100 PASS):
+
+- `d27eed9` normalizes both DEX adapters' citation windows to containing UTC days via `utcDayStart()`; complements the ranking-layer UTC-day bucket from `44a57ae` (files do not overlap).
+- `1e69e05` is a lint cleanup of the probe script — its message says "add live DEX yield source probe", which is misleading; it was a no-op refactor.
+- `c9955a8` / `da2b40c` / `24f7b34` align design/plan/README/prompts to the verified two-phase Messari DEX query path.
+- Live `probe:yields` readings match HANDOFF verbatim: uniswap USDC/USDT TVL $33.29M APR 1.06% + USDC/DAI TVL $1.22M APR 4.63%; curve 3pool TVL $154.47M APR 0.17%; windows identical `2026-09-11T00:00:00Z → 2026-09-12T00:00:00Z`.
+- One latent inconsistency (no runtime impact today): `yield-discovery.ts` `windowKey` uses `Math.round`, adapters use `Math.floor` — unify to `Math.floor` after submission (plan F2).
+
+Full report: `docs/reviews/2026-09-12-johnku-morning-update-analysis.md`. Competition finish-line: `docs/superpowers/plans/2026-09-12-competition-finish-line.md`.
 
 ### Two habits worth keeping
 

@@ -104,3 +104,28 @@ Deadline context: ETHOnline 2026-09-13 12:00 PM EDT（台北 9/14 00:00）
 Consecutive fails: 3/3（已耗盡但 recovery 後成功）
 Budget: 65%
 Status: HEALTHY
+
+---
+
+## 追蹤：johnku 第二批 5 commits（19:17-19:44）+ 比賽收尾（20:15）
+
+### 新事實（用戶提示「johnku 剛才又 push 了」，Neo 本 loop 覆核）
+
+- johnku 在我方前一個 loop 完成後又推了 **5 commits**（`1e69e05` → `24f7b34`，09-12 19:17-19:44），已合入 origin/main：
+  - `1e69e05` refactor(demo)：probe-yield-sources.ts 死代碼清理（message 誤標 "add live probe"，實際零行為變更）
+  - `d27eed9` fix(shared)：新增 `utcDayStart()`，Uniswap + Curve adapter 的 citation window 歸一化為 containing UTC day（與我方 `44a57ae` ranking 層 UTC-day bucket **互補不衝突**——檔案零重疊）
+  - `c9955a8` / `da2b40c` / `24f7b34` docs：design/plan/README/prompts 對齊 verified Messari DEX query path；HANDOFF 重寫為 discover-yields-complete
+- 我方前一 session 的修復 batch（`a745f67` → `44a57ae` 等 9-10 commits）與之合流，HEAD = `24f7b34`。
+
+### 本 loop 的 DISCOVER / PLAN / VERIFY（deep + strict）
+
+- **DISCOVER（morpheus，20:00）**：johnku 5 commits 逐個拆解；接手工作清單（Batch 1: 13 commits yield discovery Task 1-7；Batch 3: 5 commits 收尾）；比賽進展 = 可提交狀態；風險 R1 probe flakiness 🔴 / R2 checkpoint 落後 🟡 / R3 Math.round-vs-floor 🟡（0 實際風險）。
+- **PLAN（architect，20:05）**：`docs/superpowers/plans/2026-09-12-competition-finish-line.md` — Phase 0 凍結驗證 → Phase 1 錄影 → Phase 2 提交 → Phase 3 可選小修（F1 checkpoint / F2 windowKey floor / F3 correction log）。
+- **VERIFY（smith，20:10）**：gates 逐項實測（build 3/3、test 209/209、eval 27/27、smoke 6、probe:protocols 4/4、probe:yields 2/2 且 readings 逐字吻合）→ **Measured Score 95/100 PASS**（0 Critical / 0 High / 1 Medium 防禦性 M-1: windowKey round→floor）。
+- **決策**：✅ 交付分析報告；比賽收尾計畫存檔；HANDOFF 更新 checkpoint/commit history；F2（windowKey floor）建議提交後再做（不擋提交）。
+
+### 交付物
+
+- `docs/reviews/2026-09-12-johnku-morning-update-analysis.md` — johnku 更新分析 + 比賽進展報告
+- `docs/superpowers/plans/2026-09-12-competition-finish-line.md` — 收尾執行計畫
+- 本 loop state 更新 + HANDOFF 更新
