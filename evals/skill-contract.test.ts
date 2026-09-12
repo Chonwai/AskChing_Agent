@@ -14,12 +14,33 @@ describe("AskChing skill", () => {
     expect(skill).toContain("risk_scan");
     expect(skill).toContain("analyze_markets");
     expect(skill).toContain("analyze_trends");
+    expect(skill).toContain("discover_yields");
     expect(skill).toContain("yield_opportunity");
     expect(skill).toContain("liquidity_stress");
     expect(skill).toContain("evidence_quality");
     expect(skill).toContain("above 90%");
     expect(skill).toContain("asOf");
     expect(skill).not.toMatch(/fetch\(|query AskChing|JCNWRy|AwoxEZ/);
+  });
+
+  it("teaches safe cross-venue yield discovery without hiding a second engine", async () => {
+    const skill = await readFile(skillUrl, "utf8");
+    for (const expected of [
+      "Uniswap V3",
+      "Curve",
+      "ranked separately",
+      "dailySupplySideFeesUsd",
+      "estimatedFeeApr",
+      "fee_returns_variable",
+      "impermanent_loss",
+      "concentrated_liquidity",
+      "position_range_dependent",
+      "multi_asset_pool",
+      "crossDexWinner",
+      "no transaction"
+    ]) {
+      expect(skill).toContain(expected);
+    }
   });
 
   it("tells the model about the generalized metric/asset/protocol surface", async () => {

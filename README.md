@@ -4,7 +4,7 @@ AskChing is a Grok-orchestrated research MCP for ETHOnline 2026. It fans out acr
 
 ## Status
 
-The repository was built from scratch for ETHOnline 2026 (first commit after the hackathon start). Its five MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
+The repository was built from scratch for ETHOnline 2026 (first commit after the hackathon start). Its six MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
 
 ## Built on The Graph, for the agent economy
 
@@ -21,6 +21,7 @@ AskChing treats provenance as a structural invariant, not a display option:
 - `risk_scan` reports peer-relative spot signals and explicitly states it is **not** historical time-series analysis.
 - `analyze_markets` exposes every finding's calculation, supporting values, metric-aware citations, confidence, caveats, gaps, and `asOf` instead of hiding them behind a score.
 - `analyze_trends` reads cited daily history over a `7d` or `30d` window and reports per-protocol change, change percent, least-squares slope per day, direction, and volatility. Every daily point ships with its own citation, and a window wider than the sources can cover becomes an explicit gap instead of padded data.
+- `discover_yields` discovers Ethereum-mainnet USDC opportunities across lending, Uniswap V3, and Curve while keeping lending supply APY and LP fee APR in separate rankings. A cross-DEX winner requires both DEX sources on the same complete UTC day.
 
 This means AskChing refuses to fabricate. When it cannot verify, it says so.
 
@@ -78,6 +79,14 @@ Trend analysis example (fixture mode):
 DEMO_LIVE=0 pnpm askching -- "Is USDC utilization trending up across Aave V3, Compound V3, and Spark Lend over the last 7 days?"
 ```
 
+Cross-venue yield discovery example (fixture mode):
+
+```bash
+DEMO_LIVE=0 pnpm askching -- "Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep the rankings separate and cite every formula."
+```
+
+Credentialed live discovery uses the same prompt with `DEMO_LIVE=1`. Run `pnpm probe:yields` first; only DEX sources marked live by that exact-query probe may be described as live.
+
 > The Grok reasoning layer is currently a CLI. Packaging it as an MCP server is on the roadmap — once there, any MCP-compatible agent can call Grok-driven AskChing reasoning directly. The MCP tool layer is already cross-platform today (see `docs/cross-platform.md`).
 
 ## Run the comparison
@@ -95,6 +104,8 @@ pnpm live:smoke
 ```
 
 Live mode queries the Ethereum mainnet Messari lending subgraphs listed in `demos/prompts.md`. Four protocols are configured live and verified to return USDC data; a naming of any other registered deployment fails closed and comes back as an explicit gap. Missing credentials surface as a fail-closed evidence error on the MCP surface (`Need at least 2 cited sources ...`) rather than a credential message; the raw data source and the CLI still throw `GRAPH_API_KEY is required when DEMO_LIVE=1`. Failed sources are reported as explicit gaps only when at least two cited sources remain.
+
+For DEX LPs, the reported historical fee estimate is `estimatedFeeApr = dailySupplySideFeesUsd / tvlUsd × 365 × 100`. It uses the latest complete UTC daily snapshot and base trading fees only. It excludes incentives, gas, compounding, price movement, and position-specific Uniswap V3 range performance; it is not a forecast or recommendation.
 
 ## MCP client configuration
 
@@ -150,7 +161,7 @@ For live use, set `DEMO_LIVE=1` and pass `GRAPH_API_KEY` through the client's se
 
 ## Current scope
 
-`compare_markets`, `research_brief`, `risk_scan`, `analyze_markets`, and `analyze_trends` are implemented. The analysis tools support `yield_opportunity`, `liquidity_stress`, and `evidence_quality`; `analyze_markets` reads current observations and marks historical intent as an explicit spot-only gap, while `analyze_trends` reads cited `7d`/`30d` daily history and stays descriptive — it never forecasts. AskChing supports registered metrics and assets where the selected live subgraphs expose comparable data. It is research software, not a forecast, trading bot, or transaction executor.
+`compare_markets`, `research_brief`, `risk_scan`, `analyze_markets`, `analyze_trends`, and `discover_yields` are implemented. Yield discovery v1 is USDC-only on Ethereum mainnet, compares the existing lending sources with eligible USDC/USDT/DAI pools, and never combines lending and LP rankings. The analysis tools support `yield_opportunity`, `liquidity_stress`, and `evidence_quality`; `analyze_markets` reads current observations and marks historical intent as an explicit spot-only gap, while `analyze_trends` reads cited `7d`/`30d` daily history and stays descriptive — it never forecasts. AskChing is research software, not a forecast, trading bot, or transaction executor.
 
 ## Why not just official Subgraph MCP?
 

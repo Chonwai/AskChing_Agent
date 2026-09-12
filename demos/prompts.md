@@ -44,6 +44,12 @@ A utilization variant:
 
 Expected path: `analyze_trends` with `metric: "utilization"`, `window: "7d"`. When a protocol has fewer snapshots than the requested window, the result reports an explicit gap and computes the trend only from the available points — it never pads or extrapolates. The trend is descriptive; it is not a forecast or financial recommendation.
 
+## Demo G — cross-venue USDC yield discovery (20–30 seconds)
+
+> Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep lending and LP rankings separate, show every formula and citation, explain the risk flags, and do not propose a transaction.
+
+Expected path: Grok selects `discover_yields`. The screen shows two rankings, not one blended winner: lending uses current variable supply APY, while DEX LP uses `dailySupplySideFeesUsd / tvlUsd × 365 × 100` on the latest complete common UTC day. A non-null `crossDexWinner` requires qualifying cited Uniswap V3 and Curve results on that day. Point out the $1M default TVL floor, the pool addresses, `asOf`, source gaps, and that incentives, gas, compounding, and position-level returns are excluded. Keep the rankings separate and do not call the result a recommendation.
+
 
 ## Locked live sources
 
@@ -52,5 +58,7 @@ Expected path: `analyze_trends` with `metric: "utilization"`, `window: "7d"`. Wh
 | Aave V3 | Ethereum mainnet | `JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk` |
 | Compound V3 | Ethereum mainnet | `AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9` |
 | Spark Lend | Ethereum mainnet | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` |
+| Uniswap V3 | Ethereum mainnet | `4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6` |
+| Curve | Ethereum mainnet | `3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF` |
 
-All three sources use the Messari lending schema and expose market input tokens plus lender rates. The IDs above match `packages/shared/src/source-config.ts`. Recheck index status in Graph Explorer before recording the demo.
+The lending sources use the Messari lending schema. The DEX rows are pinned candidates in `packages/shared/src/yield-sources.ts`; run `pnpm probe:yields` and check their `live` flags before calling them live in a recording. Recheck index status in Graph Explorer before recording the demo.

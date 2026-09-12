@@ -54,5 +54,24 @@ describe("hackathon showcase package", () => {
     expect(readme).toContain("2026-09-09-showcase-run-script.md");
     expect(readme).toContain("2026-09-09-ethglobal-copy.md");
     expect(readme).toContain("2026-09-09-pre-recording-checklist.md");
+    expect(readme).toContain("discover_yields");
+    expect(readme).toContain("Uniswap V3");
+    expect(readme).toContain("Curve");
+    expect(readme).toMatch(/dailySupplySideFeesUsd[\s\S]*?tvlUsd[\s\S]*?365[\s\S]*?100/);
+  });
+
+  it("includes a concise cross-venue yield demo with locked source ids", async () => {
+    const prompts = await read("demos/prompts.md");
+    for (const expected of [
+      "Demo G",
+      "discover_yields",
+      "Uniswap V3",
+      "Curve",
+      "rankings separate",
+      "4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6",
+      "3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF"
+    ]) {
+      expect(prompts).toContain(expected);
+    }
   });
 });

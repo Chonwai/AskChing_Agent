@@ -1,7 +1,7 @@
 interface:
   display_name: "AskChing"
-  short_description: "Compare and analyze cited DeFi market data"
-  default_prompt: "Use $askching to analyze current USDC yield opportunity across supported protocols with calculations, citations, confidence, gaps, and as-of time."
+  short_description: "Compare cited DeFi markets and discover USDC yields"
+  default_prompt: "Use $askching to discover USDC lending and stablecoin LP yields with separate rankings, formulas, citations, risks, gaps, and as-of time."
 
 policy:
   allow_implicit_invocation: false
@@ -10,7 +10,7 @@ dependencies:
   tools:
     - type: "mcp"
       value: "askching"
-      description: "AskChing MCP server for cited multi-subgraph comparison and transparent market analysis"
+      description: "AskChing MCP server for cited multi-subgraph comparison, analysis, trends, and USDC yield discovery"
       transport: "stdio"
       command: "npx"
       args:

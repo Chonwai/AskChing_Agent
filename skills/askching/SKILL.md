@@ -1,12 +1,13 @@
 ---
 name: askching
-description: Use when a user asks to compare or analyze supported DeFi markets, review 7/30-day metric trends, request a cited multi-subgraph research brief, or scan supported protocols for evidence-first market signals through the AskChing MCP.
+description: Use when a user asks to compare or analyze supported DeFi markets, discover USDC lending and stablecoin LP yields, review trends, request a cited brief, or scan supported protocols through AskChing MCP.
 allowed-tools:
   - compare_markets
   - research_brief
   - risk_scan
   - analyze_markets
   - analyze_trends
+  - discover_yields
 version: 0.1.0
 license: MIT
 compatibility:
@@ -38,6 +39,7 @@ Use AskChing as the research tool layer. Treat its cited structured output as ev
 | Look for peer-relative metric changes | `risk_scan` |
 | Explain yield opportunity, liquidity stress, or evidence quality with transparent calculations | `analyze_markets` |
 | Ask how a metric moved over the last 7 or 30 days | `analyze_trends` |
+| Discover USDC yield across lending, Uniswap V3, and Curve | `discover_yields` |
 
 The implementation supports four metrics — `supply_apy`, `borrow_apy`, `tvl`, `utilization` — four assets — `USDC`, `USDT`, `DAI`, `WETH` — and four live protocols — `aave-v3`, `compound-v3`, `spark-lend`, `aave-v2`. Older deployments (`uwu-lend`, `zerolend`, `compound-v2`, `rari-fuse`, `makerdao`, `euler`) are registered but not live: they either lack a USDC market or predate the shared schema, so a request naming them fails closed and comes back as an explicit gap. `compare_markets`, `research_brief`, `risk_scan`, and `analyze_markets` answer from a current snapshot, so `risk_scan` must never be described as historical analysis. Only `analyze_trends` carries the time dimension, over a `7d` or `30d` window of daily snapshots.
 
@@ -58,6 +60,8 @@ For `analyze_trends`, pass one metric, at least two protocols, and an explicit `
 - `30d` over a shorter history returns explicit `gaps`; never describe the result as a full month of data.
 - Trends are descriptive history. Report them as measured movement, never as a forecast, risk score, trading instruction, or financial recommendation.
 - Route history questions here rather than to `risk_scan`, which has no time dimension.
+
+For `discover_yields`, v1 supports USDC on Ethereum mainnet with USDT/DAI counterparts. Keep lending supply APY and DEX LP `estimatedFeeApr` ranked separately. Show `dailySupplySideFeesUsd`, `tvlUsd`, and the formula `fees / TVL × 365 × 100`; never call them equivalent returns. Carry `fee_returns_variable`, `impermanent_loss`, and other returned risk flags. Uniswap V3 adds `concentrated_liquidity` and `position_range_dependent`; Curve pools may add `multi_asset_pool`. Use `crossDexWinner` only when both DEX venues share a complete UTC day. Make no transaction, deposit instruction, forecast, or recommendation.
 
 ## Call pattern
 
@@ -100,6 +104,12 @@ Trend input:
 }
 ```
 
+Yield discovery input:
+
+```json
+{ "asset": "USDC", "venues": ["lending", "uniswap-v3", "curve"], "minTvlUsd": 1000000 }
+```
+
 ## Evidence gate
 
 Before using a number, confirm its row includes `subgraphId`, `timestamp`, and `queryHash`. Confirm a comparison or quantitative finding contains at least two distinct subgraph sources. If either check fails, report the evidence gap and do not rank or synthesize the values.
@@ -107,6 +117,8 @@ Before using a number, confirm its row includes `subgraphId`, `timestamp`, and `
 For `analyze_trends`, every entry in `findings[].points` must also carry `block` and a `days` snapshot index, and the series must be ordered by `days`. If a window returned fewer points than requested, relay the matching gap instead of implying full coverage.
 
 If a tool returns an error or an explicit gap, relay that limitation. Do not replace it with remembered rates, inferred risk scores, or uncited market data.
+
+For DEX rows, also require `poolAddress`, `windowStart`, and `windowEnd`. A non-null `crossDexWinner` requires qualifying cited Uniswap V3 and Curve rows on that same window.
 
 ## Output shape
 
