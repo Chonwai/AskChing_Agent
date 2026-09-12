@@ -18,6 +18,17 @@ function uniswapPayload() {
   } };
 }
 
+function uniswapPoolsPayload() {
+  return { data: {
+    usdtPools: [{ id: "0x1111111111111111111111111111111111111111", inputTokens: [
+      { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
+      { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" }
+    ] }],
+    daiPools: [],
+    _meta: { deployment: "QmUni", block: { number: 123, timestamp: day + 86_500 } }
+  } };
+}
+
 function curvePayload() {
   return { data: {
     liquidityPoolDailySnapshots: [{
@@ -58,7 +69,12 @@ describe("createDexYieldDataSource", () => {
       const body = JSON.parse(String(init?.body)) as { operationName: string };
       const venue = body.operationName.includes("Uniswap") ? "uniswap-v3" : "curve";
       if (venue === failure) throw new Error("graph-key leaked by provider");
-      return new Response(JSON.stringify(venue === "uniswap-v3" ? uniswapPayload() : curvePayload()), { status: 200 });
+      if (venue === "uniswap-v3") {
+        // two-phase Uniswap: first fetch is the pools query, later fetches are snapshots
+        const isPools = String(body.query ?? "").includes("usdtPools");
+        return new Response(JSON.stringify(isPools ? uniswapPoolsPayload() : uniswapPayload()), { status: 200 });
+      }
+      return new Response(JSON.stringify(curvePayload()), { status: 200 });
     });
     const source = createDexYieldDataSource(
       { DEMO_LIVE: "1", GRAPH_API_KEY: "graph-key" },

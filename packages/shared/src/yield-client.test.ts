@@ -144,13 +144,12 @@ function mockTwoPhaseFetch(
   snapMap: Record<string, UniswapSnapResponse>
 ) {
   return vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
-    const body = JSON.parse(String(init?.body)) as { query?: string };
+    const body = JSON.parse(String(init?.body)) as { query?: string; variables?: { pool?: string } };
     if (isPoolsQuery(body)) {
       return new Response(JSON.stringify(poolsResponse), { status: 200 });
     }
-    // Snapshot query — extract pool id from `where: { pool: "0x..." }`
-    const match = body.query?.match(/pool:\s*"(0x[0-9a-f]+)"/i);
-    const poolId = match?.[1]?.toLowerCase();
+    // Snapshot query — pool id comes from the GraphQL variables, not the query text.
+    const poolId = body.variables?.pool?.toLowerCase();
     if (poolId && snapMap[poolId]) {
       return new Response(JSON.stringify(snapMap[poolId]), { status: 200 });
     }
@@ -248,12 +247,11 @@ describe("UniswapV3YieldAdapter", () => {
       data: { usdtPools: [UNI_POOL_1111], daiPools: [UNI_POOL_2222] }
     };
     const fetchImpl = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
-      const body = JSON.parse(String(init?.body)) as { query?: string };
+      const body = JSON.parse(String(init?.body)) as { query?: string; variables?: { pool?: string } };
       if (isPoolsQuery(body)) {
         return new Response(JSON.stringify(poolsResp), { status: 200 });
       }
-      const match = body.query?.match(/pool:\s*"(0x[0-9a-f]+)"/i);
-      const poolId = match?.[1]?.toLowerCase();
+      const poolId = body.variables?.pool?.toLowerCase();
       if (poolId === "0x1111111111111111111111111111111111111111") {
         throw new Error("network timeout");
       }
