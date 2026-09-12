@@ -4,6 +4,15 @@ import { createMarketDataSource, type LiveDataSource } from "./data-source.js";
 import { LIVE_SOURCES } from "./source-config.js";
 
 describe("createMarketDataSource (fixture mode)", () => {
+  it("exposes DEX yield opportunities through the shared facade", async () => {
+    const source = createMarketDataSource({ DEMO_LIVE: "0" });
+    const results = await source.getDexYieldOpportunities({
+      venues: ["uniswap-v3"], stablecoins: ["DAI"]
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0]?.observations.every(value => value.venue === "uniswap-v3")).toBe(true);
+  });
+
   it("returns two cited observations without fetching in fixture mode", async () => {
     const fetchImpl = vi.fn(() => {
       throw new Error("fixture mode must not fetch");

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { MARKET_FIXTURES, MARKET_HISTORY_FIXTURES } from "./fixtures.js";
 import { LIVE_PROTOCOLS, PROTOCOL_REGISTRY } from "./source-config.js";
+import { DEX_YIELD_FIXTURES } from "./yield-fixtures.js";
+import { DEX_YIELD_SOURCES } from "./yield-sources.js";
 
 /**
  * Guards the fixture/live contract.
@@ -16,6 +18,28 @@ import { LIVE_PROTOCOLS, PROTOCOL_REGISTRY } from "./source-config.js";
  * These tests make that class of drift fail loudly.
  */
 describe("fixture / live consistency", () => {
+  it("keeps every DEX fixture on a registered source with fixture-labelled deployment evidence", () => {
+    const sources = new Map(DEX_YIELD_SOURCES.map(source => [source.venue, source]));
+    for (const fixture of DEX_YIELD_FIXTURES) {
+      const source = sources.get(fixture.venue);
+      expect(source, `${fixture.venue} is not registered`).toBeDefined();
+      expect(fixture.subgraphId).toBe(source?.subgraphId);
+      expect(fixture.deploymentId).toMatch(/^fixture:/);
+    }
+  });
+
+  it("requires precise notes for disabled DEX sources and fixtures for enabled ones", () => {
+    const fixtureVenues = new Set(DEX_YIELD_FIXTURES.map(value => value.venue));
+    for (const source of DEX_YIELD_SOURCES) {
+      if (source.live) {
+        expect(fixtureVenues).toContain(source.venue);
+        expect(source.note).toBeUndefined();
+      } else {
+        expect(source.note?.trim().length).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("only uses protocols that are registered", () => {
     const registered = new Set(PROTOCOL_REGISTRY.map((source) => source.protocol));
     const used = new Set([

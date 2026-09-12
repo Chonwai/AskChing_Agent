@@ -25,13 +25,17 @@ import {
   assertLiveProtocols,
   type SubgraphSource
 } from "./source-config.js";
+import {
+  createDexYieldDataSource,
+  type DexYieldDataSource
+} from "./yield-data-source.js";
 
 export interface AskChingEnvironment {
   DEMO_LIVE?: string;
   GRAPH_API_KEY?: string;
 }
 
-export interface MarketDataSource {
+export interface MarketDataSource extends DexYieldDataSource {
   getObservations(
     metric: MarketMetric | MarketMetricId,
     protocols?: readonly ProtocolSlug[],
@@ -131,8 +135,10 @@ export function createMarketDataSource(
   environment: AskChingEnvironment,
   fetchImpl: typeof fetch = fetch
 ): MarketDataSource {
+  const dexYieldDataSource = createDexYieldDataSource(environment, fetchImpl);
   if (environment.DEMO_LIVE !== "1") {
     return {
+      getDexYieldOpportunities: dexYieldDataSource.getDexYieldOpportunities,
       async getObservations(metric, protocols, asset) {
         // Boundary normalization: legacy aliases resolve to the generalized
         // metric id (+ asset hint) so fixture filtering is metric-aware.
@@ -166,6 +172,7 @@ export function createMarketDataSource(
 
   const liveSource: LiveDataSource = {
     lastGaps,
+    getDexYieldOpportunities: dexYieldDataSource.getDexYieldOpportunities,
     async getObservations(metric, protocols, asset) {
       const {
         apiKey,
