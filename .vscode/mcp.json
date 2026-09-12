@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "askching": {
+      "type": "http",
+      "url": "https://ask-ching-agent.vercel.app/api/mcp"
+    }
+  }
+}
