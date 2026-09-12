@@ -1,7 +1,7 @@
 ---
 title: AskChing handoff
-updated: 2026-09-12
-checkpoint: 24f7b34
+updated: 2026-09-13
+checkpoint: 11aff9b
 status: competition-finish-line-ready
 ---
 
@@ -45,8 +45,8 @@ Read this box, then read §Corrections before trusting any older document.
 ## Current checkpoint
 
 - Branch `main`, tracking public `origin/main`.
-- **`24f7b34`** is the latest pushed commit: `docs(handoff): record verified yield discovery release` (johnku, 2026-09-12 19:44).
-- The previous handoff pointed at `da2b40c`; superseded by johnku's post-integration commits `1e69e05` → `24f7b34`.
+- **`11aff9b`** is the latest pushed commit: `fix(shared): align windowKey bucketing to UTC day floor` (2026-09-13). It supersedes `24f7b34` and applies Phase 3 fix F2 (see §Corrections).
+- The previous handoff pointed at `24f7b34`; superseded by the Phase 3 small-fix batch.
 - Working tree clean; credentials stay local in `.env` (git-ignored).
 - **Competition finish-line plan** is at `docs/superpowers/plans/2026-09-12-competition-finish-line.md` (Phase 0 freeze → Phase 1 record → Phase 2 submit → Phase 3 optional fixes). ETHOnline deadline: 2026-09-13 12:00 PM EDT (HK 09-14 00:00).
 - `.edison/state/*.md` **is tracked** in this repo, not ignored — loop state is part of the record.
@@ -131,6 +131,8 @@ That behaviour is unchanged today. What changed since: a fifth tool (`analyze_tr
 | DEX fix + Task 8 (chonwai) | `a745f67` → `6a36b96` | probe, Messari-schema rewrite, two-phase lookup, live flip, UTC-day bucket |
 | Yield release (johnku) | `1e69e05` → `24f7b34` | probe cleanup, adapter UTC-day normalization, docs alignment, handoff rewrite (5 commits) |
 | Competition finish-line | `docs/superpowers/plans/2026-09-12-competition-finish-line.md` | Phase 0 freeze → Phase 1 record → Phase 2 submit → Phase 3 optional fixes |
+| Project context snapshot | `5055da2` → `8505c49` | `docs/.project-context.md` cache for Edison skills (inventory, conventions, rubric anchors) |
+| Phase 3 small fixes | `11aff9b` | F2 `windowKey` UTC-day bucketing aligned to `Math.floor` (see §Corrections) |
 
 History was not squashed. Every batch was pushed to `origin/main`.
 
@@ -253,6 +255,12 @@ Reviewed by smith (strict, measured 95/100 PASS):
 - One latent inconsistency (no runtime impact today): `yield-discovery.ts` `windowKey` uses `Math.round`, adapters use `Math.floor` — unify to `Math.floor` after submission (plan F2).
 
 Full report: `docs/reviews/2026-09-12-johnku-morning-update-analysis.md`. Competition finish-line: `docs/superpowers/plans/2026-09-12-competition-finish-line.md`.
+
+### Phase 3 small fixes (2026-09-13, `11aff9b`)
+
+- **F2 applied — `windowKey` bucketing aligned to `Math.floor`.** `packages/shared/src/yield-discovery.ts` used `Math.round(Date.parse(windowStart)/DAY_MS)` while both DEX adapters normalize citation windows with `utcDayStart()` (`Math.floor`). With normalized midnight starts both agree, but a non-normalized `windowStart` just before midnight would be bucketed to the next day by `round` and the same day by `floor`, splitting ranking from citations. Now both use `Math.floor`; existing tests (all midnight-start fixtures) are unaffected.
+- **R1 DEX probe flakiness is real — record before recording.** On 2026-09-12 the first `pnpm probe:yields` run returned 0/2 FAIL (gateway transient), rerun 2/2 OK. Re-run both probes immediately before recording the demo; a one-off fail is expected, a second consecutive fail is a signal to investigate.
+- F1 applied — checkpoint advanced to `11aff9b`.
 
 ### Two habits worth keeping
 
