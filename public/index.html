@@ -6,125 +6,201 @@
     <title>AskChing — cited DeFi research over The Graph</title>
     <meta
       name="description"
-      content="AskChing is a remote MCP server for cited, multi-subgraph DeFi research. Six tools, one URL, works in Claude, Cursor, VS Code, Codex, Gemini CLI, and Grok Bot."
+      content="AskChing is a remote MCP server for cited, multi-subgraph DeFi research. Seven tools, one URL, works in Claude, Cursor, VS Code, Codex, Gemini CLI, and Grok Bot."
     />
     <style>
       :root {
         color-scheme: dark;
-        --bg: #0b0e14;
-        --panel: #141922;
-        --border: #232a36;
-        --text: #e6e9ef;
-        --muted: #98a2b3;
-        --accent: #6ee7b7;
-        --warn: #fbbf24;
+        --bg:         #05070a;
+        --bg-deep:    #020304;
+        --panel:      #0a100e;
+        --panel-2:    #0d1713;
+        --border:     #1d2b24;
+        --border-glow:#1f8a5a;
+        --text:       #dcf3e5;
+        --muted:      #8aa79a;
+        --faint:      #5c7368;
+        --green:      #3df59a;
+        --green-dim:  #21b977;
+        --green-faint:#0f4a33;
+        --cyan:       #35d6ff;
+        --magenta:    #ff5aa0;
+        --warn:       #ffc857;
+        --red:        #ff6b6b;
       }
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
-        margin: 0;
-        padding: 3rem 1.25rem 4rem;
-        background: var(--bg);
-        color: var(--text);
-        font: 16px/1.65 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg); color: var(--text);
+        font: 16px/1.65 ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+        min-height: 100vh; overflow-x: hidden;
       }
-      main { max-width: 46rem; margin: 0 auto; }
-      h1 { font-size: 1.9rem; margin: 0 0 .4rem; letter-spacing: -.02em; }
-      .tag { color: var(--muted); margin: 0 0 2rem; }
-      .lead { font-size: 1.05rem; margin: 0 0 2rem; }
-      .lead strong { color: var(--accent); }
+      body::after {
+        content: ""; position: fixed; inset: 0; z-index: 2; pointer-events: none;
+        background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+      }
+      body::before {
+        content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+        background: radial-gradient(ellipse at 50% 30%, transparent 55%, rgba(0,0,0,.55) 100%);
+      }
+      #rain, #nodes { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+      #rain { opacity: .5; }
+      #nodes { opacity: .35; }
+      main { position: relative; z-index: 3; max-width: 64rem; margin: 0 auto; padding: 4.5rem 1.25rem 5rem; }
+      .wide { max-width: 78rem; }
+      .hud { font-size: 11px; text-transform: uppercase; letter-spacing: .18em; color: var(--muted); margin: 3rem 0 .9rem; }
+      .hud::before { content: "▚ "; color: var(--green); }
+      h1 {
+        font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 700; letter-spacing: .06em; line-height: 1.1;
+        color: var(--green); text-shadow: 0 0 24px rgba(61,245,154,.35), 0 0 2px rgba(61,245,154,.6);
+      }
+      .tag { color: var(--muted); margin: .6rem 0 2.2rem; font-size: 1.05rem; }
+      .lead { font-size: 1.08rem; margin: 0 0 1.6rem; max-width: 56ch; }
+      .lead strong { color: var(--green); }
       h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 2.25rem 0 .75rem; }
-      ul.tools { list-style: none; padding: 0; margin: 0; }
-      ul.tools li {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: .6rem;
-        padding: .7rem .9rem;
-        margin-bottom: .5rem;
-        display: flex;
-        gap: .75rem;
-        align-items: baseline;
+      .chain {
+        display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: .6rem; padding: 1rem 1.2rem; margin: 0 0 1rem;
       }
+      .chain .node {
+        display: inline-flex; align-items: center; gap: .5rem;
+        font-size: .8rem; padding: .35rem .7rem; border-radius: .35rem; border: 1px solid var(--border);
+      }
+      .chain .node .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+      .chain .node.sub { color: var(--cyan); }
+      .chain .node.sub .dot { background: var(--cyan); }
+      .chain .node.blk { color: var(--green); }
+      .chain .node.blk .dot { background: var(--green); }
+      .chain .node.hsh { color: var(--magenta); }
+      .chain .node.hsh .dot { background: var(--magenta); }
+      .chain .arrow { color: var(--faint); font-size: .9rem; }
+      .chain .ok { color: var(--green); }
+      .tools { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+      @media (max-width: 720px) { .tools { grid-template-columns: 1fr; } }
+      .tools li {
+        background: var(--panel); border: 1px solid var(--border); border-radius: .55rem;
+        padding: .75rem .95rem; display: flex; flex-direction: column; gap: .3rem;
+        clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+        transition: border-color .2s, background .2s;
+      }
+      .tools li:hover { border-color: var(--border-glow); background: var(--panel-2); }
+      .tools .tool-id { color: var(--green); font-weight: 700; }
+      .tools .tool-desc { color: var(--muted); font-size: .875rem; }
       code {
-        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-        font-size: .875em;
-        background: #1b212c;
-        border: 1px solid var(--border);
-        border-radius: .35rem;
-        padding: .1rem .35rem;
+        font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: .875em; background: var(--panel-2); border: 1px solid var(--border);
+        border-radius: .35rem; padding: .1rem .35rem; color: var(--green-dim);
       }
-      pre {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: .6rem;
-        padding: 1rem;
-        overflow-x: auto;
-        margin: 0 0 .75rem;
-      }
-      pre code { background: none; border: 0; padding: 0; }
+      pre { background: var(--bg-deep); border: 1px solid var(--border); border-radius: .6rem; padding: 1rem; overflow-x: auto; margin: 0 0 .75rem; position: relative; }
+      pre code { background: none; border: 0; padding: 0; color: var(--text); }
+      .prompt { color: var(--magenta); }
+      .ok-text { color: var(--green); }
+      .refused { color: var(--warn); }
+      .terminal { background: var(--bg-deep); border: 1px solid var(--border); border-radius: .6rem; margin: 0 0 1rem; overflow: hidden; }
+      .terminal .bar { display: flex; gap: .4rem; padding: .6rem .9rem; border-bottom: 1px solid var(--border); background: var(--panel); }
+      .terminal .bar .circle { width: 10px; height: 10px; border-radius: 50%; }
+      .terminal .bar .r { background: var(--red); }
+      .terminal .bar .y { background: var(--warn); }
+      .terminal .bar .g { background: var(--green); }
+      .terminal .lines { padding: .9rem 1rem; font-size: .85rem; line-height: 1.7; }
+      .terminal .q { color: var(--green-dim); }
+      .terminal .a { color: var(--muted); }
+      .terminal .prompt-line { color: var(--magenta); }
       .muted { color: var(--muted); }
-      .note { border-left: 3px solid var(--warn); padding-left: .9rem; color: var(--muted); }
-      a { color: var(--accent); }
-      footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .875rem; }
+      .note { border-left: 3px solid var(--warn); padding-left: .9rem; color: var(--muted); margin: 1.2rem 0; }
+      a { color: var(--green); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      button.copy {
+        position: absolute; top: .5rem; right: .5rem; background: var(--panel); color: var(--muted);
+        border: 1px solid var(--border); border-radius: .35rem; padding: .25rem .6rem;
+        font: 11px ui-monospace, Menlo, monospace; cursor: pointer;
+      }
+      button.copy:hover { border-color: var(--border-glow); color: var(--green); }
+      button.copy:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
+      .status { display: inline-flex; align-items: center; gap: .5rem; color: var(--green); }
+      .status .led { width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s ease-in-out infinite; }
+      @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+      .cursor { display: inline-block; width: .55em; height: 1.1em; vertical-align: -.2em; background: var(--green); animation: blink 1.1s steps(1) infinite; }
+      @keyframes blink { 0%,55% { opacity: 1 } 56%,100% { opacity: 0 } }
+      footer { margin-top: 3.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--faint); font-size: .8rem; }
+      @media (prefers-reduced-motion: reduce) {
+        .cursor, .status .led { animation: none; opacity: .85; }
+        #rain, #nodes { display: none; }
+        body::after { background: none; }
+      }
     </style>
   </head>
   <body>
-    <main>
-      <h1>AskChing</h1>
-      <p class="tag">Cited DeFi research over The Graph — as a remote MCP server.</p>
+    <canvas id="rain" aria-hidden="true"></canvas>
+    <canvas id="nodes" aria-hidden="true"></canvas>
 
-      <p class="lead">
-        AskChing answers natural-language DeFi questions across multiple live subgraphs and returns every number
-        with its provenance. <strong>If it cannot cite at least two sources, it refuses to answer.</strong>
-      </p>
+    <main class="wide">
+      <section aria-label="hero">
+        <h1>ASKCHING</h1>
+        <p class="tag">Cited DeFi research over The Graph — as a remote MCP server.</p>
+        <p class="lead">
+          AskChing answers natural-language DeFi questions across multiple live subgraphs and returns every number
+          with its provenance. <strong>If it cannot cite at least two sources, it refuses to answer.</strong>
+        </p>
+        <div class="chain" aria-label="evidence chain">
+          <span class="node sub"><span class="dot"></span>SUBGRAPH AAVE_V3 0x9c&hellip;</span>
+          <span class="arrow">──query──&gt;</span>
+          <span class="node blk"><span class="dot"></span>BLOCK 21,784,325</span>
+          <span class="arrow">──hash──&gt;</span>
+          <span class="node hsh"><span class="dot"></span>0x4f3a&hellip;e2 <span class="ok">✓ verified</span></span>
+        </div>
+        <p class="muted" style="font-size:.8rem">
+          EVIDENCE CHAIN — every figure carries subgraph id · block · query hash, or AskChing fails closed.
+        </p>
+      </section>
 
-      <h2>Six tools</h2>
+      <p class="hud">section 0x02 · seven tools</p>
       <ul class="tools">
-        <li><code>compare_markets</code><span class="muted">Ranked cross-protocol metric comparison</span></li>
-        <li><code>analyze_markets</code><span class="muted">Yield, liquidity stress, evidence quality</span></li>
-        <li><code>analyze_trends</code><span class="muted">7d / 30d cited daily history with slope and volatility</span></li>
-        <li><code>research_brief</code><span class="muted">Conclusion, key figures, risks, follow-up</span></li>
-        <li><code>risk_scan</code><span class="muted">Peer-relative spot signals with explicit gaps</span></li>
-        <li><code>discover_yields</code><span class="muted">Cross-venue USDC yield discovery: lending + DEX LP rankings</span></li>
+        <li><span class="tool-id">compare_markets</span><span class="tool-desc">Ranked cross-protocol metric comparison</span></li>
+        <li><span class="tool-id">analyze_markets</span><span class="tool-desc">Yield, liquidity stress, evidence quality</span></li>
+        <li><span class="tool-id">analyze_trends</span><span class="tool-desc">7d / 30d cited daily history with slope and volatility</span></li>
+        <li><span class="tool-id">research_brief</span><span class="tool-desc">Conclusion, key figures, risks, follow-up</span></li>
+        <li><span class="tool-id">risk_scan</span><span class="tool-desc">Peer-relative spot signals with explicit gaps</span></li>
+        <li><span class="tool-id">discover_yields</span><span class="tool-desc">Cross-venue USDC yield: lending + DEX LP rankings</span></li>
+        <li><span class="tool-id">get_info</span><span class="tool-desc">Self-description: what AskChing is and how to use it</span></li>
       </ul>
 
-      <h2>Try it now</h2>
-      <p class="lead" style="margin-bottom: 1rem">
-        Copy any question below into your MCP client (VS Code, Claude, Cursor, Gemini CLI…) once connected.
-        Every answer comes with subgraph IDs, blocks, timestamps, and query hashes — or an explicit
-        &ldquo;cannot cite two sources&rdquo; refusal.
-      </p>
-      <ul class="tools">
-        <li><code>compare_markets</code><span class="muted">Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend right now. Rank the results, cite each source, and state the as-of time.</span></li>
-        <li><code>analyze_trends</code><span class="muted">How has USDC supply APY trended across Aave V3, Compound V3, and Spark Lend over the last seven days? Give each protocol's direction and change, and cite every data point.</span></li>
-        <li><code>discover_yields</code><span class="muted">Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep lending and LP rankings separate, show every formula and citation, and do not propose a transaction.</span></li>
-      </ul>
-      <p class="muted">
-        Want to see it refuse? Ask for a single source: <code>Compare USDC supply APY on Aave V3 only</code> —
-        it fails closed rather than answering without two cited sources.
-      </p>
+      <p class="hud">section 0x03 · try it now</p>
+      <div class="terminal" role="region" aria-label="example session">
+        <div class="bar"><span class="circle r"></span><span class="circle y"></span><span class="circle g"></span></div>
+        <div class="lines">
+          <div><span class="prompt-line">&gt;</span> <span class="q">compare_markets</span> <span class="a">Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend right now. Rank the results, cite each source, and state the as-of time.</span></div>
+          <div class="a">&rarr; 3 subgraphs queried · ranked rows · citations attached<span class="cursor"></span></div>
+          <div style="margin-top:.6rem"><span class="prompt-line">&gt;</span> <span class="q">discover_yields</span> <span class="a">Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep lending and LP rankings separate.</span></div>
+          <div class="a">&rarr; lending + LP ranked separately · formulas · risk flags</div>
+          <div style="margin-top:.6rem"><span class="prompt-line">&gt;</span> <span class="q">compare_markets</span> <span class="a">Compare USDC supply APY on Aave V3 only.</span></div>
+          <div class="refused">✕ REFUSED — only 1 source cited (requires &ge; 2)</div>
+        </div>
+      </div>
 
-      <h2>Connect any MCP client</h2>
-      <pre><code>{
+      <p class="hud">section 0x04 · connect any mcp client</p>
+      <pre><button class="copy" data-copy="askching-config" aria-label="Copy MCP config">copy</button>{
   "mcpServers": {
     "askching": {
       "url": "https://ask-ching-agent.vercel.app/api/mcp"
     }
   }
-}</code></pre>
+}</pre>
       <p class="muted">
         VS Code uses <code>type: "http"</code>, Codex uses <code>url</code>, Gemini CLI / Antigravity uses
         <code>httpUrl</code>. stdio-only clients can bridge with <code>npx -y mcp-remote &lt;url&gt;</code>.
       </p>
 
-      <h2>Health</h2>
-      <pre><code>curl https://ask-ching-agent.vercel.app/api/health
-# {"name":"askching","version":"0.1.0","transport":"streamable-http","endpoint":"/api/mcp","live":true}</code></pre>
+      <p class="hud">section 0x05 · health</p>
+      <pre><code><span class="prompt">$</span> curl https://ask-ching-agent.vercel.app/api/health
+<span class="ok-text">{"name":"askching","version":"0.1.0","transport":"streamable-http","endpoint":"/api/mcp","live":true}</span></code></pre>
+      <p class="status"><span class="led"></span> online · live mode</p>
 
-      <h2>Endpoints</h2>
+      <p class="hud">section 0x06 · endpoints</p>
       <ul class="tools">
-        <li><code>POST /api/mcp</code><span class="muted">MCP endpoint (Streamable HTTP, stateless)</span></li>
-        <li><code>GET /api/health</code><span class="muted">Credential-free metadata</span></li>
-        <li><code>POST /mcp</code><span class="muted">Alias of <code>/api/mcp</code></span></li>
+        <li><span class="tool-id">POST /api/mcp</span><span class="tool-desc">MCP endpoint (Streamable HTTP, stateless)</span></li>
+        <li><span class="tool-id">GET /api/health</span><span class="tool-desc">Credential-free metadata</span></li>
+        <li><span class="tool-id">POST /mcp</span><span class="tool-desc">Alias of <code>/api/mcp</code></span></li>
       </ul>
 
       <p class="note">
@@ -137,5 +213,95 @@
         forecast, a trading bot, or a transaction executor.
       </footer>
     </main>
+
+    <script>
+      (function () {
+        var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var rain = document.getElementById("rain");
+        var nodes = document.getElementById("nodes");
+        var rctx = rain.getContext("2d");
+        var nctx = nodes.getContext("2d");
+        var fs = 14, cols = 0, drops = [];
+        var nodeList = [], W = 0, H = 0, pulse = 0;
+
+        function resize() {
+          var dpr = window.devicePixelRatio || 1;
+          W = window.innerWidth; H = window.innerHeight;
+          rain.width = W * dpr; rain.height = H * dpr;
+          rain.style.width = W + "px"; rain.style.height = H + "px";
+          rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          nodes.width = W * dpr; nodes.height = H * dpr;
+          nodes.style.width = W + "px"; nodes.style.height = H + "px";
+          nctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          cols = Math.ceil(W / fs);
+          drops = Array.from({ length: cols }, function () { return Math.random() * -120; });
+          nodeList = Array.from({ length: 16 }, function () {
+            return { x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4 };
+          });
+        }
+
+        function drawRain() {
+          rctx.fillStyle = "rgba(5,7,10,0.08)";
+          rctx.fillRect(0, 0, W, H);
+          rctx.font = fs + "px ui-monospace, Menlo, monospace";
+          for (var i = 0; i < cols; i++) {
+            var ch = String.fromCharCode(0x30A0 + Math.random() * 96);
+            var x = i * fs, y = drops[i] * fs;
+            rctx.fillStyle = "rgba(61,245,154," + Math.max(.08, .5 - (y / H) * .45).toFixed(2) + ")";
+            rctx.fillText(ch, x, y);
+            if (y > H && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+          }
+        }
+
+        function drawNodes() {
+          nctx.clearRect(0, 0, W, H);
+          for (var i = 0; i < nodeList.length; i++) {
+            var n = nodeList[i];
+            n.x += n.vx; n.y += n.vy;
+            if (n.x < 0 || n.x > W) n.vx *= -1;
+            if (n.y < 0 || n.y > H) n.vy *= -1;
+          }
+          nctx.lineWidth = 1;
+          for (var a = 0; a < nodeList.length; a++) {
+            for (var b = a + 1; b < nodeList.length; b++) {
+              var dx = nodeList[a].x - nodeList[b].x, dy = nodeList[a].y - nodeList[b].y;
+              var d = Math.sqrt(dx * dx + dy * dy);
+              if (d < 160) {
+                nctx.strokeStyle = "rgba(53,214,255," + (0.25 * (1 - d / 160)).toFixed(2) + ")";
+                nctx.beginPath(); nctx.moveTo(nodeList[a].x, nodeList[a].y); nctx.lineTo(nodeList[b].x, nodeList[b].y); nctx.stroke();
+              }
+            }
+          }
+          nctx.fillStyle = "rgba(53,214,255,.8)";
+          pulse += 1;
+          for (var c = 0; c < nodeList.length; c++) {
+            var m = nodeList[c];
+            nctx.beginPath(); nctx.arc(m.x, m.y, 2.5, 0, Math.PI * 2); nctx.fill();
+            if (pulse % 150 === (c * 9) % 150) {
+              nctx.beginPath(); nctx.arc(m.x, m.y, 8, 0, Math.PI * 2);
+              nctx.strokeStyle = "rgba(53,214,255,.5)"; nctx.stroke();
+            }
+          }
+        }
+
+        function tick() { drawRain(); drawNodes(); requestAnimationFrame(tick); }
+
+        resize();
+        window.addEventListener("resize", resize);
+        if (!reduced) { requestAnimationFrame(tick); } else { drawRain(); drawNodes(); }
+      })();
+
+      document.querySelectorAll("button.copy").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var pre = btn.closest("pre");
+          var text = pre ? pre.innerText.replace(/copy\s*$/, "").trim() : "";
+          navigator.clipboard.writeText(text).then(function () {
+            btn.textContent = "copied ✓";
+            setTimeout(function () { btn.textContent = "copy"; }, 1600);
+          });
+        });
+      });
+    </script>
   </body>
 </html>
