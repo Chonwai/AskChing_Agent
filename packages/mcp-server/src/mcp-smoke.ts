@@ -64,6 +64,7 @@ async function main() {
     "analyze_markets",
     "analyze_trends",
     "compare_markets",
+    "discover_yields",
     "research_brief",
     "risk_scan"
   ];

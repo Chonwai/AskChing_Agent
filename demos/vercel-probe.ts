@@ -126,8 +126,8 @@ async function main() {
 
   const listed = await callMcp(handler, { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });
   const names = (listed.body.result?.tools ?? []).map((tool) => tool.name).sort();
-  if (names.length !== 5) {
-    throw new Error(`expected 5 tools but got [${names.join(", ")}]`);
+  if (names.length !== 6) {
+    throw new Error(`expected 6 tools but got [${names.join(", ")}]`);
   }
   console.log(`tools/list          OK  ${names.join(", ")}`);
 

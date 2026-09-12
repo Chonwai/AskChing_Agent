@@ -11,14 +11,92 @@ import {
   AnalyzeTrendsCoreSchema,
   AnalyzeTrendsInputSchema,
   CompareMarketsCoreSchema,
+  DiscoverYieldsCoreSchema,
+  DiscoverYieldsInputSchema,
   ResearchBriefCoreSchema,
   RiskScanCoreSchema,
   analyzeMarkets,
   analyzeTrends,
   compareMarkets,
+  discoverYields,
   researchBrief,
   riskScan
 } from "./tools.js";
+
+describe("discoverYields", () => {
+  it("applies defaults and returns separate cited lending and LP rankings", async () => {
+    const result = await discoverYields(
+      {},
+      createMarketDataSource({ DEMO_LIVE: "0" })
+    );
+
+    expect(result.asset).toBe("USDC");
+    expect(result.chain).toBe("ethereum-mainnet");
+    expect(result.lending.length).toBeGreaterThanOrEqual(2);
+    expect(result.dexLp.map(value => value.venue)).toEqual(
+      expect.arrayContaining(["uniswap-v3", "curve"])
+    );
+    expect(result.crossDexWinner).not.toBeNull();
+    expect(result.lending.every(value => value.category === "lending")).toBe(true);
+    expect(result.dexLp.every(value => value.category === "dex_lp")).toBe(true);
+  });
+
+  it("normalizes lowercase fields and deduplicates requested filters", async () => {
+    const fixture = createMarketDataSource({ DEMO_LIVE: "0" });
+    const calls: unknown[] = [];
+    const dataSource: MarketDataSource = {
+      ...fixture,
+      async getDexYieldOpportunities(input) {
+        calls.push(input);
+        return fixture.getDexYieldOpportunities(input);
+      }
+    };
+    const result = await discoverYields({
+      asset: "usdc",
+      chain: "Ethereum-Mainnet",
+      stablecoins: ["usdt", "USDT"],
+      venues: ["curve", "curve"],
+      minTvlUsd: 0,
+      limitPerCategory: 2
+    }, dataSource);
+
+    expect(result.asset).toBe("USDC");
+    expect(calls).toEqual([{ venues: ["curve"], stablecoins: ["USDT"] }]);
+    expect(result.lending).toEqual([]);
+    expect(result.crossDexWinner).toBeNull();
+  });
+
+  it("rejects unsupported assets, chains, and bounds before data access", () => {
+    expect(() => DiscoverYieldsInputSchema.parse({ asset: "WETH" })).toThrow(/USDC/);
+    expect(() => DiscoverYieldsInputSchema.parse({ chain: "sui-mainnet" })).toThrow(/ethereum-mainnet/);
+    expect(() => DiscoverYieldsInputSchema.parse({ minTvlUsd: -1 })).toThrow();
+    expect(() => DiscoverYieldsInputSchema.parse({ limitPerCategory: 21 })).toThrow();
+    expect(z.object(DiscoverYieldsCoreSchema.shape).safeParse({ asset: "WETH" }).success).toBe(false);
+  });
+
+  it("preserves a successful DEX venue and its explicit partial-source gap", async () => {
+    const fixture = createMarketDataSource({ DEMO_LIVE: "0" });
+    const dataSource: MarketDataSource = {
+      ...fixture,
+      async getDexYieldOpportunities(input) {
+        const [uniswap] = await fixture.getDexYieldOpportunities({
+          ...input, venues: ["uniswap-v3"]
+        });
+        return [uniswap!, {
+          venue: "curve",
+          observations: [],
+          gaps: [{ venue: "curve", reason: "Curve data is unavailable from its configured Graph source." }]
+        }];
+      }
+    };
+    const result = await discoverYields({ venues: ["uniswap-v3", "curve"] }, dataSource);
+    expect(result.dexLp.length).toBeGreaterThan(0);
+    expect(result.crossDexWinner).toBeNull();
+    expect(result.gaps).toEqual(expect.arrayContaining([
+      expect.objectContaining({ venue: "curve", reason: expect.stringMatching(/unavailable/) })
+    ]));
+  });
+});
 
 describe("analyzeMarkets", () => {
   it.each([

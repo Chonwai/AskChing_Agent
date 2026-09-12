@@ -3,6 +3,7 @@ import {
   AnalyzeMarketsResultSchema,
   AnalyzeTrendsResultSchema,
   ComparisonSchema,
+  DiscoverYieldsResultSchema,
   type MarketDataSource
 } from "@askching/shared";
 
@@ -10,12 +11,14 @@ import {
   AnalyzeMarketsCoreSchema,
   AnalyzeTrendsCoreSchema,
   CompareMarketsCoreSchema,
+  DiscoverYieldsCoreSchema,
   ResearchBriefCoreSchema,
   ResearchBriefResultSchema,
   RiskScanCoreSchema,
   analyzeMarkets,
   analyzeTrends,
   compareMarkets,
+  discoverYields,
   researchBrief,
   riskScan
 } from "./tools.js";
@@ -87,6 +90,24 @@ export function registerAskChingTools(
   );
 
   server.registerTool(
+    "discover_yields",
+    {
+      title: "Discover USDC yields",
+      description:
+        "Discover cited Ethereum-mainnet USDC opportunities across lending, Uniswap V3, and Curve. Lending supply APY and historical LP fee APR are ranked separately with formula inputs, risks, complete UTC-day windows, explicit gaps, and no transaction execution.",
+      inputSchema: DiscoverYieldsCoreSchema.shape,
+      outputSchema: DiscoverYieldsResultSchema.shape
+    },
+    async (input) => {
+      const result = await discoverYields(input, dataSource);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        structuredContent: result
+      };
+    }
+  );
+
+  server.registerTool(
     "research_brief",
     {
       title: "Research brief",
@@ -127,6 +148,7 @@ export const ASKCHING_TOOL_NAMES = [
   "analyze_markets",
   "analyze_trends",
   "compare_markets",
+  "discover_yields",
   "research_brief",
   "risk_scan"
 ] as const;

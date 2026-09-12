@@ -3,12 +3,15 @@ import {
   AnalyzeMarketsResultSchema,
   AnalyzeTrendsResultSchema,
   AssetSymbolSchema,
+  DiscoverYieldsResultSchema,
+  LIVE_PROTOCOLS,
   TrendWindowSchema,
   analyzeMarketObservations,
   analyzeTrendSeries,
   compareObservations,
   ComparisonSourceSchema,
   resolveMetricId,
+  normalizeYieldDiscovery,
   type Comparison,
   type AnalysisGap,
   type AnalyzeMarketsResult,
@@ -16,9 +19,108 @@ import {
   type LiveDataSource,
   type MarketMetricId,
   type MarketDataSource,
+  type DiscoverYieldsResult,
+  type YieldDiscoveryGap,
   ProtocolSchema
 } from "@askching/shared";
 import { z } from "zod";
+
+const UsdcOnlyFieldSchema = z.string().refine(
+  value => value.toUpperCase() === "USDC",
+  "discover_yields supports USDC only"
+);
+const EthereumMainnetFieldSchema = z.string().refine(
+  value => value.toLowerCase() === "ethereum-mainnet",
+  "discover_yields supports ethereum-mainnet only"
+);
+const StablecoinFieldSchema = z.string().refine(
+  value => ["USDT", "DAI"].includes(value.toUpperCase()),
+  "Stablecoin counterpart must be USDT or DAI"
+);
+const YieldVenueFieldSchema = z.enum(["lending", "uniswap-v3", "curve"]);
+
+export const DiscoverYieldsCoreSchema = z.object({
+  asset: UsdcOnlyFieldSchema.optional().default("USDC"),
+  chain: EthereumMainnetFieldSchema.optional().default("ethereum-mainnet"),
+  stablecoins: z.array(StablecoinFieldSchema).optional().default(["USDT", "DAI"]),
+  venues: z.array(YieldVenueFieldSchema).optional().default(["lending", "uniswap-v3", "curve"]),
+  minTvlUsd: z.number().finite().nonnegative().optional().default(1_000_000),
+  limitPerCategory: z.number().int().min(1).max(20).optional().default(5)
+});
+
+export const DiscoverYieldsInputSchema = DiscoverYieldsCoreSchema.transform(value => ({
+  asset: value.asset.toUpperCase() as "USDC",
+  chain: value.chain.toLowerCase() as "ethereum-mainnet",
+  stablecoins: [...new Set(value.stablecoins.map(stablecoin => stablecoin.toUpperCase() as "USDT" | "DAI"))],
+  venues: [...new Set(value.venues)],
+  minTvlUsd: value.minTvlUsd,
+  limitPerCategory: value.limitPerCategory
+}));
+
+export async function discoverYields(
+  rawInput: unknown,
+  dataSource: MarketDataSource
+): Promise<DiscoverYieldsResult> {
+  const input = DiscoverYieldsInputSchema.parse(rawInput);
+  const lendingObservations = [];
+  const dexObservations = [];
+  const gaps: YieldDiscoveryGap[] = [];
+
+  if (input.venues.includes("lending")) {
+    for (const metric of ["supply_apy", "utilization", "tvl"] as const) {
+      try {
+        lendingObservations.push(...await dataSource.getObservations(
+          metric, LIVE_PROTOCOLS, input.asset
+        ));
+        captureLendingGaps(gaps, metric, dataSource);
+      } catch {
+        const before = gaps.length;
+        captureLendingGaps(gaps, metric, dataSource);
+        if (gaps.length === before) {
+          gaps.push({ venue: "lending", reason: `Lending ${metric} data is unavailable.` });
+        }
+      }
+    }
+  }
+
+  const dexVenues = input.venues.filter(
+    (venue): venue is "uniswap-v3" | "curve" => venue !== "lending"
+  );
+  if (dexVenues.length > 0) {
+    const results = await dataSource.getDexYieldOpportunities({
+      venues: dexVenues,
+      stablecoins: input.stablecoins
+    });
+    for (const result of results) {
+      dexObservations.push(...result.observations);
+      gaps.push(...result.gaps);
+    }
+  }
+
+  return DiscoverYieldsResultSchema.parse(normalizeYieldDiscovery({
+    lendingObservations,
+    dexObservations,
+    gaps,
+    minTvlUsd: input.minTvlUsd,
+    limitPerCategory: input.limitPerCategory,
+    now: new Date()
+  }));
+}
+
+function captureLendingGaps(
+  gaps: YieldDiscoveryGap[],
+  metric: MarketMetricId,
+  dataSource: MarketDataSource
+): void {
+  const liveGaps = [...((dataSource as Partial<LiveDataSource>).lastGaps ?? [])];
+  for (const entry of liveGaps) {
+    const protocol = entry.split(": ", 1)[0];
+    gaps.push({
+      venue: "lending",
+      reason: `${protocol || "A lending source"} did not return ${metric}.`
+    });
+  }
+}
 
 // ── Metric / asset field-level validation (H3) ─────────────────────
 // MCP registration passes CoreSchema.shape to the SDK, which re-wraps it as a
