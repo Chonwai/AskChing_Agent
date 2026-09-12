@@ -5,10 +5,7 @@
   "outputDirectory": "public",
   "functions": {
     "api/*.ts": {
-      "includeFiles": [
-        "packages/shared/dist/**",
-        "packages/mcp-server/dist/**"
-      ],
+      "includeFiles": "packages/shared/dist/**,packages/mcp-server/dist/**",
       "memory": 1024,
       "maxDuration": 60
     }
