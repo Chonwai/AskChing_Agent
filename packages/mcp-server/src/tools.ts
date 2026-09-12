@@ -674,3 +674,123 @@ export async function riskScan(
     sources
   };
 }
+
+// ── get_info (v1.0) ────────────────────────────────────────────────────
+// Static self-description tool: tells any client what AskChing is, lists the
+// six research tools, and gives a copy-paste example per tool. No data source
+// required, so it works even when Graph credentials are absent.
+
+export const GetInfoInputSchema = z
+  .object({
+    topic: z
+      .enum(["overview", "tools", "examples", "all"])
+      .optional()
+      .default("all")
+  })
+  .describe("Which part of the AskChing self-description to return.");
+
+export interface AskChingInfo {
+  name: string;
+  tagline: string;
+  description: string;
+  evidenceModel: string[];
+  tools: Array<{ name: string; purpose: string; example: string }>;
+  transports: string[];
+  liveSources: string[];
+}
+
+export const AskChingInfoSchema = z.object({
+  name: z.string(),
+  tagline: z.string(),
+  description: z.string(),
+  evidenceModel: z.array(z.string()),
+  tools: z.array(
+    z.object({
+      name: z.string(),
+      purpose: z.string(),
+      example: z.string()
+    })
+  ),
+  transports: z.array(z.string()),
+  liveSources: z.array(z.string())
+});
+
+const ASKCHING_INFO: AskChingInfo = {
+  name: "askching",
+  tagline: "Cited DeFi research over The Graph — as a remote MCP server.",
+  description:
+    "AskChing answers natural-language DeFi questions across multiple live The Graph subgraphs and returns every number with its provenance. If it cannot cite at least two sources, it refuses to answer.",
+  evidenceModel: [
+    "Every observation carries subgraph ID, block, timestamp, and query hash.",
+    "Quantitative comparisons require at least two distinct cited subgraph sources.",
+    "Fewer than two cited sources fails closed: AskChing refuses rather than hallucinates.",
+    "Historical windows requested from spot-only tools surface as explicit gaps."
+  ],
+  tools: [
+    {
+      name: "compare_markets",
+      purpose: "Ranked cross-protocol comparison of a spot metric (supply_apy, borrow_apy, tvl, utilization).",
+      example: "Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend right now. Rank the results, cite each source, and state the as-of time."
+    },
+    {
+      name: "analyze_markets",
+      purpose: "Transparent yield-opportunity, liquidity-stress, or evidence-quality analysis with calculations and confidence.",
+      example: "Analyze the best current USDC supply-yield opportunity across Aave V3, Compound V3, and Spark Lend. Show the APY spread calculation, utilization context, and citations."
+    },
+    {
+      name: "analyze_trends",
+      purpose: "Cited 7d / 30d daily history: change, least-squares slope, direction, volatility, min/max.",
+      example: "How has USDC supply APY trended across Aave V3, Compound V3, and Spark Lend over the last seven days? Cite every data point."
+    },
+    {
+      name: "research_brief",
+      purpose: "Structured cited brief: conclusion, key figures with sources, risks, and a suggested follow-up.",
+      example: "Prepare a research brief on USDC supply APY across Aave V3, Compound V3, and Spark Lend."
+    },
+    {
+      name: "risk_scan",
+      purpose: "Peer-relative spot risk signals and explicit data gaps across protocols.",
+      example: "Scan Aave V3, Compound V3, and Spark Lend for unusual USDC risk signals and note any data gaps."
+    },
+    {
+      name: "discover_yields",
+      purpose: "Cross-venue USDC yield discovery: separate lending and DEX LP (Uniswap V3, Curve) rankings with formula inputs and risks.",
+      example: "Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep lending and LP rankings separate and do not propose a transaction."
+    }
+  ],
+  transports: ["stdio", "Streamable HTTP"],
+  liveSources: ["aave-v3", "compound-v3", "spark-lend", "aave-v2", "uniswap-v3 (DEX)", "curve (DEX)"]
+};
+
+export function getInfo(rawInput: unknown): AskChingInfo {
+  const input = GetInfoInputSchema.parse(rawInput);
+  if (input.topic === "overview") {
+    return {
+      ...ASKCHING_INFO,
+      tools: [],
+      transports: [],
+      liveSources: []
+    };
+  }
+  if (input.topic === "tools") {
+    return {
+      ...ASKCHING_INFO,
+      tools: ASKCHING_INFO.tools.map(({ name, purpose }) => ({ name, purpose, example: "" })),
+      description: "",
+      evidenceModel: [],
+      transports: [],
+      liveSources: []
+    };
+  }
+  if (input.topic === "examples") {
+    return {
+      ...ASKCHING_INFO,
+      tools: ASKCHING_INFO.tools.map(({ name, example }) => ({ name, purpose: "", example })),
+      description: "",
+      evidenceModel: [],
+      transports: [],
+      liveSources: []
+    };
+  }
+  return ASKCHING_INFO;
+}

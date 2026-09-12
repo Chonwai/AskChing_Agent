@@ -55,7 +55,7 @@ describe("remote MCP transport (streamable HTTP)", () => {
     expect(response.status).toBe(200);
     const names = (body.result.tools as Array<{ name: string }>).map((tool) => tool.name).sort();
     expect(names).toEqual([...ASKCHING_TOOL_NAMES].sort());
-    expect(names).toHaveLength(6);
+    expect(names).toHaveLength(7);
   });
 
   it("is stateless: no session id is issued between requests", async () => {

@@ -3,6 +3,7 @@ import {
   analyzeTrends,
   compareMarkets,
   discoverYields,
+  getInfo,
   researchBrief,
   riskScan
 } from "@askching/mcp-server/tools.js";
@@ -72,6 +73,25 @@ export interface OrchestratorResult {
 const LIVE_PROTOCOL_ENUM: readonly string[] = [...LIVE_PROTOCOLS];
 
 export const ASKCHING_TOOLS: ToolDefinition[] = [
+  {
+    type: "function",
+    function: {
+      name: "get_info",
+      description:
+        "Self-description tool. Use when the user asks what this MCP can do, what tools exist, how to use it, or wants an example question. Returns the AskChing overview, evidence model, the six research tools with a copy-paste example each, transports, and live sources. Topic: overview | tools | examples | all.",
+      parameters: {
+        type: "object",
+        properties: {
+          topic: {
+            type: "string",
+            enum: ["overview", "tools", "examples", "all"],
+            default: "all"
+          }
+        },
+        additionalProperties: false
+      }
+    }
+  },
   {
     type: "function",
     function: {
@@ -357,6 +377,8 @@ async function executeTool(
   dataSource: MarketDataSource
 ): Promise<unknown> {
   switch (name) {
+    case "get_info":
+      return getInfo(input);
     case "analyze_markets":
       return analyzeMarkets(input, dataSource);
     case "analyze_trends":

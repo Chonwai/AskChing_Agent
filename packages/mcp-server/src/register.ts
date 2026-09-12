@@ -12,6 +12,7 @@ import {
   AnalyzeTrendsCoreSchema,
   CompareMarketsCoreSchema,
   DiscoverYieldsCoreSchema,
+  GetInfoInputSchema,
   ResearchBriefCoreSchema,
   ResearchBriefResultSchema,
   RiskScanCoreSchema,
@@ -19,6 +20,7 @@ import {
   analyzeTrends,
   compareMarkets,
   discoverYields,
+  getInfo,
   researchBrief,
   riskScan
 } from "./tools.js";
@@ -141,6 +143,23 @@ export function registerAskChingTools(
       };
     }
   );
+
+  server.registerTool(
+    "get_info",
+    {
+      title: "Get AskChing info",
+      description:
+        "Self-description tool: returns what AskChing is, its evidence model, the six research tools with a copy-paste example each, transports, and live sources. Use this when a user asks what this MCP can do or how to use it.",
+      inputSchema: GetInfoInputSchema.shape
+    },
+    async (input) => {
+      const result = getInfo(input);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        structuredContent: result as unknown as Record<string, unknown>
+      };
+    }
+  );
 }
 
 /** Tool names exposed by every AskChing transport, in canonical order. */
@@ -149,6 +168,7 @@ export const ASKCHING_TOOL_NAMES = [
   "analyze_trends",
   "compare_markets",
   "discover_yields",
+  "get_info",
   "research_brief",
   "risk_scan"
 ] as const;

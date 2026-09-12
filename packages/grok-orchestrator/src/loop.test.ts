@@ -55,6 +55,7 @@ describe("runGrokOrchestrator", () => {
     expect(complete).toHaveBeenCalledTimes(2);
     expect(complete.mock.calls[0]?.[0].tools.map((tool) => tool.function.name))
       .toEqual([
+        "get_info",
         "compare_markets",
         "research_brief",
         "risk_scan",
