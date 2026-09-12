@@ -221,5 +221,41 @@
       "window": "30d"
     },
     "requireWindowGap": true
+  },
+  {
+    "id": "discover-yields-full",
+    "question": "Where can I earn USDC yield across lending, Uniswap V3, and Curve?",
+    "kind": "discover_yields",
+    "input": {},
+    "requireCrossDexWinner": true
+  },
+  {
+    "id": "discover-yields-tvl-floor",
+    "question": "Show USDC yield opportunities above the default one-million-dollar TVL floor.",
+    "kind": "discover_yields",
+    "input": {
+      "minTvlUsd": 1000000
+    },
+    "requireCrossDexWinner": true
+  },
+  {
+    "id": "discover-yields-one-dex",
+    "question": "Show USDC LP fee yields on Uniswap V3 only.",
+    "kind": "discover_yields",
+    "input": {
+      "venues": ["uniswap-v3"],
+      "stablecoins": ["USDT", "DAI"]
+    },
+    "requireNoCrossDexWinner": true
+  },
+  {
+    "id": "discover-yields-category-separation",
+    "question": "Compare USDC lending and stablecoin LP yields without mixing their rankings.",
+    "kind": "discover_yields",
+    "input": {
+      "venues": ["lending", "uniswap-v3", "curve"],
+      "limitPerCategory": 2
+    },
+    "requireCrossDexWinner": true
   }
 ]

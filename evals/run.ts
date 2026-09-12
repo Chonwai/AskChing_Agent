@@ -6,7 +6,8 @@ import {
   analyzeTrends,
   compareMarkets,
   researchBrief,
-  riskScan
+  riskScan,
+  discoverYields
 } from "../packages/mcp-server/src/tools.js";
 
 type EvalKind =
@@ -14,7 +15,8 @@ type EvalKind =
   | "research_brief"
   | "risk_scan"
   | "analyze_markets"
-  | "analyze_trends";
+  | "analyze_trends"
+  | "discover_yields";
 type EvalProtocol =
   | "aave-v3"
   | "compound-v3"
@@ -31,16 +33,22 @@ interface EvalCase {
     metric?: string;
     asset?: string;
     question?: string;
-    protocols: EvalProtocol[];
+    protocols?: EvalProtocol[];
     timeframe?: string;
     assets?: string[];
     window?: string;
     objective?: "yield_opportunity" | "liquidity_stress" | "evidence_quality";
     metrics?: string[];
+    stablecoins?: string[];
+    venues?: string[];
+    minTvlUsd?: number;
+    limitPerCategory?: number;
   };
   requireTimeframeCaveat?: boolean;
   requireSpotOnlyGap?: boolean;
   requireWindowGap?: boolean;
+  requireCrossDexWinner?: boolean;
+  requireNoCrossDexWinner?: boolean;
 }
 
 const cases = JSON.parse(
@@ -289,6 +297,58 @@ for (const testCase of cases) {
         testCase.id,
         "expected an explicit gap when the window exceeds the available snapshots"
       );
+    }
+  } else if (kind === "discover_yields") {
+    const result = await discoverYields(testCase.input, dataSource);
+    const windowMs = Date.parse(result.window.end) - Date.parse(result.window.start);
+
+    assert(result.asset === "USDC", testCase.id, "expected the v1 USDC asset");
+    assert(result.chain === "ethereum-mainnet", testCase.id, "expected Ethereum mainnet");
+    assert(windowMs === 86_400_000, testCase.id, "expected one complete UTC day");
+    assert(
+      result.lending.every((value, index) =>
+        value.category === "lending" &&
+        value.rank === index + 1 &&
+        value.calculation.length > 0 &&
+        value.citations.length >= 2 &&
+        value.citations.every(citation =>
+          Boolean(citation.subgraphId) && Boolean(citation.timestamp) && Boolean(citation.queryHash)
+        )
+      ),
+      testCase.id,
+      "expected every lending row to carry its own rank, calculation, and citations"
+    );
+    assert(
+      result.dexLp.every((value, index) =>
+        value.category === "dex_lp" &&
+        value.rank === index + 1 &&
+        value.tvlUsd >= (testCase.input.minTvlUsd ?? 1_000_000) &&
+        value.dailySupplySideFeesUsd >= 0 &&
+        value.calculation.length > 0 &&
+        Boolean(value.poolAddress) &&
+        Boolean(value.subgraphId) &&
+        Boolean(value.timestamp) &&
+        Boolean(value.queryHash)
+      ),
+      testCase.id,
+      "expected every LP row to carry its own rank, formula inputs, and complete citation"
+    );
+    assert(
+      !("winner" in result),
+      testCase.id,
+      "expected no combined lending/LP winner field"
+    );
+    if (testCase.requireCrossDexWinner) {
+      assert(
+        result.crossDexWinner !== null &&
+        result.dexLp.some(value => value.venue === "uniswap-v3") &&
+        result.dexLp.some(value => value.venue === "curve"),
+        testCase.id,
+        "expected a cross-DEX winner backed by both DEX venues"
+      );
+    }
+    if (testCase.requireNoCrossDexWinner) {
+      assert(result.crossDexWinner === null, testCase.id, "expected no cross-DEX winner");
     }
   } else {
     throw new Error(`FAIL ${testCase.id}: unsupported kind '${kind}'`);
