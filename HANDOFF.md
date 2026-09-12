@@ -1,13 +1,22 @@
 ---
 title: AskChing handoff
 updated: 2026-09-12
-checkpoint: 40f7923
-status: remote-mcp-shipped-protocols-verified
+checkpoint: 66d7d5a
+status: discover-yields-task-1-complete
 ---
 
 # AskChing handoff
 
 Updated: 2026-09-12 (Asia/Hong_Kong)
+
+## Active yield-discovery batch
+
+- Approved design: `docs/superpowers/specs/2026-09-12-discover-yields-design.md` (`051a91a`).
+- Execution plan: `docs/superpowers/plans/2026-09-12-discover-yields.md` (`de60106`).
+- Completed Task 1 at `66d7d5a`: yield result/observation/citation/risk schemas, canonical USDC/USDT/DAI addresses, and pending Uniswap V3 + Curve source entries.
+- Verification: the new contracts first failed as expected; then 6/6 focused tests and the shared TypeScript build passed.
+- Both DEX candidates deliberately remain `live: false` with `Pending exact-query credentialed probe.` They must not be advertised as live until the exact production queries pass.
+- Next action: Task 2 — add deterministic DEX fixtures and the injected-clock Uniswap V3 daily-fee adapter using test-first development.
 
 ## TL;DR for the incoming teammate
 
