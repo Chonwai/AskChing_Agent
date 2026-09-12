@@ -12,17 +12,19 @@ describe("DEX yield source registry", () => {
       expect.objectContaining({
         venue: "uniswap-v3",
         subgraphId: "4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6",
-        live: true,
-        note: undefined
+        live: true
       }),
       expect.objectContaining({
         venue: "curve",
         subgraphId: "3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF",
-        live: true,
-        note: undefined
+        live: true
       })
     ]);
     expect(LIVE_DEX_YIELD_SOURCES).toHaveLength(2);
+    // Enabled sources carry no pending probe note.
+    for (const source of LIVE_DEX_YIELD_SOURCES) {
+      expect(source.note).toBeUndefined();
+    }
   });
 
   it("uses canonical lower-case token addresses", () => {
