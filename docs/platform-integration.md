@@ -1,7 +1,7 @@
 # AskChing — 多平台接入指南（遠端 MCP）
 
 > 建立日期: 2026-09-12｜對應 Loop: `loop-vercel-mcp-deployment`
-> 前置: 已依 `docs/deployment-vercel.md` 部署，取得 `https://<app>.vercel.app/api/mcp`
+> 前置: 已依 `docs/deployment-vercel.md` 部署，取得 `https://ask-ching-agent.vercel.app/api/mcp`
 > 目的: 讓同一個 AskChing MCP server 在 7+ 個 AI 平台上使用，作為 demo 的核心說服力
 
 ---
@@ -45,7 +45,7 @@
 {
   "mcpServers": {
     "askching": {
-      "url": "https://<app>.vercel.app/api/mcp"
+      "url": "https://ask-ching-agent.vercel.app/api/mcp"
     }
   }
 }
@@ -63,7 +63,7 @@
   "mcpServers": {
     "askching": {
       "type": "http",
-      "url": "https://<app>.vercel.app/api/mcp"
+      "url": "https://ask-ching-agent.vercel.app/api/mcp"
     }
   }
 }
@@ -72,7 +72,7 @@
 或用 CLI：
 
 ```bash
-claude mcp add --transport http askching https://<app>.vercel.app/api/mcp
+claude mcp add --transport http askching https://ask-ching-agent.vercel.app/api/mcp
 ```
 
 ## 4. Cursor
@@ -83,7 +83,7 @@ claude mcp add --transport http askching https://<app>.vercel.app/api/mcp
 {
   "mcpServers": {
     "askching": {
-      "url": "https://<app>.vercel.app/api/mcp"
+      "url": "https://ask-ching-agent.vercel.app/api/mcp"
     }
   }
 }
@@ -100,7 +100,7 @@ Cursor Settings → MCP → 確認 `askching` 為綠色 → 在 chat 中 `@askch
   "servers": {
     "askching": {
       "type": "http",
-      "url": "https://<app>.vercel.app/api/mcp"
+      "url": "https://ask-ching-agent.vercel.app/api/mcp"
     }
   }
 }
@@ -114,19 +114,19 @@ Command Palette → **MCP: List Servers** → 確認已連線；在 Copilot Chat
 
 ```toml
 [mcp_servers.askching]
-url = "https://<app>.vercel.app/api/mcp"
+url = "https://ask-ching-agent.vercel.app/api/mcp"
 ```
 
 ## 7. Gemini CLI / Antigravity
 
 ```bash
 # Streamable HTTP（推薦）
-gemini mcp add --transport http askching https://<app>.vercel.app/api/mcp
+gemini mcp add --transport http askching https://ask-ching-agent.vercel.app/api/mcp
 
 # 只開放研究工具（可選，收窄攻擊面）
 gemini mcp add --transport http \
   --include-tools compare_markets,analyze_markets,analyze_trends,research_brief,risk_scan \
-  askching https://<app>.vercel.app/api/mcp
+  askching https://ask-ching-agent.vercel.app/api/mcp
 ```
 
 或直接寫 `settings.json`：
@@ -135,14 +135,14 @@ gemini mcp add --transport http \
 {
   "mcpServers": {
     "askching": {
-      "httpUrl": "https://<app>.vercel.app/api/mcp",
+      "httpUrl": "https://ask-ching-agent.vercel.app/api/mcp",
       "timeout": 60000
     }
   }
 }
 ```
 
-驗證：`gemini mcp list`（或 CLI 內 `/mcp`）應顯示 `Connected` 與 5 個 tools。
+驗證：`gemini mcp list`（或 CLI 內 `/mcp`）應顯示 `Connected` 與 6 個 tools。
 
 > ⚠️ **命名注意**：Google 已於 2026-06-18 以 **Antigravity CLI** 取代免費層／Google One 使用者的 Gemini CLI。設定格式相同（`httpUrl` / `--transport http`）。兩個 CLI 都支援 Streamable HTTP。
 >
@@ -157,7 +157,7 @@ Grok Bot 官方文件明載：
 流程：
 
 1. 建立一個 Bot（例如命名 `DeFi Research`）
-2. 在 Bot 的 connectors 設定加入 MCP server，URL 填 `https://<app>.vercel.app/api/mcp`
+2. 在 Bot 的 connectors 設定加入 MCP server，URL 填 `https://ask-ching-agent.vercel.app/api/mcp`
 3. 授予存取權
 4. 以自然語言交辦：
    > Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend. Cite every number and tell me the as-of block.
@@ -171,7 +171,7 @@ Grok Bot 官方文件明載：
 依 Vercel 官方指引（`vercel.com/kb/guide/mcp-server-chatgpt-connector`）：
 
 1. ChatGPT → Settings → Connectors → Advanced → Developer mode
-2. Add custom connector → MCP URL 填 `https://<app>.vercel.app/api/mcp`
+2. Add custom connector → MCP URL 填 `https://ask-ching-agent.vercel.app/api/mcp`
 3. 在對話中選擇該 connector 後提問
 
 > 若組織政策限制開發者模式，跳過此平台；§2–§7 已足以展示跨平台。
@@ -185,7 +185,7 @@ Grok Bot 官方文件明載：
   "mcpServers": {
     "askching": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://<app>.vercel.app/api/mcp"]
+      "args": ["-y", "mcp-remote", "https://ask-ching-agent.vercel.app/api/mcp"]
     }
   }
 }
@@ -214,7 +214,7 @@ pnpm -C packages/mcp-server build
 | 2 | `curl .../api/mcp` tools/list | 「5 個工具，一行 URL」 |
 | 3 | **Claude Desktop** 問一個問題 | 展示 ranked + citation + asOf |
 | 4 | **VS Code Copilot** 問同樣問題 | 證明「不是綁死某一家」 |
-| 5 | **Gemini CLI / Antigravity** `gemini mcp list` | 5 個 tools、`Connected` |
+| 5 | **Gemini CLI / Antigravity** `gemini mcp list` | 6 個 tools、`Connected` |
 | 6 | **Grok Bot**（若可用） | 把它接進後續工作流 |
 | 7 | 回到 terminal：`ASKCHING_DEBUG=1 pnpm askching -- "..."` | 顯示 tool trace，證明是真呼叫而非幻覺 |
 

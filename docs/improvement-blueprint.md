@@ -171,7 +171,7 @@ Day 3（buffer）
 
 | 問題 | 答案 |
 |---|---|
-| 系統夠強嗎？ | **功能面夠**（5 tools、雙傳輸、嚴格證據鏈、可跨平台）。**規模面不夠**（4 個 live 協議、單鏈 vs 對手 90 deployments、15 鏈）。 |
+| 系統夠強嗎？ | **功能面夠**（6 tools、雙傳輸、嚴格證據鏈、可跨平台）。**規模面不夠**（4 個 live 協議、單鏈 vs 對手 90 deployments、15 鏈）。 |
 | 最該做的下一件事？ | **擴大協議覆蓋**（§1）——但真實空間是 6 → 10+，且每筆要過 schemaVersion 3.1.0 檢查。先驗既有 4 筆的死因，再逐筆加新協議。 |
 | 最 Wow 但費時？ | **Agent0 / ERC-8004**（§2）——不需付款，且是 The Graph 2026 主推方向。 |
 | 分析還缺什麼？ | Peer percentile、liquidation proximity、cross-protocol flow（§3）。 |

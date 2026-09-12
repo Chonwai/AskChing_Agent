@@ -332,14 +332,14 @@ pnpm vercel:probe
 ### 預期輸出
 
 ```
-mcp-smoke OK: askching (5 tools)
-mcp-http-smoke OK: askching (5 tools, transport=streamable-http, findings=3)
+mcp-smoke OK: askching (6 tools)
+mcp-http-smoke OK: askching (6 tools, transport=streamable-http, findings=3)
 vercel-probe OK: api/mcp.ts and api/health.ts are deployable
 ```
 
 ### ✅ 驗證點
 
-- [ ] `mcp-smoke OK: askching (5 tools)`
+- [ ] `mcp-smoke OK: askching (6 tools)`
 - [ ] 列出 5 個 tools：`compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` / `analyze_trends`
 - [ ] `mcp-http-smoke` 回報 `transport=streamable-http` 且有 findings
 - [ ] `vercel-probe` 顯示 `export shape OK` 與 `config OK runtime=nodejs`
@@ -393,7 +393,7 @@ risk_scan
 - [ ] `GET /api/mcp` 回 **405**（非 200、非 hang）
 - [ ] `mcp:serve` 輸出出現在 stderr（stdout 留給協議訊息）
 
-> 🚀 **實際部署**：`vercel --prod` 後，把 `http://localhost:8787` 換成 `https://<app>.vercel.app`；
+> 🚀 **實際部署**：`vercel --prod` 後，把 `http://localhost:8787` 換成 `https://ask-ching-agent.vercel.app`；
 > Framework Preset 選 **`Other`**（詳見 `docs/deployment-vercel.md` §3）。
 
 ---
@@ -461,7 +461,7 @@ pnpm mcp:smoke && pnpm mcp:http:smoke
 | 1 | `167 passed` + `23/23 evals` |
 | 2 | `Mode: fixture`、三行 ranked（4.25 / 3.14 / 2.95）、asOf、三 subgraph ID |
 | 4 | rows + sources 齊全、queryHash 三源相同、block 相近 |
-| 6 | `mcp-smoke OK: askching (5 tools)` + `mcp-http-smoke OK` |
+| 6 | `mcp-smoke OK: askching (6 tools)` + `mcp-http-smoke OK` |
 | 7 | `/health` 無 key、GET 回 405 |
 
 ✅ **快速版全 Pass = 核心功能（compare + cite + fan-out + MCP）已驗證。** 之後隨時可補跑 Station 3（live demo）與 Station 5（Grok 推理）做完整驗證。

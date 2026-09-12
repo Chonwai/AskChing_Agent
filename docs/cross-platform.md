@@ -35,7 +35,7 @@ AskChing 的「可重用性」證明分兩層：
 
 > **遠端接入（v0.2.0）**：部署後可用一行 URL 取代下面的 stdio config：
 > ```json
-> { "mcpServers": { "askching": { "url": "https://<app>.vercel.app/api/mcp" } } }
+> { "mcpServers": { "askching": { "url": "https://ask-ching-agent.vercel.app/api/mcp" } } }
 > ```
 > 各平台的 URL 欄位名稱不同（VS Code 用 `type: http`、Codex 用 `url`、Gemini CLI 用 `httpUrl`），完整對照見 `docs/platform-integration.md`。
 
@@ -250,14 +250,14 @@ pnpm test
 cd packages/mcp-server && npm pack --dry-run
 ```
 
-`mcp-smoke` 輸出 `mcp-smoke OK: askching (5 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
+`mcp-smoke` 輸出 `mcp-smoke OK: askching (6 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
 
 遠端（HTTP）的對應驗證：
 
 ```bash
 # 本機 HTTP server + 端到端 smoke（initialize / tools/list / tools/call）
 pnpm mcp:serve
-pnpm mcp:http:smoke     # → mcp-http-smoke OK: askching (5 tools, transport=streamable-http, findings=3)
+pnpm mcp:http:smoke     # → mcp-http-smoke OK: askching (6 tools, transport=streamable-http, findings=3)
 
 # 驗證 Vercel serverless 入口（同一種 Web 簽名）
 pnpm vercel:probe       # → vercel-probe OK: api/mcp.ts and api/health.ts are deployable
