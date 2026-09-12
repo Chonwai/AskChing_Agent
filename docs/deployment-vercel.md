@@ -65,6 +65,14 @@
 實際上 Vercel 會**自動偵測**：repo 裡沒有 `next.config.*`、`vite.config.*` 等，
 所以它本來就會選 `Other`。你只要**不要手動改掉**即可。
 
+> ⚠️ **「Other」是 Dashboard project 設定，不是 `vercel.json` 的 property。**
+> `vercel.json` 的 `framework` field **沒有 `"other"` 這個合法值**（官方 JSON schema
+> enum 只有 `nextjs` / `node` / `vite` / `hono` … 等，`"other"` 不在其中，且頂層
+> `additionalProperties: false`）。把 `"framework": "other"` 寫進 `vercel.json`
+> 會在 schema 嚴格驗證的版本直接 fail build。正確做法：**在 `vercel.json` 不寫
+> `framework`**（= 自動偵測 / Other），並在 Dashboard Project Settings 確認
+> Framework Preset 顯示 `Other` 即可。
+
 ### 3.2 設定對照表
 
 到 Vercel Project → **Settings → Build and Deployment**：
