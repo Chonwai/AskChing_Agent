@@ -61,6 +61,12 @@ curl -s -X POST https://ask-ching-agent.vercel.app/api/mcp \
 
 完整清單在 `demos/prompts.md`（Demo A–G，含每個 demo 的預期路徑）。以下是三個最能展示特色的：
 
+### 第 0 步 — 讓 AskChing 自我介紹（先問這個）
+
+> What can this MCP do, and how do I use it?
+
+預期：`get_info` tool 回傳 AskChing 的 overview、evidence model、6 個研究工具的用途 + 各一句範例問題、transports、live sources。這是任何新使用者的最佳起點。
+
 ### Demo 1 — 跨協議比較 + citations（展示「信得過」）
 > Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend right now. Rank the results, cite each source, and state the as-of time.
 

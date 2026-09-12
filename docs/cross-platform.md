@@ -250,14 +250,14 @@ pnpm test
 cd packages/mcp-server && npm pack --dry-run
 ```
 
-`mcp-smoke` 輸出 `mcp-smoke OK: askching (6 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
+`mcp-smoke` 輸出 `mcp-smoke OK: askching (7 tools)` 即代表 stdio server 可真實啟動並完成 MCP handshake。
 
 遠端（HTTP）的對應驗證：
 
 ```bash
 # 本機 HTTP server + 端到端 smoke（initialize / tools/list / tools/call）
 pnpm mcp:serve
-pnpm mcp:http:smoke     # → mcp-http-smoke OK: askching (6 tools, transport=streamable-http, findings=3)
+pnpm mcp:http:smoke     # → mcp-http-smoke OK: askching (7 tools, transport=streamable-http, findings=3)
 
 # 驗證 Vercel serverless 入口（同一種 Web 簽名）
 pnpm vercel:probe       # → vercel-probe OK: api/mcp.ts and api/health.ts are deployable

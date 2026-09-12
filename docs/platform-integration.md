@@ -142,7 +142,7 @@ gemini mcp add --transport http \
 }
 ```
 
-驗證：`gemini mcp list`（或 CLI 內 `/mcp`）應顯示 `Connected` 與 6 個 tools。
+驗證：`gemini mcp list`（或 CLI 內 `/mcp`）應顯示 `Connected` 與 7 個 tools。
 
 > ⚠️ **命名注意**：Google 已於 2026-06-18 以 **Antigravity CLI** 取代免費層／Google One 使用者的 Gemini CLI。設定格式相同（`httpUrl` / `--transport http`）。兩個 CLI 都支援 Streamable HTTP。
 >
@@ -214,7 +214,7 @@ pnpm -C packages/mcp-server build
 | 2 | `curl .../api/mcp` tools/list | 「5 個工具，一行 URL」 |
 | 3 | **Claude Desktop** 問一個問題 | 展示 ranked + citation + asOf |
 | 4 | **VS Code Copilot** 問同樣問題 | 證明「不是綁死某一家」 |
-| 5 | **Gemini CLI / Antigravity** `gemini mcp list` | 6 個 tools、`Connected` |
+| 5 | **Gemini CLI / Antigravity** `gemini mcp list` | 7 個 tools、`Connected` |
 | 6 | **Grok Bot**（若可用） | 把它接進後續工作流 |
 | 7 | 回到 terminal：`ASKCHING_DEBUG=1 pnpm askching -- "..."` | 顯示 tool trace，證明是真呼叫而非幻覺 |
 
