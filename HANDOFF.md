@@ -1,8 +1,8 @@
 ---
 title: AskChing handoff
 updated: 2026-09-13
-checkpoint: 11aff9b
-status: competition-finish-line-ready
+checkpoint: 616e4c6
+status: vercel-deploy-ready
 ---
 
 # AskChing handoff
@@ -45,10 +45,11 @@ Read this box, then read §Corrections before trusting any older document.
 ## Current checkpoint
 
 - Branch `main`, tracking public `origin/main`.
-- **`11aff9b`** is the latest pushed commit: `fix(shared): align windowKey bucketing to UTC day floor` (2026-09-13). It supersedes `24f7b34` and applies Phase 3 fix F2 (see §Corrections).
-- The previous handoff pointed at `24f7b34`; superseded by the Phase 3 small-fix batch.
+- **`616e4c6`** is the latest pushed commit: `docs(plan): Vercel deployment execution plan` (2026-09-13).
+- The previous handoff pointed at `11aff9b`; superseded by the Vercel deployment research batch.
 - Working tree clean; credentials stay local in `.env` (git-ignored).
 - **Competition finish-line plan** is at `docs/superpowers/plans/2026-09-12-competition-finish-line.md` (Phase 0 freeze → Phase 1 record → Phase 2 submit → Phase 3 optional fixes). ETHOnline deadline: 2026-09-13 12:00 PM EDT (HK 09-14 00:00).
+- **Vercel deployment is researched and repo-ready** — `docs/reviews/2026-09-13-vercel-deploy-research.md` (answers: 6 tools / Other preset / GitHub auto-deploy) + `docs/superpowers/plans/2026-09-13-vercel-deploy-plan.md` (Phase B-D). Only remaining step is user action: import the repo in Vercel Dashboard and set env vars (see plan §5).
 - `.edison/state/*.md` **is tracked** in this repo, not ignored — loop state is part of the record.
 - Yield batch range so far: `git log --oneline 40f7923..HEAD`. History is incremental and unsquashed.
 
