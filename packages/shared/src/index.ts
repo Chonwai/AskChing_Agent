@@ -8,3 +8,4 @@ export * from "./source-config.js";
 export * from "./yield-sources.js";
 export * from "./yield-fixtures.js";
 export * from "./yield-client.js";
+export * from "./yield-discovery.js";
