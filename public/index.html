@@ -6,7 +6,7 @@
     <title>AskChing — cited DeFi research over The Graph</title>
     <meta
       name="description"
-      content="AskChing is a remote MCP server for cited, multi-subgraph DeFi research. Five tools, one URL, works in Claude, Cursor, VS Code, Codex, Gemini CLI, and Grok Bot."
+      content="AskChing is a remote MCP server for cited, multi-subgraph DeFi research. Six tools, one URL, works in Claude, Cursor, VS Code, Codex, Gemini CLI, and Grok Bot."
     />
     <style>
       :root {
@@ -77,20 +77,21 @@
         with its provenance. <strong>If it cannot cite at least two sources, it refuses to answer.</strong>
       </p>
 
-      <h2>Five tools</h2>
+      <h2>Six tools</h2>
       <ul class="tools">
         <li><code>compare_markets</code><span class="muted">Ranked cross-protocol metric comparison</span></li>
         <li><code>analyze_markets</code><span class="muted">Yield, liquidity stress, evidence quality</span></li>
         <li><code>analyze_trends</code><span class="muted">7d / 30d cited daily history with slope and volatility</span></li>
         <li><code>research_brief</code><span class="muted">Conclusion, key figures, risks, follow-up</span></li>
         <li><code>risk_scan</code><span class="muted">Peer-relative spot signals with explicit gaps</span></li>
+        <li><code>discover_yields</code><span class="muted">Cross-venue USDC yield discovery: lending + DEX LP rankings</span></li>
       </ul>
 
       <h2>Connect any MCP client</h2>
       <pre><code>{
   "mcpServers": {
     "askching": {
-      "url": "https://YOUR-DEPLOYMENT.vercel.app/api/mcp"
+      "url": "https://ask-ching-agent.vercel.app/api/mcp"
     }
   }
 }</code></pre>
@@ -100,7 +101,7 @@
       </p>
 
       <h2>Health</h2>
-      <pre><code>curl https://YOUR-DEPLOYMENT.vercel.app/api/health
+      <pre><code>curl https://ask-ching-agent.vercel.app/api/health
 # {"name":"askching","version":"0.1.0","transport":"streamable-http","endpoint":"/api/mcp","live":true}</code></pre>
 
       <h2>Endpoints</h2>
