@@ -214,7 +214,11 @@ function toDexOpportunity(
 }
 
 function windowKey(value: DexYieldObservation): string {
-  return `${value.windowStart}|${value.windowEnd}`;
+  // Bucket by UTC day of the window start so venues whose snapshots land at
+  // slightly offset timestamps (e.g. 23:59:59 vs 23:52:59) still share a
+  // common complete day. Fail-closed semantics are preserved: no shared
+  // bucket still yields no cross-DEX winner.
+  return String(Math.round(Date.parse(value.windowStart) / DAY_MS));
 }
 
 function resolveResultWindow(
