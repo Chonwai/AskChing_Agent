@@ -87,7 +87,7 @@ function uniswapSnapResponse(poolId: string, overrides: Partial<UniswapSnapFixtu
       liquidityPoolDailySnapshots: [
         {
           id: `${poolId}-day`,
-          timestamp: String(day),
+          timestamp: String(day + 86_399),
           blockNumber: "111",
           dailySupplySideRevenueUSD: "1000",
           dailyVolumeUSD: "2000000",
@@ -334,12 +334,12 @@ function curveResponse(): CurveFixtureEnvelope {
   return {
     data: {
       liquidityPoolDailySnapshots: [
-        { id: "two-new", timestamp: String(day), blockNumber: "456", dailySupplySideRevenueUSD: "200", dailyVolumeUSD: "400000", totalValueLockedUSD: "2000000", pool: pool("0x5555555555555555555555555555555555555555", [usdc, usdt]) },
-        { id: "two-old", timestamp: String(day - 86_400), blockNumber: "400", dailySupplySideRevenueUSD: "999", dailyVolumeUSD: "1", totalValueLockedUSD: "1", pool: pool("0x5555555555555555555555555555555555555555", [usdc, usdt]) },
-        { id: "three-current", timestamp: String(day + 86_400), blockNumber: "500", dailySupplySideRevenueUSD: "999", dailyVolumeUSD: "1", totalValueLockedUSD: "1", pool: pool("0x6666666666666666666666666666666666666666", [usdc, usdt, dai]) },
-        { id: "three-new", timestamp: String(day), blockNumber: "457", dailySupplySideRevenueUSD: "300", dailyVolumeUSD: "600000", totalValueLockedUSD: "3000000", pool: pool("0x6666666666666666666666666666666666666666", [usdc, usdt, dai]) },
-        { id: "no-usdc", timestamp: String(day), blockNumber: "458", dailySupplySideRevenueUSD: "100", dailyVolumeUSD: "1", totalValueLockedUSD: "1000000", pool: pool("0x7777777777777777777777777777777777777777", [usdt, dai]) },
-        { id: "zero-tvl", timestamp: String(day), blockNumber: "459", dailySupplySideRevenueUSD: "100", dailyVolumeUSD: "1", totalValueLockedUSD: "0", pool: pool("0x8888888888888888888888888888888888888888", [usdc, usdt]) }
+        { id: "two-new", timestamp: String(day + 86_399), blockNumber: "456", dailySupplySideRevenueUSD: "200", dailyVolumeUSD: "400000", totalValueLockedUSD: "2000000", pool: pool("0x5555555555555555555555555555555555555555", [usdc, usdt]) },
+        { id: "two-old", timestamp: String(day - 1), blockNumber: "400", dailySupplySideRevenueUSD: "999", dailyVolumeUSD: "1", totalValueLockedUSD: "1", pool: pool("0x5555555555555555555555555555555555555555", [usdc, usdt]) },
+        { id: "three-current", timestamp: String(day + 86_500), blockNumber: "500", dailySupplySideRevenueUSD: "999", dailyVolumeUSD: "1", totalValueLockedUSD: "1", pool: pool("0x6666666666666666666666666666666666666666", [usdc, usdt, dai]) },
+        { id: "three-new", timestamp: String(day + 86_399), blockNumber: "457", dailySupplySideRevenueUSD: "300", dailyVolumeUSD: "600000", totalValueLockedUSD: "3000000", pool: pool("0x6666666666666666666666666666666666666666", [usdc, usdt, dai]) },
+        { id: "no-usdc", timestamp: String(day + 86_399), blockNumber: "458", dailySupplySideRevenueUSD: "100", dailyVolumeUSD: "1", totalValueLockedUSD: "1000000", pool: pool("0x7777777777777777777777777777777777777777", [usdt, dai]) },
+        { id: "zero-tvl", timestamp: String(day + 86_399), blockNumber: "459", dailySupplySideRevenueUSD: "100", dailyVolumeUSD: "1", totalValueLockedUSD: "0", pool: pool("0x8888888888888888888888888888888888888888", [usdc, usdt]) }
       ],
       _meta: { deployment: "QmCurve", block: { number: 999, timestamp: day + 86_500 } }
     }
@@ -381,11 +381,11 @@ describe("CurveYieldAdapter", () => {
   it("does not combine fee revenue and TVL from different daily snapshots", async () => {
     const payload = curveResponse();
     payload.data.liquidityPoolDailySnapshots = [
-      { id: "fees-only", timestamp: String(day), blockNumber: "460", dailySupplySideRevenueUSD: "200", dailyVolumeUSD: "1", pool: { id: "0x9999999999999999999999999999999999999999", inputTokens: [
+      { id: "fees-only", timestamp: String(day + 86_399), blockNumber: "460", dailySupplySideRevenueUSD: "200", dailyVolumeUSD: "1", pool: { id: "0x9999999999999999999999999999999999999999", inputTokens: [
         { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
         { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" }
       ] } },
-      { id: "tvl-only", timestamp: String(day - 86_400), blockNumber: "430", dailyVolumeUSD: "1", totalValueLockedUSD: "2000000", pool: { id: "0x9999999999999999999999999999999999999999", inputTokens: [
+      { id: "tvl-only", timestamp: String(day - 1), blockNumber: "430", dailyVolumeUSD: "1", totalValueLockedUSD: "2000000", pool: { id: "0x9999999999999999999999999999999999999999", inputTokens: [
         { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
         { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" }
       ] } }

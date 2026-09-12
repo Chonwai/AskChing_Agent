@@ -173,7 +173,7 @@ export class UniswapV3YieldAdapter {
     for (const { pool, snapshots, meta } of perPool) {
       const poolAddress = pool.id.toLowerCase();
       const complete = snapshots
-        .filter(snapshot => snapshot.timestamp + 86_400 <= boundary)
+        .filter(snapshot => utcDayStart(snapshot.timestamp) + 86_400 <= boundary)
         .sort((a, b) => b.timestamp - a.timestamp);
       if (complete.length === 0) {
         gaps.push({ venue: "uniswap-v3", poolAddress, reason: "No complete UTC daily snapshot." });
@@ -196,6 +196,7 @@ export class UniswapV3YieldAdapter {
         gaps.push({ venue: "uniswap-v3", poolAddress, reason: "Daily fee revenue and volume must be non-negative." });
         continue;
       }
+      const windowStart = utcDayStart(snapshot.timestamp);
       observations.push(DexYieldObservationSchema.parse({
         venue: "uniswap-v3",
         poolAddress,
@@ -205,8 +206,8 @@ export class UniswapV3YieldAdapter {
         volume24hUsd: snapshot.dailyVolumeUSD,
         tvlUsd: snapshot.totalValueLockedUSD,
         estimatedFeeApr: snapshot.dailySupplySideRevenueUSD! / snapshot.totalValueLockedUSD! * 365 * 100,
-        windowStart: new Date(snapshot.timestamp * 1000).toISOString(),
-        windowEnd: new Date((snapshot.timestamp + 86_400) * 1000).toISOString(),
+        windowStart: new Date(windowStart * 1000).toISOString(),
+        windowEnd: new Date((windowStart + 86_400) * 1000).toISOString(),
         subgraphId: this.#source.subgraphId,
         deploymentId: meta?.deployment,
         block: snapshot.blockNumber ?? meta?.block.number,
@@ -358,7 +359,7 @@ export class CurveYieldAdapter {
     const queryHash = await sha256(GET_CURVE_YIELDS_QUERY);
     for (const [poolAddress, poolSnapshots] of snapshotsByPool) {
       const complete = poolSnapshots
-        .filter(snapshot => snapshot.timestamp + 86_400 <= boundary)
+        .filter(snapshot => utcDayStart(snapshot.timestamp) + 86_400 <= boundary)
         .sort((a, b) => b.timestamp - a.timestamp);
       if (complete.length === 0) {
         gaps.push({ venue: "curve", poolAddress, reason: "No complete UTC daily snapshot." });
@@ -381,6 +382,7 @@ export class CurveYieldAdapter {
         gaps.push({ venue: "curve", poolAddress, reason: "Daily fee revenue and volume must be non-negative." });
         continue;
       }
+      const windowStart = utcDayStart(snapshot.timestamp);
       observations.push(DexYieldObservationSchema.parse({
         venue: "curve",
         poolAddress,
@@ -390,8 +392,8 @@ export class CurveYieldAdapter {
         volume24hUsd: snapshot.dailyVolumeUSD,
         tvlUsd: snapshot.totalValueLockedUSD,
         estimatedFeeApr: snapshot.dailySupplySideRevenueUSD! / snapshot.totalValueLockedUSD! * 365 * 100,
-        windowStart: new Date(snapshot.timestamp * 1000).toISOString(),
-        windowEnd: new Date((snapshot.timestamp + 86_400) * 1000).toISOString(),
+        windowStart: new Date(windowStart * 1000).toISOString(),
+        windowEnd: new Date((windowStart + 86_400) * 1000).toISOString(),
         subgraphId: this.#source.subgraphId,
         deploymentId: envelope.data._meta.deployment,
         block: snapshot.blockNumber ?? envelope.data._meta.block.number,
@@ -405,6 +407,10 @@ export class CurveYieldAdapter {
       gaps: gaps.sort((a, b) => (a.poolAddress ?? "").localeCompare(b.poolAddress ?? ""))
     };
   }
+}
+
+function utcDayStart(timestamp: number): number {
+  return Math.floor(timestamp / 86_400) * 86_400;
 }
 
 async function sha256(value: string): Promise<string> {
