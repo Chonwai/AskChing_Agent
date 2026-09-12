@@ -6,6 +6,17 @@ AskChing is a Grok-orchestrated research MCP for ETHOnline 2026. It fans out acr
 
 The repository was built from scratch for ETHOnline 2026 (first commit after the hackathon start). Its six MCP research tools and Grok tool-calling CLI work in deterministic fixture mode and credential-gated live mode.
 
+## Try it (60 seconds)
+
+**Live remote MCP endpoint**: `https://ask-ching-agent.vercel.app/api/mcp` — connect any MCP client (VS Code, Claude, Cursor, Gemini CLI…) and ask:
+
+> Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend right now. Rank the results, cite each source, and state the as-of time.
+
+Quick health check: `curl https://ask-ching-agent.vercel.app/api/health` → `{"live":true}`.
+
+- **Judge/first-timer guide**: [`docs/try-it.md`](docs/try-it.md) — curl test, VS Code setup, copy-paste demo questions, per-platform cheat sheet.
+- **Example prompts (Demo A–G)**: [`demos/prompts.md`](demos/prompts.md).
+
 ## Built on The Graph, for the agent economy
 
 The Graph is the load-bearing data layer: AskChing queries live Messari Standardized Subgraphs through the Graph Gateway, then layers on Grok reasoning, metric normalization, cross-protocol ranking, and cited synthesis. Four protocols are live today (Aave V3, Compound V3, Spark Lend, Aave V2) — each verified to serve USDC through the same code path the server uses (`pnpm probe:protocols`). The same tools are exposed as a standard MCP server — over stdio **and** remote Streamable HTTP — so any MCP-compatible agent (Cursor, Claude, VS Code, Codex, Gemini CLI, Grok Bot, ChatGPT connectors) can call them.
