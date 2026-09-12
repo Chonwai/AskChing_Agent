@@ -5,7 +5,7 @@ import { DEX_YIELD_SOURCES } from "./yield-sources.js";
 
 const day = Date.parse("2026-09-10T00:00:00.000Z") / 1000;
 
-interface CurveFixtureSnapshot {
+interface UniswapFixtureSnapshot {
   id: string;
   timestamp: string;
   blockNumber: string;
@@ -18,9 +18,9 @@ interface CurveFixtureSnapshot {
   };
 }
 
-interface CurveFixtureEnvelope {
+interface UniswapFixtureEnvelope {
   data: {
-    liquidityPoolDailySnapshots: CurveFixtureSnapshot[];
+    liquidityPoolDailySnapshots: UniswapFixtureSnapshot[];
     _meta: {
       deployment: string;
       block: { number: number; timestamp: number };
@@ -28,42 +28,32 @@ interface CurveFixtureEnvelope {
   };
 }
 
-function response() {
-  const pools = [
-    {
-      id: "0x1111111111111111111111111111111111111111",
-      token0: { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
-      token1: { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" },
-      feeTier: "500",
-      poolDayData: [
-        { date: String(day + 86_400), feesUSD: "999", volumeUSD: "1", tvlUSD: "1" },
-        { date: String(day), feesUSD: "1000", volumeUSD: "2000000", tvlUSD: "10000000" }
-      ]
-    },
-    {
-      id: "0x2222222222222222222222222222222222222222",
-      token0: { id: "0x6b175474e89094c44da98b954eedeac495271d0f", symbol: "DAI" },
-      token1: { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
-      feeTier: "100",
-      poolDayData: [
-        { date: String(day), feesUSD: "500", volumeUSD: "1000000", tvlUSD: "5000000" }
-      ]
-    },
-    {
-      id: "0x3333333333333333333333333333333333333333",
-      token0: { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
-      token1: { id: "0x0000000000000000000000000000000000000001", symbol: "WETH" },
-      feeTier: "3000",
-      poolDayData: [{ date: String(day), feesUSD: "1", volumeUSD: "1", tvlUSD: "1" }]
+function uniswapResponse(): UniswapFixtureEnvelope {
+  const pool = (
+    id: string,
+    tokens: Array<{ id: string; symbol: string }>
+  ) => ({ id, inputTokens: tokens });
+  const usdc = { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" };
+  const usdt = { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" };
+  const dai = { id: "0x6b175474e89094c44da98b954eedeac495271d0f", symbol: "DAI" };
+  return {
+    data: {
+      liquidityPoolDailySnapshots: [
+        { id: "usdc-usdt-new", timestamp: String(day), blockNumber: "111", dailySupplySideRevenueUSD: "1000", dailyVolumeUSD: "2000000", totalValueLockedUSD: "10000000", pool: pool("0x1111111111111111111111111111111111111111", [usdc, usdt]) },
+        { id: "usdc-usdt-old", timestamp: String(day - 86_400), blockNumber: "110", dailySupplySideRevenueUSD: "999", dailyVolumeUSD: "1", totalValueLockedUSD: "1", pool: pool("0x1111111111111111111111111111111111111111", [usdc, usdt]) },
+        { id: "dai-usdc-new", timestamp: String(day), blockNumber: "222", dailySupplySideRevenueUSD: "500", dailyVolumeUSD: "1000000", totalValueLockedUSD: "5000000", pool: pool("0x2222222222222222222222222222222222222222", [dai, usdc]) },
+        { id: "usdc-weth", timestamp: String(day), blockNumber: "333", dailySupplySideRevenueUSD: "1", dailyVolumeUSD: "1", totalValueLockedUSD: "1", pool: pool("0x3333333333333333333333333333333333333333", [usdc, { id: "0x0000000000000000000000000000000000000001", symbol: "WETH" }]) },
+        { id: "zero-tvl", timestamp: String(day), blockNumber: "444", dailySupplySideRevenueUSD: "100", dailyVolumeUSD: "1", totalValueLockedUSD: "0", pool: pool("0x4444444444444444444444444444444444444444", [usdc, usdt]) }
+      ],
+      _meta: { deployment: "QmUniswap", block: { number: 123, timestamp: day + 86_500 } }
     }
-  ];
-  return { data: { usdcAsToken0: pools.slice(0, 1).concat(pools[2]!), usdcAsToken1: [pools[1]], _meta: { deployment: "QmTest", block: { number: 123, timestamp: day + 86_500 } } } };
+  };
 }
 
 describe("UniswapV3YieldAdapter", () => {
   it("supports both token orders and uses the latest complete UTC day", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(response()), { status: 200 })
+      new Response(JSON.stringify(uniswapResponse()), { status: 200 })
     );
     const adapter = new UniswapV3YieldAdapter({
       source: DEX_YIELD_SOURCES[0]!,
@@ -76,16 +66,18 @@ describe("UniswapV3YieldAdapter", () => {
 
     expect(result.observations).toHaveLength(2);
     expect(result.observations.map(value => value.tokenSymbols)).toEqual([
-      ["USDC", "USDT"],
-      ["DAI", "USDC"]
+      ["DAI", "USDC"],
+      ["USDC", "USDT"]
     ]);
     expect(result.observations[0]!.estimatedFeeApr).toBeCloseTo(3.65);
     expect(result.observations[0]!.windowEnd).toBe("2026-09-11T00:00:00.000Z");
   });
 
   it("rejects zero TVL and returns no unsupported pair", async () => {
-    const payload = response();
-    payload.data.usdcAsToken0[0]!.poolDayData[1]!.tvlUSD = "0";
+    const payload = uniswapResponse();
+    payload.data.liquidityPoolDailySnapshots = payload.data.liquidityPoolDailySnapshots.filter(
+      snapshot => snapshot.pool.id !== "0x3333333333333333333333333333333333333333"
+    );
     const adapter = new UniswapV3YieldAdapter({
       source: DEX_YIELD_SOURCES[0]!,
       apiKey: "secret",
@@ -97,6 +89,31 @@ describe("UniswapV3YieldAdapter", () => {
     const result = await adapter.getOpportunities({ stablecoins: ["USDT"] });
     expect(result.observations).toEqual([]);
     expect(result.gaps[0]?.reason).toMatch(/positive TVL/);
+  });
+
+  it("does not combine fee revenue and TVL from different daily snapshots", async () => {
+    const payload = uniswapResponse();
+    payload.data.liquidityPoolDailySnapshots = [
+      { id: "fees-only", timestamp: String(day), blockNumber: "555", dailySupplySideRevenueUSD: "1000", dailyVolumeUSD: "1", pool: { id: "0x5555555555555555555555555555555555555555", inputTokens: [
+        { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
+        { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" }
+      ] } },
+      { id: "tvl-only", timestamp: String(day - 86_400), blockNumber: "550", dailyVolumeUSD: "1", totalValueLockedUSD: "10000000", pool: { id: "0x5555555555555555555555555555555555555555", inputTokens: [
+        { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
+        { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" }
+      ] } }
+    ];
+    const adapter = new UniswapV3YieldAdapter({
+      source: DEX_YIELD_SOURCES[0]!, apiKey: "secret",
+      fetchImpl: vi.fn().mockResolvedValue(new Response(JSON.stringify(payload), { status: 200 })),
+      now: () => new Date("2026-09-11T12:00:00.000Z")
+    });
+
+    const result = await adapter.getOpportunities({ stablecoins: ["USDT"] });
+    expect(result.observations).toEqual([]);
+    expect(result.gaps).toEqual([
+      expect.objectContaining({ poolAddress: "0x5555555555555555555555555555555555555555", reason: expect.stringMatching(/same daily snapshot/) })
+    ]);
   });
 
   it("never leaks credentials from provider errors", async () => {
