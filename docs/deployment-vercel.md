@@ -23,7 +23,7 @@
 
 ```
                     packages/mcp-server/src/register.ts
-                    （5 個 tools 的單一註冊來源）
+                    （6 個 tools 的單一註冊來源）
                                │
               ┌────────────────┴─────────────────┐
               │                                  │
@@ -170,7 +170,7 @@ curl -s https://<app>.vercel.app/api/mcp \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | jq '.result.tools[].name'
-# → analyze_markets / analyze_trends / compare_markets / research_brief / risk_scan
+# → analyze_markets / analyze_trends / compare_markets / discover_yields / research_brief / risk_scan
 ```
 
 **部署前在本機先驗證 handler 邏輯**（`api/mcp.ts` 與 `api/health.ts` 會被真的載入，驅動真的 MCP 握手）：
@@ -195,7 +195,7 @@ pnpm mcp:serve
 
 # 另一個終端：端到端 smoke（initialize + tools/list + tools/call）
 pnpm mcp:http:smoke
-# → mcp-http-smoke OK: askching (5 tools, transport=streamable-http, findings=3)
+# → mcp-http-smoke OK: askching (6 tools, transport=streamable-http, findings=3)
 ```
 
 `pnpm mcp:serve` 內建 `GET /health`，可先確認模式（live / fixture）。
