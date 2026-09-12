@@ -113,13 +113,13 @@ AskChing runs over **two transports from one shared tool registration**: local s
 
 ### Remote (deployed)
 
-Deploy with `vercel --prod` (see [`docs/deployment-vercel.md`](docs/deployment-vercel.md)), then use a URL:
+**Live at [`https://askching.vercel.app/api/mcp`](https://askching.vercel.app/api/mcp)** — deployed to Vercel with automatic GitHub push-to-deploy. Health check: [`https://askching.vercel.app/api/health`](https://askching.vercel.app/api/health) (reports `live: true` on Production).
 
 ```json
 {
   "mcpServers": {
     "askching": {
-      "url": "https://<app>.vercel.app/api/mcp"
+      "url": "https://askching.vercel.app/api/mcp"
     }
   }
 }
