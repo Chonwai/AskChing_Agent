@@ -1,0 +1,17 @@
+{
+  "name": "AskChing",
+  "short_name": "AskChing",
+  "description": "Cited DeFi research over The Graph — as a remote MCP server.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070a",
+  "theme_color": "#05070a",
+  "icons": [
+    {
+      "src": "/askching-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
