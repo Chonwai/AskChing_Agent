@@ -5,3 +5,4 @@ export * from "./graph-client.js";
 export * from "./metrics.js";
 export * from "./schemas.js";
 export * from "./source-config.js";
+export * from "./yield-sources.js";

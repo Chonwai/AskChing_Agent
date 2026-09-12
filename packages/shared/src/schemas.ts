@@ -216,3 +216,111 @@ export const AnalyzeTrendsResultSchema = z.object({
   asOf: z.string().datetime()
 });
 export type AnalyzeTrendsResult = z.infer<typeof AnalyzeTrendsResultSchema>;
+
+// ── Cross-venue yield discovery (v1.2) ───────────────────────────
+export const YieldVenueSchema = z.enum([
+  "lending",
+  "uniswap-v3",
+  "curve"
+]);
+export type YieldVenue = z.infer<typeof YieldVenueSchema>;
+
+export const YieldCategorySchema = z.enum(["lending", "dex_lp"]);
+export type YieldCategory = z.infer<typeof YieldCategorySchema>;
+
+export const YieldRiskFlagSchema = z.enum([
+  "spot_rate_variable",
+  "fee_returns_variable",
+  "stablecoin_depeg",
+  "smart_contract",
+  "impermanent_loss",
+  "excludes_incentives_gas_and_compounding",
+  "concentrated_liquidity",
+  "position_range_dependent",
+  "multi_asset_pool"
+]);
+export type YieldRiskFlag = z.infer<typeof YieldRiskFlagSchema>;
+
+const EthereumAddressSchema = z
+  .string()
+  .regex(/^0x[a-f0-9]{40}$/, "Expected a lower-case Ethereum address");
+
+export const YieldCitationSchema = z.object({
+  venue: YieldVenueSchema.exclude(["lending"]),
+  poolAddress: EthereumAddressSchema,
+  subgraphId: z.string().min(1),
+  deploymentId: z.string().min(1).optional(),
+  block: z.number().int().nonnegative().optional(),
+  timestamp: z.string().datetime(),
+  queryHash: z.string().min(1),
+  windowStart: z.string().datetime(),
+  windowEnd: z.string().datetime()
+});
+export type YieldCitation = z.infer<typeof YieldCitationSchema>;
+
+export const DexYieldObservationSchema = YieldCitationSchema.extend({
+  asset: z.literal("USDC"),
+  tokenSymbols: z.array(z.enum(["USDC", "USDT", "DAI"])).min(2),
+  feeTier: z.number().int().positive().optional(),
+  dailySupplySideFeesUsd: z.number().finite().nonnegative(),
+  volume24hUsd: z.number().finite().nonnegative(),
+  tvlUsd: z.number().finite().positive(),
+  estimatedFeeApr: z.number().finite().nonnegative()
+});
+export type DexYieldObservation = z.infer<typeof DexYieldObservationSchema>;
+
+export const LendingYieldOpportunitySchema = z.object({
+  category: z.literal("lending"),
+  rank: z.number().int().positive(),
+  protocol: ProtocolSchema,
+  asset: z.literal("USDC"),
+  supplyApy: z.number().finite().nonnegative(),
+  utilization: z.number().finite().nonnegative().optional(),
+  tvlUsd: z.number().finite().nonnegative().optional(),
+  calculation: z.string().min(1),
+  citations: z.array(AnalysisCitationSchema).min(2),
+  riskFlags: z.array(YieldRiskFlagSchema),
+  caveats: z.array(z.string())
+});
+export type LendingYieldOpportunity = z.infer<
+  typeof LendingYieldOpportunitySchema
+>;
+
+export const DexLpYieldOpportunitySchema = DexYieldObservationSchema.extend({
+  category: z.literal("dex_lp"),
+  rank: z.number().int().positive(),
+  calculation: z.string().min(1),
+  riskFlags: z.array(YieldRiskFlagSchema),
+  caveats: z.array(z.string())
+});
+export type DexLpYieldOpportunity = z.infer<
+  typeof DexLpYieldOpportunitySchema
+>;
+
+export const YieldDiscoveryGapSchema = z.object({
+  venue: YieldVenueSchema.optional(),
+  poolAddress: EthereumAddressSchema.optional(),
+  reason: z.string().min(1)
+});
+export type YieldDiscoveryGap = z.infer<typeof YieldDiscoveryGapSchema>;
+
+export const YieldDiscoveryWindowSchema = z.object({
+  kind: z.literal("latest_complete_utc_day"),
+  start: z.string().datetime(),
+  end: z.string().datetime()
+});
+
+export const DiscoverYieldsResultSchema = z.object({
+  asset: z.literal("USDC"),
+  chain: z.literal("ethereum-mainnet"),
+  window: YieldDiscoveryWindowSchema,
+  lending: z.array(LendingYieldOpportunitySchema),
+  dexLp: z.array(DexLpYieldOpportunitySchema),
+  crossDexWinner: DexLpYieldOpportunitySchema.nullable(),
+  gaps: z.array(YieldDiscoveryGapSchema),
+  methodology: z.array(z.string().min(1)),
+  asOf: z.string().datetime()
+});
+export type DiscoverYieldsResult = z.infer<
+  typeof DiscoverYieldsResultSchema
+>;
