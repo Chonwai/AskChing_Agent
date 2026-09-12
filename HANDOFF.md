@@ -1,15 +1,15 @@
 ---
 title: AskChing handoff
 updated: 2026-09-12
-checkpoint: a20dc42
-status: discover-yields-task-5-complete
+checkpoint: aa440bd
+status: discover-yields-complete
 ---
 
 # AskChing handoff
 
 Updated: 2026-09-12 (Asia/Hong_Kong)
 
-## Active yield-discovery batch
+## Active yield-discovery batch — COMPLETE
 
 - Approved design: `docs/superpowers/specs/2026-09-12-discover-yields-design.md` (`051a91a`).
 - Execution plan: `docs/superpowers/plans/2026-09-12-discover-yields.md` (`de60106`).
@@ -18,26 +18,32 @@ Updated: 2026-09-12 (Asia/Hong_Kong)
 - Completed Task 3 at `11f964b`: Curve daily-snapshot adapter; `4f95009` then fixed three-core-stablecoin composition matching for single-counterpart requests.
 - Completed Task 4 at `f4bc428`: pure filtering, separate lending/LP rankings, calculations, risk flags, common-day gate, and fail-closed behavior.
 - Completed Task 5 at `a20dc42`: fixture/live DEX facade, `Promise.allSettled` partial failures, safe venue gaps, fixture/live invariants, and integration into `MarketDataSource`.
-- Verification at this checkpoint: yield adapters/facade plus existing data-source invariants passed **37/37 tests in 4 files**; shared TypeScript build and `git diff --check` passed. Normalizer plus compare/analysis/trend regressions passed **47/47 tests in 4 files**.
-- Both DEX candidates deliberately remain `live: false` with `Pending exact-query credentialed probe.` They must not be advertised as live until the exact production queries pass.
-- The DEX facade can execute candidate adapters in a controlled live test, but production exposure must respect the registry state until Task 8's credentialed probes succeed.
-- Next action: Task 6 — add failing `discover_yields` MCP handler/registration tests, implement the handler, update both transport smoke counts from five to six, commit, and push.
-- Remaining after Task 6: Task 7 Grok tool routing; Task 8 evals/docs/credentialed DEX probes/final full verification.
+- Completed Task 6 at `1f335c4`: `discover_yields` MCP handler + registration over both transports (6 tools).
+- Completed Task 7 at `20cf570`: Grok orchestrator routing for `discover_yields`.
+- Completed Task 8 (this handoff batch, `a745f67` → `aa440bd`):
+  - `a745f67` added `probe:yields` (`demos/probe-yield-sources.ts`) — credentialed DEX source probe.
+  - Root-cause fix: johnku pinned Messari-schema subgraphs, but the Uniswap adapter used the official v3 schema. `f4f294f`/`f46fd33` rewrote it to the Messari `liquidityPoolDailySnapshots` shape.
+  - Second fix (`712fe84`/`b316186`): Messari Uniswap V3's **global** `liquidityPoolDailySnapshots(first:1000)` query reliably times out (all 5 indexers unavailable), so the adapter now does a **two-phase lookup**: pools query (aliased `usdtPools`/`daiPools` with `inputTokens_contains`) then per-pool `where:{pool}` snapshot fetches in parallel (~5s + ~390ms/pool). Verified live: obs=8, gaps=0, eligible=2 (USDC/USDT 0.01% TVL $34.0M APR 1.51%; USDC/DAI TVL $1.17M APR 0.99%).
+  - `3f9bfd4` flipped **both DEX sources to `live: true`** and removed their pending notes — Task 8 was the only task allowed to do this, gated on `probe:yields` passing (2/2).
+  - `9cc3372`/`aa440bd` typed + aligned the two-phase mock tests.
+- **Gates today (2026-09-12, HEAD `aa440bd`)**: `pnpm build` 3/3, `pnpm test` **209 passed (21 files)**, `pnpm eval` **27/27**, `pnpm mcp:smoke` 6 tools, `pnpm mcp:http:smoke` 6 tools, `pnpm vercel:probe` OK, `pnpm probe:protocols` 4/4, `pnpm probe:yields` **2/2 live DEX venues**, `git diff --check` clean.
+- **Credentialed Grok smoke passed** (`ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching -- "Where can I earn yield on USDC across lending, Uniswap V3, and Curve? ...")`: Grok selects `discover_yields`, prints separate lending/LP rankings, formulas, complete citations, risk flags, and no transaction.
+- **Known live nuance**: with live data, Uniswap windowEnd (23:59:59) vs Curve windowEnd (23:52:59) do **not** share an identical UTC boundary → `crossDexWinner: null` + explicit gap. This is spec-consistent fail-closed behavior. Fixture mode still demonstrates a common day; a demo recording that needs a live `crossDexWinner` must either craft the prompt carefully or accept the null + explanation.
+- Next actions (nice-to-have, not blocking): consider whether to widen the common-day gate to snapshot-day buckets (e.g. UTC date of `windowStart`) since Messari pools snapshot at slightly offset timestamps; revisit chain expansion (Base/Arbitrum/Polygon) as the highest-ROI demo differentiator.
 
 ## TL;DR for the incoming teammate
 
 Read this box, then read §Corrections before trusting any older document.
 
-- **5 currently registered MCP tools**; `discover_yields` shared engine is implemented through Task 5 but is not registered yet. There are **2 transports** (local stdio + remote Streamable HTTP) and **4 verified live lending protocols**.
+- **6 currently registered MCP tools** (`compare_markets`, `research_brief`, `risk_scan`, `analyze_markets`, `analyze_trends`, `discover_yields`) across **2 transports** (local stdio + remote Streamable HTTP); **4 verified live lending protocols** + **2 live DEX venues** (Uniswap V3, Curve).
 - **Remote MCP is implemented and cloud-ready** — `api/mcp.ts`, `api/health.ts`, `vercel.json`, `public/index.html`. Deployment is being handled by the user's partner and is outside this active code batch; do not claim its current URL/status without probing it.
-- **56 commits** landed since the older `9a3f592` handoff; the active yield batch accounts for 13 commits after `40f7923`. All implementation commits through `a20dc42` are pushed to `origin/main`.
-- A verification pass on 2026-09-12 re-derived every checkable claim from the file system, the vendors' documentation, and the live API instead of from commit messages. It found and fixed **3 real bugs** and **1 false claim**; two of the bugs would only have surfaced after deployment.
-- Green today: `pnpm build` 3/3, `pnpm test` **175 passed (17 files)**, `pnpm eval` **23/23**, `pnpm mcp:smoke` 5 tools, `pnpm mcp:http:smoke` 5 tools, `pnpm vercel:probe` OK, `pnpm probe:protocols` **4/4**.
+- The active yield batch is now **complete through Task 8**: both DEX sources are `live: true` (flipped only after `probe:yields` passed 2/2), the Uniswap adapter uses a two-phase lookup to avoid the Messari subgraph's global-snapshot timeout, and all release gates are green.
+- Green today (HEAD `aa440bd`): `pnpm build` 3/3, `pnpm test` **209 (21 files)**, `pnpm eval` **27/27**, `pnpm mcp:smoke` 6 tools, `pnpm mcp:http:smoke` 6 tools, `pnpm vercel:probe` OK, `pnpm probe:protocols` 4/4, `pnpm probe:yields` **2/2**.
 
 ## Current checkpoint
 
 - Branch `main`, tracking public `origin/main`.
-- **`a20dc42`** is the latest pushed implementation commit: `feat(shared): add settled DEX yield data source`. The handoff edits you are reading follow it.
+- **`aa440bd`** is the latest pushed commit: `test(shared): assert live DEX sources carry no pending note`. The handoff edits you are reading follow it.
 - The previous yield handoff pointed at `66d7d5a`; that checkpoint is superseded.
 - Working tree was clean before these handoff edits. Credentials stay local in `.env` (git-ignored).
 - `.edison/state/*.md` **is tracked** in this repo, not ignored — loop state is part of the record.
@@ -45,7 +51,7 @@ Read this box, then read §Corrections before trusting any older document.
 
 ## What exists now
 
-### MCP tool surface (5 tools, one registration)
+### MCP tool surface (6 tools, one registration)
 
 All five are registered from a single source — `packages/mcp-server/src/register.ts` — so the stdio server and the remote HTTP server can never drift apart.
 
@@ -56,6 +62,7 @@ All five are registered from a single source — `packages/mcp-server/src/regist
 | `risk_scan` | Peer-relative spot signals + explicit time-series gap | spot |
 | `analyze_markets` | `yield_opportunity` / `liquidity_stress` / `evidence_quality` | spot, with calculation + confidence + gaps |
 | `analyze_trends` | 7d / 30d daily history: change, changePct, least-squares slope, direction, volatility | **historical** |
+| `discover_yields` | Cross-venue USDC yield: separate lending/LP rankings, citations, risk flags | **discovery** |
 
 The three-layer story the demo leans on: compare (now) → analyze (now, explained) → analyze_trends (how it got here).
 
@@ -85,6 +92,17 @@ Verified on 2026-09-12 through the same code path the server uses. `pnpm probe:p
 
 `PROTOCOL_REGISTRY` holds 13 entries: 4 live, 5 reachable-but-unusable, 4 on an older schema. **Every non-live entry must carry a `note` explaining why** — enforced by test. The registry is the only place the live set is written down; the Grok tool schema derives its protocol enum from it.
 
+### Verified live DEX venues (2)
+
+Verified on 2026-09-12 through `pnpm probe:yields` (exact production query path).
+
+| Venue | Subgraph id | Live reading at verification |
+| --- | --- | --- |
+| `uniswap-v3` | `4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6` | 2 eligible pools; USDC/USDT 0.01% TVL $34.0M APR 1.51%; USDC/DAI TVL $1.17M APR 0.99% |
+| `curve` | `3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF` | 1 eligible pool; 3pool TVL $154.17M APR 0.27% |
+
+Both are Messari-schema subgraphs. The Uniswap adapter uses a two-phase lookup (pools query then per-pool `where:{pool}` snapshots) because the global `liquidityPoolDailySnapshots(first:1000)` query reliably times out on that deployment. `DEX_YIELD_SOURCES` holds exactly these 2 entries, both `live: true` with no `note`. `probe:yields` exits non-zero if a live source cannot deliver an eligible complete snapshot.
+
 ### Historical note: the analyze_markets batch
 
 Kept for context only. The previous handoff described this batch as the current state; it is now several batches behind.
@@ -111,19 +129,20 @@ History was not squashed. Every batch was pushed to `origin/main`.
 
 ## Verification evidence
 
-Re-run from the repository root at `40f7923` on 2026-09-12. These are the numbers to expect; treat anything else as a real signal.
+Re-run from the repository root at `aa440bd` on 2026-09-12. These are the numbers to expect; treat anything else as a real signal.
 
 ```text
 pnpm build          -> 3 of 4 workspace projects built
-pnpm test           -> 175 passed (17 files)
-pnpm eval           -> 23/23 passed
-pnpm mcp:smoke      -> mcp-smoke OK: askching (5 tools)
-pnpm mcp:http:smoke -> mcp-http-smoke OK: askching (5 tools, transport=streamable-http, findings=3)
+pnpm test           -> 209 passed (21 files)
+pnpm eval           -> 27/27 passed
+pnpm mcp:smoke      -> mcp-smoke OK: askching (6 tools)
+pnpm mcp:http:smoke -> mcp-http-smoke OK: askching (6 tools, transport=streamable-http, findings=3)
 pnpm vercel:probe   -> vercel-probe OK: export shape, config, initialize, tools/list, tools/call, health
 pnpm probe:protocols -> 4/4 live protocols returned data
+pnpm probe:yields   -> 2/2 live DEX venues passed (uniswap-v3 eligible=2, curve eligible=1)
 ```
 
-`pnpm live:smoke` and `pnpm askching` need `GRAPH_API_KEY` (and `XAI_API_KEY` for the latter); `pnpm probe:protocols` needs `GRAPH_API_KEY`.
+`pnpm live:smoke` and `pnpm askching` need `GRAPH_API_KEY` (and `XAI_API_KEY` for the latter); `pnpm probe:protocols` and `pnpm probe:yields` need `GRAPH_API_KEY`.
 
 ### Credentialed live evidence
 
