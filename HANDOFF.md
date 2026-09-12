@@ -1,8 +1,8 @@
 ---
 title: AskChing handoff
 updated: 2026-09-12
-checkpoint: 66d7d5a
-status: discover-yields-task-1-complete
+checkpoint: a20dc42
+status: discover-yields-task-5-complete
 ---
 
 # AskChing handoff
@@ -14,28 +14,34 @@ Updated: 2026-09-12 (Asia/Hong_Kong)
 - Approved design: `docs/superpowers/specs/2026-09-12-discover-yields-design.md` (`051a91a`).
 - Execution plan: `docs/superpowers/plans/2026-09-12-discover-yields.md` (`de60106`).
 - Completed Task 1 at `66d7d5a`: yield result/observation/citation/risk schemas, canonical USDC/USDT/DAI addresses, and pending Uniswap V3 + Curve source entries.
-- Verification: the new contracts first failed as expected; then 6/6 focused tests and the shared TypeScript build passed.
+- Completed Task 2 at `39d1e6d`: deterministic DEX fixtures and the injected-clock Uniswap V3 complete-day fee adapter.
+- Completed Task 3 at `11f964b`: Curve daily-snapshot adapter; `4f95009` then fixed three-core-stablecoin composition matching for single-counterpart requests.
+- Completed Task 4 at `f4bc428`: pure filtering, separate lending/LP rankings, calculations, risk flags, common-day gate, and fail-closed behavior.
+- Completed Task 5 at `a20dc42`: fixture/live DEX facade, `Promise.allSettled` partial failures, safe venue gaps, fixture/live invariants, and integration into `MarketDataSource`.
+- Verification at this checkpoint: yield adapters/facade plus existing data-source invariants passed **37/37 tests in 4 files**; shared TypeScript build and `git diff --check` passed. Normalizer plus compare/analysis/trend regressions passed **47/47 tests in 4 files**.
 - Both DEX candidates deliberately remain `live: false` with `Pending exact-query credentialed probe.` They must not be advertised as live until the exact production queries pass.
-- Next action: Task 2 — add deterministic DEX fixtures and the injected-clock Uniswap V3 daily-fee adapter using test-first development.
+- The DEX facade can execute candidate adapters in a controlled live test, but production exposure must respect the registry state until Task 8's credentialed probes succeed.
+- Next action: Task 6 — add failing `discover_yields` MCP handler/registration tests, implement the handler, update both transport smoke counts from five to six, commit, and push.
+- Remaining after Task 6: Task 7 Grok tool routing; Task 8 evals/docs/credentialed DEX probes/final full verification.
 
 ## TL;DR for the incoming teammate
 
 Read this box, then read §Corrections before trusting any older document.
 
-- **5 MCP tools**, **2 transports** (local stdio + remote Streamable HTTP), **4 verified live protocols**.
-- **Remote MCP is implemented and cloud-ready** — `api/mcp.ts`, `api/health.ts`, `vercel.json`, `public/index.html`. It has **not been deployed yet**; that is Chonwai's task.
-- **42 commits** landed since the previous handoff (`9a3f592`). All pushed to `origin/main`.
+- **5 currently registered MCP tools**; `discover_yields` shared engine is implemented through Task 5 but is not registered yet. There are **2 transports** (local stdio + remote Streamable HTTP) and **4 verified live lending protocols**.
+- **Remote MCP is implemented and cloud-ready** — `api/mcp.ts`, `api/health.ts`, `vercel.json`, `public/index.html`. Deployment is being handled by the user's partner and is outside this active code batch; do not claim its current URL/status without probing it.
+- **56 commits** landed since the older `9a3f592` handoff; the active yield batch accounts for 13 commits after `40f7923`. All implementation commits through `a20dc42` are pushed to `origin/main`.
 - A verification pass on 2026-09-12 re-derived every checkable claim from the file system, the vendors' documentation, and the live API instead of from commit messages. It found and fixed **3 real bugs** and **1 false claim**; two of the bugs would only have surfaced after deployment.
 - Green today: `pnpm build` 3/3, `pnpm test` **175 passed (17 files)**, `pnpm eval` **23/23**, `pnpm mcp:smoke` 5 tools, `pnpm mcp:http:smoke` 5 tools, `pnpm vercel:probe` OK, `pnpm probe:protocols` **4/4**.
 
 ## Current checkpoint
 
 - Branch `main`, tracking public `origin/main`.
-- **`40f7923`** is the last implementation-or-state commit: `chore(state): record loop outcomes for the verify-and-harden batch`. The handoff edits you are reading follow it.
-- Previous handoff pointed at `9a3f592`; that checkpoint is superseded.
+- **`a20dc42`** is the latest pushed implementation commit: `feat(shared): add settled DEX yield data source`. The handoff edits you are reading follow it.
+- The previous yield handoff pointed at `66d7d5a`; that checkpoint is superseded.
 - Working tree was clean before these handoff edits. Credentials stay local in `.env` (git-ignored).
 - `.edison/state/*.md` **is tracked** in this repo, not ignored — loop state is part of the record.
-- Full range for this handoff: `git log --oneline 9a3f592..HEAD`.
+- Yield batch range so far: `git log --oneline 40f7923..HEAD`. History is incremental and unsquashed.
 
 ## What exists now
 
