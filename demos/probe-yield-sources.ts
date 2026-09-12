@@ -8,7 +8,7 @@
  * before flipping `live: true` in the source registry.
  *
  * Usage:
- *   pnpm probe:yields                       # probe all registered DEX venues
+ *   pnpm probe:yields                         # probe all registered DEX venues
  *   pnpm probe:yields -- --venue uniswap-v3  # probe Uniswap V3 only
  *   pnpm probe:yields -- --venue curve       # probe Curve only
  */
@@ -62,20 +62,16 @@ async function main() {
     let totalObs = 0;
     let gaps = 0;
     let eligibleObs = 0;
-    let succeeded = false;
-    let error: string | undefined;
 
     try {
       const adapter = createAdapter(source, apiKey);
       const result = await adapter.getOpportunities(input);
       totalObs = result.observations.length;
       gaps = result.gaps.length;
-      succeeded = true;
 
       const eligible = result.observations.filter(o => o.tvlUsd >= MIN_TVL_USD);
       eligibleObs = eligible.length;
 
-      // Report per-source summary
       let tag: string;
       if (expectLive) {
         liveTotal += 1;
@@ -98,7 +94,6 @@ async function main() {
         `subgraph=${source.subgraphId}`
       );
 
-      // Print eligible observations
       for (const obs of eligible) {
         console.log(
           `  ${obs.venue} ${obs.poolAddress} ` +
@@ -109,15 +104,14 @@ async function main() {
         );
       }
 
-      // Print gap reasons (helps diagnose pagination / schema risks)
       if (result.gaps.length > 0) {
-        console.log(`  gaps:`);
+        console.log("  gaps:");
         for (const gap of result.gaps) {
           console.log(`    ${gap.poolAddress ?? "?"}: ${gap.reason}`);
         }
       }
     } catch (err) {
-      error = (err as Error).message;
+      const error = (err as Error).message;
 
       let tag: string;
       if (expectLive) {
@@ -138,7 +132,6 @@ async function main() {
     console.log();
   }
 
-  // Summary
   console.log(`${livePassed}/${liveTotal} live venues passed (eligible ≥ ${formatNumber(MIN_TVL_USD)} TVL)`);
   if (regressions > 0) {
     console.error(
