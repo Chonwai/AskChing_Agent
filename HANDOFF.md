@@ -1,13 +1,24 @@
 ---
 title: AskChing handoff
 updated: 2026-09-13
-checkpoint: 960f4c9
-status: vercel-deployed-live
+checkpoint: c9aceac
+status: submission-images-complete
 ---
 
 # AskChing handoff
 
-Updated: 2026-09-12 (Asia/Hong_Kong)
+Updated: 2026-09-13 (Asia/Hong_Kong)
+
+## Submission image batch — COMPLETE
+
+- Approved Terminal Proof design: `docs/superpowers/specs/2026-09-13-submission-images-design.md`.
+- Execution plan: `docs/superpowers/plans/2026-09-13-submission-images.md`.
+- `90f5e8a` added the validated 512×512 logo; `356159e` added the validated 1600×900 cover.
+- `d76595c` added three deterministic 1600×900 product screenshots and their reproducible HTML sources; `c9aceac` refreshed screenshot 1 to the canonical Pro endpoint after pulling the partner's deployment changes.
+- Upload mapping and data caveats are in `submission-assets/README.md`. All five PNGs were visually inspected, dimension checked, and scanned for credential markers.
+- Product surface now has **7 MCP tools total**: 6 research tools plus the `get_info` self-description tool added at `1e9947e`.
+- Canonical live endpoint: `https://ask-ching-agent.vercel.app/api/mcp`.
+- Next action: upload the five files from `submission-assets/` to ETHOnline, then record/submit the demo. Re-run or relabel time-sensitive numerical screenshots if a later recording claims they are current rather than the dated 2026-09-12 observations.
 
 ## Active yield-discovery batch — COMPLETE
 
@@ -37,7 +48,7 @@ Updated: 2026-09-12 (Asia/Hong_Kong)
 
 Read this box, then read §Corrections before trusting any older document.
 
-- **6 currently registered MCP tools** (`compare_markets`, `research_brief`, `risk_scan`, `analyze_markets`, `analyze_trends`, `discover_yields`) across **2 transports** (local stdio + remote Streamable HTTP); **4 verified live lending protocols** + **2 live DEX venues** (Uniswap V3, Curve).
+- **7 currently registered MCP tools**: six research tools (`compare_markets`, `research_brief`, `risk_scan`, `analyze_markets`, `analyze_trends`, `discover_yields`) plus `get_info`, across **2 transports** (local stdio + remote Streamable HTTP); **4 verified live lending protocols** + **2 live DEX venues** (Uniswap V3, Curve).
 - **Remote MCP is LIVE on Vercel Pro** — `https://ask-ching-agent.vercel.app/api/mcp` (project `ask-ching-agent` under Pro team `chonwai-s-team`; the free-team `askching` project on `chonwais-projects` is a superseded duplicate). Health at `/api/health` reports `live: true`. Verified: 6 tools listed, `/mcp` rewrite works, `compare_markets` returns live cited data (block 25963035, queryHash, subgraphId). GitHub push-to-deploy connected to the Pro project — pushes to `main` auto-deploy. Env: Production `DEMO_LIVE=1` + `GRAPH_API_KEY` (secret); Preview `DEMO_LIVE=0`.
 - The active yield batch is now **complete through Task 8**: both DEX sources are `live: true` (flipped only after `probe:yields` passed 2/2), the Uniswap adapter uses a two-phase lookup to avoid the Messari subgraph's global-snapshot timeout, and all release gates are green.
 - Green today (pushed checkpoint `da2b40c`): `pnpm build` 3/3, `pnpm test` **209 (21 files)**, `pnpm eval` **27/27**, `pnpm mcp:smoke` 6 tools, `pnpm mcp:http:smoke` 6 tools, `pnpm vercel:probe` OK, `pnpm probe:protocols` 4/4, `pnpm probe:yields` **2/2**, credentialed Grok smoke passed.
@@ -45,7 +56,7 @@ Read this box, then read §Corrections before trusting any older document.
 ## Current checkpoint
 
 - Branch `main`, tracking public `origin/main`.
-- **`960f4c9`** is the latest pushed commit: `fix(deploy): includeFiles must be a string, not array` (2026-09-13). This fixed the actual Vercel deploy error: `functions.api/*.ts.includeFiles` was an array but the schema requires a string.
+- **`c9aceac`** is the latest pushed asset commit before this manifest/handoff update: `fix(demo): use canonical live MCP endpoint`. The handoff commit follows it.
 - **Deployed live (Pro team)**: `https://ask-ching-agent.vercel.app` (project `ask-ching-agent`, team `chonwai-s-team`), `live: true` on Production, 6 tools verified, GitHub auto-deploy connected. The earlier free-team deployment `askching.vercel.app` (team `chonwais-projects`) is superseded — the Pro project is the canonical endpoint.
 - The previous handoff pointed at `616e4c6`; superseded by the successful deployment batch.
 - Working tree clean; credentials stay local in `.env` (git-ignored). `.vercel/` is gitignored.
