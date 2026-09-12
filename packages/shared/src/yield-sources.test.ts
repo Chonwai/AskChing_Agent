@@ -7,22 +7,22 @@ import {
 } from "./yield-sources.js";
 
 describe("DEX yield source registry", () => {
-  it("pins the approved Ethereum source candidates as pending probes", () => {
+  it("pins the approved Ethereum DEX sources as live after credentialed probes", () => {
     expect(DEX_YIELD_SOURCES).toEqual([
       expect.objectContaining({
         venue: "uniswap-v3",
         subgraphId: "4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6",
-        live: false,
-        note: "Pending exact-query credentialed probe."
+        live: true,
+        note: undefined
       }),
       expect.objectContaining({
         venue: "curve",
         subgraphId: "3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF",
-        live: false,
-        note: "Pending exact-query credentialed probe."
+        live: true,
+        note: undefined
       })
     ]);
-    expect(LIVE_DEX_YIELD_SOURCES).toEqual([]);
+    expect(LIVE_DEX_YIELD_SOURCES).toHaveLength(2);
   });
 
   it("uses canonical lower-case token addresses", () => {

@@ -24,8 +24,7 @@ export const DEX_YIELD_SOURCES: readonly DexYieldSource[] = [
     subgraphId: "4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6",
     explorerUrl:
       "https://thegraph.com/explorer/subgraphs/4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6",
-    live: false,
-    note: "Pending exact-query credentialed probe."
+    live: true
   },
   {
     venue: "curve",
@@ -34,8 +33,7 @@ export const DEX_YIELD_SOURCES: readonly DexYieldSource[] = [
     subgraphId: "3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF",
     explorerUrl:
       "https://thegraph.com/explorer/subgraphs/3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF",
-    live: false,
-    note: "Pending exact-query credentialed probe."
+    live: true
   }
 ];
 
