@@ -66,7 +66,7 @@ describe("createDexYieldDataSource", () => {
     ["curve", "uniswap-v3"]
   ] as const)("keeps %s evidence when %s fails and redacts the key", async (success, failure) => {
     const fetchImpl = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
-      const body = JSON.parse(String(init?.body)) as { operationName: string };
+      const body = JSON.parse(String(init?.body)) as { operationName: string; query?: string };
       const venue = body.operationName.includes("Uniswap") ? "uniswap-v3" : "curve";
       if (venue === failure) throw new Error("graph-key leaked by provider");
       if (venue === "uniswap-v3") {
