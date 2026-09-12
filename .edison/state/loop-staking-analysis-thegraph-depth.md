@@ -57,3 +57,23 @@
 
 1. **$10K USDC vs ETH staking**：以當前 cited 數據，USDC（Compound 3.6% / Uniswap LP 4.63%）> Lido staking（2.32%）。但 AskChing 只給數據不給建議。
 2. **The Graph 分析功能**：已涵蓋（比較/風險/趨勢/收益發現/簡報）；ETH staking 是最高加分的新功能，Lido 數據已驗證可用，spec 已備好，deadline 後實作。
+
+---
+
+## 補齊 VERIFY 閘門（2026-09-13，用戶要求 review 剛做的工作）
+
+### smith strict 審查批次（5539606..HEAD）
+
+- **Measured Score: 94/100 PASS**（threshold 93）— 0 Critical / 0 High / 1 Medium / 1 Low
+- 批次性質：docs + state only（4 files, +278 lines, **零代碼變更**），gates 全綠
+- **smith 親測驗證**（非 mirror）：Lido `totalRewards.apr`=2.315% @ block 25961308 ✅、Rocket Pool 社群 ID 失效 ✅、Messari rocket-pool no allocations ✅、Messari lido live ✅、`TotalReward.blockTime` 欄位 introspection 確認 ✅、probe:protocols 4/4 ✅
+- **F-M1（Medium）**：spec citation 結構漏了 `timestamp`（required）→ 修：加 `TotalReward.blockTime` → ISO datetime
+- **F-L1（Low）**：Demo H 需錄影前重跑 probes → 修：加 caveat
+
+### 修復 commit
+
+- `9e008f8`：docs — apply smith review fixes
+
+### 最終結論
+
+批次通過 strict 審查，無代碼缺失（本來就是 docs-only）。用戶疑問的「未經 Neo Agent Network」— 確實之前缺 VERIFY，現已補齊。完整講解見對話回覆。
