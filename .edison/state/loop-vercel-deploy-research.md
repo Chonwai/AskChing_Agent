@@ -69,3 +69,42 @@
 2. 設 env：Production DEMO_LIVE=1 + GRAPH_API_KEY / Preview DEMO_LIVE=0
 3. Deploy → 跑 Phase C checklist（health / tools-list-6 / rewrite / tools-call / 30d）
 4. URL 回寫 README/HANDOFF/demo narrative
+
+---
+
+## 補充：實際部署執行（2026-09-13，用戶報錯後）
+
+### 用戶報告：Vercel 上有 error（截圖）
+
+### DISCOVER（Neo 診斷）
+
+- `vercel projects ls`：無 AskChing 專案（後確認是 CLI 舊版列出不完整）
+- `vercel link --yes --project askching` → 成功建立 `chonwais-projects/askching`，**Vercel 顯示「No framework detected」= Other 正確**
+- `vercel --prod`（CLI 39.2.2）→ **抓到真實錯誤**：
+  ```
+  Error: Invalid vercel.json - Invalid request:
+  `functions.api/*.ts.includeFiles` should be string.
+  ```
+- **根本原因**：`vercel.json` 的 `includeFiles` 用了陣列 `["packages/shared/dist/**", ...]`，但 Vercel schema 要求**字串**（多個 glob 用逗號分隔）。smith 之前審查只驗證存在性，未驗證型別 — 這是布局上真正的炸彈。
+- 第二個問題：本機 `/usr/local/bin/vercel` 是舊版 39.2.2（root 安裝 2024），fnm 內有 59.16.0 → 用 fnm 版本部署。
+
+### EXECUTE（修復）
+
+- `vercel.json`：`includeFiles` 陣列 → 字串 `"packages/shared/dist/**,packages/mcp-server/dist/**"`（commit `960f4c9`）
+- `.vercel/` 已 gitignored（第 8 行確認）
+
+### 部署結果（全部實測）
+
+- **Build 15s / Ready 29s** → Production `https://askching-9xwhkam42-chonwais-projects.vercel.app` aliased 到 `https://askching.vercel.app`
+- **C1 health** ✅ `{"live":true}`（設 env 後）
+- **C2 tools/list** ✅ **6 tools**：analyze_markets / analyze_trends / compare_markets / discover_yields / research_brief / risk_scan
+- **C3 /mcp rewrite** ✅
+- **C4 live tools/call** ✅ compare_markets 回傳即時數據（compound-v3 supply 3.86%，block 25963035，完整 citations）
+- **GitHub 串接** ✅ `vercel git connect` → Chonwai/AskChing_Agent 已連接，push 自動部署
+- **Env** ✅ Production：DEMO_LIVE=1 + GRAPH_API_KEY（secret）；Preview：DEMO_LIVE=0
+
+### 注意事項
+
+- `vercel build` 本機 CLI 版跑會卡（project link 互動 + Clash proxy 干擾）→ 用 `vercel --prod --yes` 直接部署更可靠
+- 部署要用 fnm 的 vercel 59.16.0（`/Users/chonwai/.local/share/fnm/node-versions/v24.12.0/installation/bin/vercel`），不是 `/usr/local/bin/vercel`（39.2.2 太舊會 401）
+- `memory: 1024` 設定被 Vercel 警告忽略（Active CPU billing）— 可留可去，不影響功能

@@ -1,8 +1,8 @@
 ---
 title: AskChing handoff
 updated: 2026-09-13
-checkpoint: 616e4c6
-status: vercel-deploy-ready
+checkpoint: 960f4c9
+status: vercel-deployed-live
 ---
 
 # AskChing handoff
@@ -38,18 +38,19 @@ Updated: 2026-09-12 (Asia/Hong_Kong)
 Read this box, then read §Corrections before trusting any older document.
 
 - **6 currently registered MCP tools** (`compare_markets`, `research_brief`, `risk_scan`, `analyze_markets`, `analyze_trends`, `discover_yields`) across **2 transports** (local stdio + remote Streamable HTTP); **4 verified live lending protocols** + **2 live DEX venues** (Uniswap V3, Curve).
-- **Remote MCP is implemented and cloud-ready** — `api/mcp.ts`, `api/health.ts`, `vercel.json`, `public/index.html`. Deployment is being handled by the user's partner and is outside this active code batch; do not claim its current URL/status without probing it.
+- **Remote MCP is LIVE on Vercel** — `https://askching.vercel.app/api/mcp` (aliased; `askching-9xwhkam42-chonwais-projects.vercel.app` is the direct deployment). Health at `/api/health` reports `live: true`. Verified: 6 tools listed, `/mcp` rewrite works, `compare_markets` returns live cited data (block 25963035, queryHash, subgraphId). GitHub push-to-deploy connected — pushes to `main` auto-deploy. Env: Production `DEMO_LIVE=1` + `GRAPH_API_KEY` (secret); Preview `DEMO_LIVE=0`.
 - The active yield batch is now **complete through Task 8**: both DEX sources are `live: true` (flipped only after `probe:yields` passed 2/2), the Uniswap adapter uses a two-phase lookup to avoid the Messari subgraph's global-snapshot timeout, and all release gates are green.
 - Green today (pushed checkpoint `da2b40c`): `pnpm build` 3/3, `pnpm test` **209 (21 files)**, `pnpm eval` **27/27**, `pnpm mcp:smoke` 6 tools, `pnpm mcp:http:smoke` 6 tools, `pnpm vercel:probe` OK, `pnpm probe:protocols` 4/4, `pnpm probe:yields` **2/2**, credentialed Grok smoke passed.
 
 ## Current checkpoint
 
 - Branch `main`, tracking public `origin/main`.
-- **`616e4c6`** is the latest pushed commit: `docs(plan): Vercel deployment execution plan` (2026-09-13).
-- The previous handoff pointed at `11aff9b`; superseded by the Vercel deployment research batch.
-- Working tree clean; credentials stay local in `.env` (git-ignored).
+- **`960f4c9`** is the latest pushed commit: `fix(deploy): includeFiles must be a string, not array` (2026-09-13). This fixed the actual Vercel deploy error: `functions.api/*.ts.includeFiles` was an array but the schema requires a string.
+- **Deployed live**: `https://askching.vercel.app` (aliased), `live: true` on Production, 6 tools verified, GitHub auto-deploy connected.
+- The previous handoff pointed at `616e4c6`; superseded by the successful deployment batch.
+- Working tree clean; credentials stay local in `.env` (git-ignored). `.vercel/` is gitignored.
 - **Competition finish-line plan** is at `docs/superpowers/plans/2026-09-12-competition-finish-line.md` (Phase 0 freeze → Phase 1 record → Phase 2 submit → Phase 3 optional fixes). ETHOnline deadline: 2026-09-13 12:00 PM EDT (HK 09-14 00:00).
-- **Vercel deployment is researched and repo-ready** — `docs/reviews/2026-09-13-vercel-deploy-research.md` (answers: 6 tools / Other preset / GitHub auto-deploy) + `docs/superpowers/plans/2026-09-13-vercel-deploy-plan.md` (Phase B-D). Only remaining step is user action: import the repo in Vercel Dashboard and set env vars (see plan §5).
+- **Vercel deployment is DONE and verified** — research `docs/reviews/2026-09-13-vercel-deploy-research.md`, execution plan `docs/superpowers/plans/2026-09-13-vercel-deploy-plan.md`. Next: demo recording + submission.
 - `.edison/state/*.md` **is tracked** in this repo, not ignored — loop state is part of the record.
 - Yield batch range so far: `git log --oneline 40f7923..HEAD`. History is incremental and unsquashed.
 
