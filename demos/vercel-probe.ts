@@ -14,6 +14,8 @@
  * Run: pnpm vercel:probe
  */
 
+import { ASKCHING_TOOL_NAMES } from "../packages/mcp-server/dist/register.js";
+
 const ACCEPT = "application/json, text/event-stream";
 
 interface JsonRpcResponse {
@@ -126,8 +128,8 @@ async function main() {
 
   const listed = await callMcp(handler, { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });
   const names = (listed.body.result?.tools ?? []).map((tool) => tool.name).sort();
-  if (names.length !== 6) {
-    throw new Error(`expected 6 tools but got [${names.join(", ")}]`);
+  if (JSON.stringify(names) !== JSON.stringify([...ASKCHING_TOOL_NAMES].sort())) {
+    throw new Error(`expected tools [${[...ASKCHING_TOOL_NAMES].join(", ")}] but got [${names.join(", ")}]`);
   }
   console.log(`tools/list          OK  ${names.join(", ")}`);
 
