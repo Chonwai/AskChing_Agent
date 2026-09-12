@@ -87,6 +87,22 @@
         <li><code>discover_yields</code><span class="muted">Cross-venue USDC yield discovery: lending + DEX LP rankings</span></li>
       </ul>
 
+      <h2>Try it now</h2>
+      <p class="lead" style="margin-bottom: 1rem">
+        Copy any question below into your MCP client (VS Code, Claude, Cursor, Gemini CLI…) once connected.
+        Every answer comes with subgraph IDs, blocks, timestamps, and query hashes — or an explicit
+        &ldquo;cannot cite two sources&rdquo; refusal.
+      </p>
+      <ul class="tools">
+        <li><code>compare_markets</code><span class="muted">Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend right now. Rank the results, cite each source, and state the as-of time.</span></li>
+        <li><code>analyze_trends</code><span class="muted">How has USDC supply APY trended across Aave V3, Compound V3, and Spark Lend over the last seven days? Give each protocol's direction and change, and cite every data point.</span></li>
+        <li><code>discover_yields</code><span class="muted">Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep lending and LP rankings separate, show every formula and citation, and do not propose a transaction.</span></li>
+      </ul>
+      <p class="muted">
+        Want to see it refuse? Ask for a single source: <code>Compare USDC supply APY on Aave V3 only</code> —
+        it fails closed rather than answering without two cited sources.
+      </p>
+
       <h2>Connect any MCP client</h2>
       <pre><code>{
   "mcpServers": {
