@@ -61,4 +61,4 @@ Expected path: Grok selects `discover_yields`. The screen shows two rankings, no
 | Uniswap V3 | Ethereum mainnet | `4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6` |
 | Curve | Ethereum mainnet | `3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF` |
 
-The lending sources use the Messari lending schema. The DEX rows are pinned candidates in `packages/shared/src/yield-sources.ts`; run `pnpm probe:yields` and check their `live` flags before calling them live in a recording. Recheck index status in Graph Explorer before recording the demo.
+The lending sources use the Messari lending schema. The DEX rows in `packages/shared/src/yield-sources.ts` passed their exact production queries on 2026-09-12; run `pnpm probe:yields` again immediately before recording because indexer availability and pool data can change. Recheck index status in Graph Explorer before recording the demo.

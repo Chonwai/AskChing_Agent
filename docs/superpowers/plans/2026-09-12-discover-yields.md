@@ -57,6 +57,8 @@ Assert Ethereum token addresses are lower-case:
 
 Both candidates begin as live: false with note: "Pending exact-query credentialed probe." Every disabled source requires a non-empty note; every enabled source must have no note. Task 8 is the only task allowed to flip either candidate to live: true.
 
+Execution correction: the candidate exposes the Messari DEX schema rather than the official Uniswap schema. Its global snapshot query timed out, so the exact production path uses a two-phase pool lookup followed by per-pool daily-snapshot queries; the credentialed probe verified this path before activation.
+
 - [ ] **Step 3: Verify RED**
 
 Run:

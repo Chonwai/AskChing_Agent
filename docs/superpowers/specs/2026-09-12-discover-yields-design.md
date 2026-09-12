@@ -108,10 +108,12 @@ Implementation must probe and pin an indexed Ethereum mainnet deployment before 
 
 | Venue | Candidate subgraph id | Evidence |
 | --- | --- | --- |
-| Uniswap V3 Ethereum | `4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6` | [Graph Explorer](https://thegraph.com/explorer/subgraphs/4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6?chain=mainnet&view=Query), [official schema repository](https://github.com/Uniswap/v3-subgraph) |
+| Uniswap V3 Ethereum | `4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6` | [Graph Explorer](https://thegraph.com/explorer/subgraphs/4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6?chain=mainnet&view=Query), [Messari schema repository](https://github.com/messari/subgraphs) |
 | Curve Finance Ethereum | `3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF` | [Graph Explorer](https://thegraph.com/explorer/subgraphs/3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF?chain=mainnet&view=Query), [Curve volume-subgraph reference](https://github.com/curvefi/volume-subgraphs) |
 
 A candidate is not marked live merely because its schema parses: the exact production query must return a qualifying pool and complete daily snapshot through the configured Graph Gateway. If a candidate fails, implementation may replace it only with another indexed Graph Explorer deployment that passes the same probe and is recorded with its exact id and verification evidence.
+
+Verification correction (2026-09-12): the Uniswap deployment exposes the Messari DEX schema. The production adapter uses a two-phase query—matching pools first, then fetching each pool's daily snapshots—because the deployment's global snapshot query timed out. Curve daily-snapshot `timestamp` is treated as an observation within its UTC day; the cited window is the containing UTC day, never `timestamp + 24h`.
 
 Required Uniswap fields:
 
