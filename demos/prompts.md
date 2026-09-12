@@ -62,3 +62,11 @@ Expected path: Grok selects `discover_yields`. The screen shows two rankings, no
 | Curve | Ethereum mainnet | `3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF` |
 
 The lending sources use the Messari lending schema. The DEX rows in `packages/shared/src/yield-sources.ts` passed their exact production queries on 2026-09-12; run `pnpm probe:yields` again immediately before recording because indexer availability and pool data can change. Recheck index status in Graph Explorer before recording the demo.
+
+## Demo H — honest cross-asset gap (staking, 2026-09-13)
+
+> I have $10,000. Should I stake it as USDC or as ETH? Which gives the higher yield?
+
+Expected path: Grok answers the USDC leg with cited lending/DEX readings (Compound V3 supply APY highest among live lending; Uniswap DAI/USDC 4.63% historical fee APR is the standing LP leader). For the ETH staking leg it must **fail closed honestly**: Lido / Rocket Pool are not in the live coverage set, so there is no cited staking rate — the output explicitly labels this a gap, not a zero yield, and does not invent a number.
+
+This is a deliberate evidence-first beat: AskChing would rather say "I cannot cite it" than guess. The `compare_staking` feature (Lido official subgraph verified live, `apr` 2.315% at block 25961308) is designed but not yet wired; see `docs/superpowers/specs/2026-09-13-compare-staking-design.md`. If Lido has been added by demo time, re-run the question and expect a cited single-source answer with an explicit cross-protocol limitation note.
