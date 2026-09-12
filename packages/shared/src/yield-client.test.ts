@@ -141,7 +141,7 @@ describe("CurveYieldAdapter", () => {
     const adapter = new CurveYieldAdapter({
       source: DEX_YIELD_SOURCES[1]!,
       apiKey: "secret",
-      fetchImpl: vi.fn().mockResolvedValue(
+      fetchImpl: vi.fn().mockImplementation(async () =>
         new Response(JSON.stringify(curveResponse()), { status: 200 })
       ),
       now: () => new Date("2026-09-11T12:00:00.000Z")
@@ -159,6 +159,12 @@ describe("CurveYieldAdapter", () => {
     expect(result.observations.every(value => value.windowStart === "2026-09-10T00:00:00.000Z")).toBe(true);
     expect(result.gaps).toEqual([
       expect.objectContaining({ poolAddress: "0x8888888888888888888888888888888888888888", reason: expect.stringMatching(/positive TVL/) })
+    ]);
+
+    const usdtOnly = await adapter.getOpportunities({ stablecoins: ["USDT"] });
+    expect(usdtOnly.observations.map(value => value.poolAddress)).toEqual([
+      "0x5555555555555555555555555555555555555555",
+      "0x6666666666666666666666666666666666666666"
     ]);
   });
 

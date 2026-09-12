@@ -243,10 +243,7 @@ export class CurveYieldAdapter {
       throw new Error("Curve Graph query returned no usable data");
     }
 
-    const allowed = new Set<string>([
-      CORE_STABLECOIN_ADDRESSES.USDC,
-      ...input.stablecoins.map(symbol => CORE_STABLECOIN_ADDRESSES[symbol])
-    ]);
+    const allowed = new Set<string>(Object.values(CORE_STABLECOIN_ADDRESSES));
     const requestedCounterparts = new Set<string>(
       input.stablecoins.map(symbol => CORE_STABLECOIN_ADDRESSES[symbol])
     );
