@@ -85,7 +85,7 @@ Cross-venue yield discovery example (fixture mode):
 DEMO_LIVE=0 pnpm askching -- "Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep the rankings separate and cite every formula."
 ```
 
-Credentialed live discovery uses the same prompt with `DEMO_LIVE=1`. Run `pnpm probe:yields` first; only DEX sources marked live by that exact-query probe may be described as live.
+Credentialed live discovery uses the same prompt with `DEMO_LIVE=1`. Uniswap V3 and Curve passed their exact production queries on 2026-09-12; run `pnpm probe:yields` again before a live demo because indexer availability and pool data can change.
 
 > The Grok reasoning layer is currently a CLI. Packaging it as an MCP server is on the roadmap — once there, any MCP-compatible agent can call Grok-driven AskChing reasoning directly. The MCP tool layer is already cross-platform today (see `docs/cross-platform.md`).
 
