@@ -2,6 +2,7 @@ import {
   analyzeMarkets,
   analyzeTrends,
   compareMarkets,
+  discoverYields,
   researchBrief,
   riskScan
 } from "@askching/mcp-server/tools.js";
@@ -259,6 +260,34 @@ export const ASKCHING_TOOLS: ToolDefinition[] = [
         additionalProperties: false
       }
     }
+  },
+  {
+    type: "function",
+    function: {
+      name: "discover_yields",
+      description:
+        "Use for where-to-earn, deposit, lend, or stablecoin-LP questions across venue types. Discovers cited Ethereum-mainnet USDC lending, Uniswap V3, and Curve opportunities. Lending supply APY and historical LP fee APR must be ranked separately with formulas, complete-day windows, risks, caveats, and gaps. No transaction execution or combined lending/LP winner. Use compare_markets for a single lending metric and analyze_trends for historical lending questions.",
+      parameters: {
+        type: "object",
+        properties: {
+          asset: { type: "string", enum: ["USDC"], default: "USDC" },
+          chain: { type: "string", enum: ["ethereum-mainnet"], default: "ethereum-mainnet" },
+          stablecoins: {
+            type: "array",
+            items: { type: "string", enum: ["USDT", "DAI"] },
+            default: ["USDT", "DAI"]
+          },
+          venues: {
+            type: "array",
+            items: { type: "string", enum: ["lending", "uniswap-v3", "curve"] },
+            default: ["lending", "uniswap-v3", "curve"]
+          },
+          minTvlUsd: { type: "number", minimum: 0, default: 1_000_000 },
+          limitPerCategory: { type: "integer", minimum: 1, maximum: 20, default: 5 }
+        },
+        additionalProperties: false
+      }
+    }
   }
 ];
 
@@ -334,6 +363,8 @@ async function executeTool(
       return analyzeTrends(input, dataSource);
     case "compare_markets":
       return compareMarkets(input, dataSource);
+    case "discover_yields":
+      return discoverYields(input, dataSource);
     case "research_brief":
       return researchBrief(input, dataSource);
     case "risk_scan":

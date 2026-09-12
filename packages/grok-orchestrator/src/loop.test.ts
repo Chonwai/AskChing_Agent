@@ -59,7 +59,8 @@ describe("runGrokOrchestrator", () => {
         "research_brief",
         "risk_scan",
         "analyze_markets",
-        "analyze_trends"
+        "analyze_trends",
+        "discover_yields"
       ]);
   });
 
@@ -140,6 +141,67 @@ describe("runGrokOrchestrator", () => {
 
     expect(result.toolCalls[0]?.name).toBe("analyze_markets");
     expect(result.answer).toContain("cited evidence");
+  });
+
+  it("executes cross-venue USDC yield discovery with separate rankings", async () => {
+    const toolArguments = {
+      asset: "USDC",
+      chain: "ethereum-mainnet",
+      stablecoins: ["USDT", "DAI"],
+      venues: ["lending", "uniswap-v3", "curve"],
+      minTvlUsd: 1_000_000,
+      limitPerCategory: 5
+    };
+    const complete = vi
+      .fn<ChatCompletionClient["complete"]>()
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: null,
+        tool_calls: [{
+          id: "yield-1",
+          type: "function",
+          function: {
+            name: "discover_yields",
+            arguments: JSON.stringify(toolArguments)
+          }
+        }]
+      })
+      .mockImplementationOnce(async (request) => {
+        const toolMessage = request.messages.find(message => message.role === "tool");
+        const discovery = JSON.parse(toolMessage!.content);
+        expect(discovery.lending.length).toBeGreaterThanOrEqual(2);
+        expect(discovery.dexLp.length).toBeGreaterThanOrEqual(2);
+        expect(discovery.crossDexWinner).not.toBeNull();
+        return {
+          role: "assistant",
+          content: "Lending supply APY and LP fee APR are ranked separately with citations and risks; no transaction was proposed."
+        };
+      });
+
+    const result = await runGrokOrchestrator({
+      prompt: "Where can I earn yield on USDC across lending and stablecoin LPs?",
+      client: { complete },
+      dataSource: createMarketDataSource({ DEMO_LIVE: "0" }),
+      systemPrompt: "Use discovery for cross-venue yield questions."
+    });
+
+    expect(result.toolCalls[0]).toMatchObject({
+      name: "discover_yields",
+      arguments: toolArguments
+    });
+    expect(result.answer).toContain("ranked separately");
+  });
+
+  it("describes discovery as separate category rankings with no transaction execution", () => {
+    const discovery = ASKCHING_TOOLS.find(tool => tool.function.name === "discover_yields");
+    expect(discovery?.function.description).toMatch(/ranked separately/i);
+    expect(discovery?.function.description).toMatch(/no transaction/i);
+    const parameters = discovery?.function.parameters as {
+      properties?: Record<string, { enum?: string[]; default?: unknown; items?: { enum?: string[] } }>;
+    };
+    expect(parameters.properties?.asset?.enum).toEqual(["USDC"]);
+    expect(parameters.properties?.chain?.enum).toEqual(["ethereum-mainnet"]);
+    expect(parameters.properties?.venues?.items?.enum).toEqual(["lending", "uniswap-v3", "curve"]);
   });
 
   it("routes a historical question to analyze_trends with a cited series", async () => {
