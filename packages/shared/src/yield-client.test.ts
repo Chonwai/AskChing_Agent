@@ -66,8 +66,8 @@ describe("UniswapV3YieldAdapter", () => {
 
     expect(result.observations).toHaveLength(2);
     expect(result.observations.map(value => value.tokenSymbols)).toEqual([
-      ["DAI", "USDC"],
-      ["USDC", "USDT"]
+      ["USDC", "USDT"],
+      ["DAI", "USDC"]
     ]);
     expect(result.observations[0]!.estimatedFeeApr).toBeCloseTo(3.65);
     expect(result.observations[0]!.windowEnd).toBe("2026-09-11T00:00:00.000Z");
@@ -75,8 +75,10 @@ describe("UniswapV3YieldAdapter", () => {
 
   it("rejects zero TVL and returns no unsupported pair", async () => {
     const payload = uniswapResponse();
+    // 過濾掉合格的 USDC/USDT pool（0x1111），保留 WETH pair（0x3333）驗證排除、
+    // DAI/USDC（0x2222，非 requested counterpart）與 zero-TVL pool（0x4444）
     payload.data.liquidityPoolDailySnapshots = payload.data.liquidityPoolDailySnapshots.filter(
-      snapshot => snapshot.pool.id !== "0x3333333333333333333333333333333333333333"
+      snapshot => snapshot.pool.id !== "0x1111111111111111111111111111111111111111"
     );
     const adapter = new UniswapV3YieldAdapter({
       source: DEX_YIELD_SOURCES[0]!,
@@ -88,6 +90,7 @@ describe("UniswapV3YieldAdapter", () => {
     });
     const result = await adapter.getOpportunities({ stablecoins: ["USDT"] });
     expect(result.observations).toEqual([]);
+    expect(result.gaps.map(value => value.poolAddress)).not.toContain("0x3333333333333333333333333333333333333333");
     expect(result.gaps[0]?.reason).toMatch(/positive TVL/);
   });
 
@@ -129,6 +132,29 @@ describe("UniswapV3YieldAdapter", () => {
       .rejects.not.toThrow(/top-secret/);
   });
 });
+
+interface CurveFixtureSnapshot {
+  id: string;
+  timestamp: string;
+  blockNumber: string;
+  dailySupplySideRevenueUSD?: string;
+  dailyVolumeUSD?: string;
+  totalValueLockedUSD?: string;
+  pool: {
+    id: string;
+    inputTokens: Array<{ id: string; symbol: string }>;
+  };
+}
+
+interface CurveFixtureEnvelope {
+  data: {
+    liquidityPoolDailySnapshots: CurveFixtureSnapshot[];
+    _meta: {
+      deployment: string;
+      block: { number: number; timestamp: number };
+    };
+  };
+}
 
 function curveResponse(): CurveFixtureEnvelope {
   const pool = (

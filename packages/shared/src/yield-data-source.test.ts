@@ -6,13 +6,14 @@ const day = Date.parse("2026-09-10T00:00:00.000Z") / 1000;
 
 function uniswapPayload() {
   return { data: {
-    usdcAsToken0: [{
-      id: "0x1111111111111111111111111111111111111111", feeTier: "500",
-      token0: { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
-      token1: { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" },
-      poolDayData: [{ date: String(day), feesUSD: "200", volumeUSD: "400000", tvlUSD: "2000000" }]
+    liquidityPoolDailySnapshots: [{
+      id: "uni-day", timestamp: String(day), blockNumber: "123",
+      dailySupplySideRevenueUSD: "200", dailyVolumeUSD: "400000", totalValueLockedUSD: "2000000",
+      pool: { id: "0x1111111111111111111111111111111111111111", inputTokens: [
+        { id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", symbol: "USDC" },
+        { id: "0xdac17f958d2ee523a2206206994597c13d831ec7", symbol: "USDT" }
+      ] }
     }],
-    usdcAsToken1: [],
     _meta: { deployment: "QmUni", block: { number: 123, timestamp: day + 86_500 } }
   } };
 }

@@ -9,8 +9,8 @@ import { CORE_STABLECOIN_ADDRESSES, type DexYieldSource } from "./yield-sources.
 
 export const GET_UNISWAP_YIELDS_QUERY = [
   "query AskChingUniswapYields {",
-  'usdcAsToken0: pools(first: 100, where: { token0: "' + CORE_STABLECOIN_ADDRESSES.USDC + '" }) { id feeTier token0 { id symbol } token1 { id symbol } poolDayData(first: 3, orderBy: date, orderDirection: desc) { date feesUSD volumeUSD tvlUSD } }',
-  'usdcAsToken1: pools(first: 100, where: { token1: "' + CORE_STABLECOIN_ADDRESSES.USDC + '" }) { id feeTier token0 { id symbol } token1 { id symbol } poolDayData(first: 3, orderBy: date, orderDirection: desc) { date feesUSD volumeUSD tvlUSD } }',
+  'liquidityPools(first: 100, where: { inputTokens_contains: ["' + CORE_STABLECOIN_ADDRESSES.USDC + '"] }) { id inputTokens { id symbol } }',
+  "liquidityPoolDailySnapshots(first: 1000, orderBy: timestamp, orderDirection: desc) { id timestamp blockNumber dailySupplySideRevenueUSD dailyVolumeUSD totalValueLockedUSD pool { id inputTokens { id symbol } } }",
   "_meta { deployment block { number timestamp } }",
   "}"
 ].join("\n");
@@ -24,22 +24,23 @@ export const GET_CURVE_YIELDS_QUERY = [
 ].join("\n");
 
 const NumberSchema = z.coerce.number().finite();
-const PoolSchema = z.object({
+const UniswapPoolSchema = z.object({
   id: z.string(),
-  feeTier: z.coerce.number().int().positive(),
-  token0: z.object({ id: z.string(), symbol: z.string() }),
-  token1: z.object({ id: z.string(), symbol: z.string() }),
-  poolDayData: z.array(z.object({
-    date: NumberSchema,
-    feesUSD: NumberSchema,
-    volumeUSD: NumberSchema,
-    tvlUSD: NumberSchema
-  }))
+  inputTokens: z.array(z.object({ id: z.string(), symbol: z.string() })).min(2)
 });
-const EnvelopeSchema = z.object({
+const UniswapSnapshotSchema = z.object({
+  id: z.string(),
+  timestamp: NumberSchema,
+  blockNumber: NumberSchema.optional(),
+  dailySupplySideRevenueUSD: NumberSchema.optional(),
+  dailyVolumeUSD: NumberSchema.optional(),
+  totalValueLockedUSD: NumberSchema.optional(),
+  pool: UniswapPoolSchema
+});
+const UniswapEnvelopeSchema = z.object({
   data: z.object({
-    usdcAsToken0: z.array(PoolSchema),
-    usdcAsToken1: z.array(PoolSchema),
+    liquidityPools: z.array(UniswapPoolSchema).optional(),
+    liquidityPoolDailySnapshots: z.array(UniswapSnapshotSchema),
     _meta: z.object({
       deployment: z.string().optional(),
       block: z.object({
@@ -140,55 +141,75 @@ export class UniswapV3YieldAdapter {
       throw new Error("Uniswap V3 Graph request failed with HTTP " + response.status);
     }
 
-    const envelope = EnvelopeSchema.parse(await response.json());
+    const envelope = UniswapEnvelopeSchema.parse(await response.json());
     if (envelope.errors?.length || !envelope.data) {
       throw new Error("Uniswap V3 Graph query returned no usable data");
     }
 
-    const allowed = new Set<string>(
+    const allowed = new Set<string>(Object.values(CORE_STABLECOIN_ADDRESSES));
+    const requestedCounterparts = new Set<string>(
       input.stablecoins.map(symbol => CORE_STABLECOIN_ADDRESSES[symbol])
     );
     const now = this.#now();
     const boundary = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 1000;
-    const pools = new Map(
-      [...envelope.data.usdcAsToken0, ...envelope.data.usdcAsToken1].map(
-        pool => [pool.id.toLowerCase(), pool]
-      )
-    );
+    const snapshotsByPool = new Map<string, Array<z.infer<typeof UniswapSnapshotSchema>>>();
+
+    for (const snapshot of envelope.data.liquidityPoolDailySnapshots) {
+      const poolAddress = snapshot.pool.id.toLowerCase();
+      const tokenIds = snapshot.pool.inputTokens.map(token => token.id.toLowerCase());
+      const hasRequestedCounterpart = tokenIds.some(id => requestedCounterparts.has(id));
+      if (
+        !tokenIds.includes(CORE_STABLECOIN_ADDRESSES.USDC) ||
+        !hasRequestedCounterpart ||
+        tokenIds.some(id => !allowed.has(id))
+      ) continue;
+      const snapshots = snapshotsByPool.get(poolAddress) ?? [];
+      snapshots.push(snapshot);
+      snapshotsByPool.set(poolAddress, snapshots);
+    }
+
     const observations: DexYieldObservation[] = [];
     const gaps: YieldDiscoveryGap[] = [];
     const queryHash = await sha256(GET_UNISWAP_YIELDS_QUERY);
-
-    for (const pool of pools.values()) {
-      const ids = [pool.token0.id.toLowerCase(), pool.token1.id.toLowerCase()];
-      const other = ids[0] === CORE_STABLECOIN_ADDRESSES.USDC ? ids[1] : ids[0];
-      if (!ids.includes(CORE_STABLECOIN_ADDRESSES.USDC) || !allowed.has(other!)) continue;
-      const snapshot = [...pool.poolDayData]
-        .filter(value => value.date + 86_400 <= boundary)
-        .sort((a, b) => b.date - a.date)[0];
-      if (!snapshot) {
-        gaps.push({ venue: "uniswap-v3", poolAddress: pool.id.toLowerCase(), reason: "No complete UTC daily snapshot." });
+    for (const [poolAddress, poolSnapshots] of snapshotsByPool) {
+      const complete = poolSnapshots
+        .filter(snapshot => snapshot.timestamp + 86_400 <= boundary)
+        .sort((a, b) => b.timestamp - a.timestamp);
+      if (complete.length === 0) {
+        gaps.push({ venue: "uniswap-v3", poolAddress, reason: "No complete UTC daily snapshot." });
         continue;
       }
-      if (snapshot.tvlUSD <= 0) {
-        gaps.push({ venue: "uniswap-v3", poolAddress: pool.id.toLowerCase(), reason: "A positive TVL is required to calculate fee APR." });
+      const snapshot = complete.find(value =>
+        value.dailySupplySideRevenueUSD !== undefined &&
+        value.dailyVolumeUSD !== undefined &&
+        value.totalValueLockedUSD !== undefined
+      );
+      if (!snapshot) {
+        gaps.push({ venue: "uniswap-v3", poolAddress, reason: "Fee revenue, volume, and TVL must come from the same daily snapshot." });
+        continue;
+      }
+      if (snapshot.totalValueLockedUSD! <= 0) {
+        gaps.push({ venue: "uniswap-v3", poolAddress, reason: "A positive TVL is required to calculate fee APR." });
+        continue;
+      }
+      if (snapshot.dailySupplySideRevenueUSD! < 0 || snapshot.dailyVolumeUSD! < 0) {
+        gaps.push({ venue: "uniswap-v3", poolAddress, reason: "Daily fee revenue and volume must be non-negative." });
         continue;
       }
       observations.push(DexYieldObservationSchema.parse({
         venue: "uniswap-v3",
-        poolAddress: pool.id.toLowerCase(),
+        poolAddress,
         asset: "USDC",
-        tokenSymbols: [pool.token0.symbol.toUpperCase(), pool.token1.symbol.toUpperCase()],
-        feeTier: pool.feeTier,
-        dailySupplySideFeesUsd: snapshot.feesUSD,
-        volume24hUsd: snapshot.volumeUSD,
-        tvlUsd: snapshot.tvlUSD,
-        estimatedFeeApr: snapshot.feesUSD / snapshot.tvlUSD * 365 * 100,
-        windowStart: new Date(snapshot.date * 1000).toISOString(),
-        windowEnd: new Date((snapshot.date + 86_400) * 1000).toISOString(),
+        tokenSymbols: snapshot.pool.inputTokens.map(token => token.symbol.toUpperCase()),
+        dailySupplySideFeesUsd: snapshot.dailySupplySideRevenueUSD,
+        volume24hUsd: snapshot.dailyVolumeUSD,
+        tvlUsd: snapshot.totalValueLockedUSD,
+        estimatedFeeApr: snapshot.dailySupplySideRevenueUSD! / snapshot.totalValueLockedUSD! * 365 * 100,
+        windowStart: new Date(snapshot.timestamp * 1000).toISOString(),
+        windowEnd: new Date((snapshot.timestamp + 86_400) * 1000).toISOString(),
         subgraphId: this.#source.subgraphId,
         deploymentId: envelope.data._meta.deployment,
-        block: envelope.data._meta.block.number,
+        block: snapshot.blockNumber ?? envelope.data._meta.block.number,
         timestamp: new Date(envelope.data._meta.block.timestamp * 1000).toISOString(),
         queryHash
       }));
@@ -196,7 +217,7 @@ export class UniswapV3YieldAdapter {
     return {
       venue: "uniswap-v3",
       observations: observations.sort((a, b) => a.poolAddress.localeCompare(b.poolAddress)),
-      gaps
+      gaps: gaps.sort((a, b) => (a.poolAddress ?? "").localeCompare(b.poolAddress ?? ""))
     };
   }
 }
