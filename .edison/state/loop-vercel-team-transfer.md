@@ -31,12 +31,14 @@
 ### DISCOVER（morpheus deep research + Neo 實測）結論
 
 **關鍵發現：不需要轉移！** Pro team（`chonwai-s-team`）上**已有** `ask-ching-agent` 專案：
+
 - 連接**同一個 GitHub repo**（Chonwai/AskChing_Agent，repoId 1360369150）
 - 已部署 3+ 次 production，health `live:true`，**6 tools 全數上線**
 - env vars 完整（GRAPH_API_KEY + DEMO_LIVE，Production + Preview）
 - 變更（`b2b88582`）由 johnku 推的 submission image 方向 docs
 
 驗證事實：
+
 - `chonwai-s-team` = **Pro** plan（`billing.plan: "pro"`），`chonwais-projects` = **hobby**
 - `vercel move`/`transfer` CLI 指令**不存在** — 轉移只能 Dashboard（零 downtime）或 REST API
 - CLI 有 `switch [scope]` 與 `-S/--scope`

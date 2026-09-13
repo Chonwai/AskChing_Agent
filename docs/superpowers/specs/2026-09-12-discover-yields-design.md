@@ -94,9 +94,8 @@ Adapters implement one small interface:
 
 ```ts
 interface YieldAdapter {
-  readonly venue: "lending" | "uniswap-v3" | "curve";
-  getOpportunities(input: ResolvedYieldDiscoveryInput):
-    Promise<YieldAdapterResult>;
+  readonly venue: 'lending' | 'uniswap-v3' | 'curve';
+  getOpportunities(input: ResolvedYieldDiscoveryInput): Promise<YieldAdapterResult>;
 }
 ```
 
@@ -106,9 +105,9 @@ interface YieldAdapter {
 
 Implementation must probe and pin an indexed Ethereum mainnet deployment before enabling each DEX adapter. These are the concrete candidates to probe first:
 
-| Venue | Candidate subgraph id | Evidence |
-| --- | --- | --- |
-| Uniswap V3 Ethereum | `4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6` | [Graph Explorer](https://thegraph.com/explorer/subgraphs/4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6?chain=mainnet&view=Query), [Messari schema repository](https://github.com/messari/subgraphs) |
+| Venue                  | Candidate subgraph id                          | Evidence                                                                                                                                                                                                        |
+| ---------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Uniswap V3 Ethereum    | `4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6` | [Graph Explorer](https://thegraph.com/explorer/subgraphs/4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6?chain=mainnet&view=Query), [Messari schema repository](https://github.com/messari/subgraphs)              |
 | Curve Finance Ethereum | `3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF` | [Graph Explorer](https://thegraph.com/explorer/subgraphs/3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF?chain=mainnet&view=Query), [Curve volume-subgraph reference](https://github.com/curvefi/volume-subgraphs) |
 
 A candidate is not marked live merely because its schema parses: the exact production query must return a qualifying pool and complete daily snapshot through the configured Graph Gateway. If a candidate fails, implementation may replace it only with another indexed Graph Explorer deployment that passes the same probe and is recorded with its exact id and verification evidence.

@@ -20,22 +20,22 @@
 
 ## 2. 程式庫現狀分析（Codebase Baseline）
 
-| 項目 | 現狀（已驗證） |
-|---|---|
-| MCP tools | 6 個，單一註冊源 `packages/mcp-server/src/register.ts`：`compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` / `analyze_trends` / `discover_yields`；stdio + Streamable HTTP 雙傳輸 |
-| Live lending | 4 個（`aave-v3` / `compound-v3` / `spark-lend` / `aave-v2`），`pnpm probe:protocols` 4/4 |
-| Live DEX | 2 個（`uniswap-v3` `4cKy6Q…` / `curve` `3fy93e…`，皆 Messari schema），`pnpm probe:yields` 2/2；Uniswap 用 two-phase lookup（pools → per-pool `where:{pool}`）避開 global snapshot timeout |
-| Gates（HEAD） | `build` 3/3、`test` 209/209（21 files）、`eval` 27/27、`mcp:smoke` 6、`mcp:http:smoke` 6、`vercel:probe` OK、`probe:protocols` 4/4、`probe:yields` 2/2、`git diff --check` clean |
-| Demo 資產 | `docs/superpowers/plans/2026-09-12-demo-narrative.md`（3 Wow + shot list + fallback）、`demos/prompts.md`、`demos/demo.ts` / `live-smoke.ts` |
-| 協作狀態 | johnku 近 5 commits 為收尾性質（probe lint + adapter UTC-day 歸一化 + docs 對齊），與本地修復互補無衝突；已推送至 `24f7b34` |
+| 項目          | 現狀（已驗證）                                                                                                                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MCP tools     | 6 個，單一註冊源 `packages/mcp-server/src/register.ts`：`compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` / `analyze_trends` / `discover_yields`；stdio + Streamable HTTP 雙傳輸 |
+| Live lending  | 4 個（`aave-v3` / `compound-v3` / `spark-lend` / `aave-v2`），`pnpm probe:protocols` 4/4                                                                                                              |
+| Live DEX      | 2 個（`uniswap-v3` `4cKy6Q…` / `curve` `3fy93e…`，皆 Messari schema），`pnpm probe:yields` 2/2；Uniswap 用 two-phase lookup（pools → per-pool `where:{pool}`）避開 global snapshot timeout            |
+| Gates（HEAD） | `build` 3/3、`test` 209/209（21 files）、`eval` 27/27、`mcp:smoke` 6、`mcp:http:smoke` 6、`vercel:probe` OK、`probe:protocols` 4/4、`probe:yields` 2/2、`git diff --check` clean                      |
+| Demo 資產     | `docs/superpowers/plans/2026-09-12-demo-narrative.md`（3 Wow + shot list + fallback）、`demos/prompts.md`、`demos/demo.ts` / `live-smoke.ts`                                                          |
+| 協作狀態      | johnku 近 5 commits 為收尾性質（probe lint + adapter UTC-day 歸一化 + docs 對齊），與本地修復互補無衝突；已推送至 `24f7b34`                                                                           |
 
 已知風險（morpheus 遺留，全部承接）：
 
-| # | 風險 | 等級 | 對策所在 Phase |
-|---|---|---|---|
-| R1 | DEX probe flakiness：gateway 暫態抖動，首次 0/2 FAIL、重跑 2/2 OK | 🔴 | Phase 0 重跑判讀 + Phase 1 開錄前 5 分鐘重跑 + fallback |
-| R2 | HANDOFF checkpoint 落後（`da2b40c` vs HEAD `24f7b34`） | 🟡 | Phase 3 可選小修，不擋提交 |
-| R3 | `windowKey` 用 `Math.round` vs adapter 用 `Math.floor`（latent inconsistency，目前無觸發） | 🟡 | Phase 3 可選小修，不擋提交 |
+| #   | 風險                                                                                       | 等級 | 對策所在 Phase                                          |
+| --- | ------------------------------------------------------------------------------------------ | ---- | ------------------------------------------------------- |
+| R1  | DEX probe flakiness：gateway 暫態抖動，首次 0/2 FAIL、重跑 2/2 OK                          | 🔴   | Phase 0 重跑判讀 + Phase 1 開錄前 5 分鐘重跑 + fallback |
+| R2  | HANDOFF checkpoint 落後（`da2b40c` vs HEAD `24f7b34`）                                     | 🟡   | Phase 3 可選小修，不擋提交                              |
+| R3  | `windowKey` 用 `Math.round` vs adapter 用 `Math.floor`（latent inconsistency，目前無觸發） | 🟡   | Phase 3 可選小修，不擋提交                              |
 
 R3 精確位置（已讀檔確認）：
 
@@ -87,18 +87,18 @@ pnpm probe:protocols
 
 ### 4.2 預期結果（任一不符即停，不進 Phase 1）
 
-| Gate | 預期 |
-|---|---|
-| `git status -sb` | clean（除 `.env` 未追蹤外無修改） |
-| `pnpm build` | 3/3 packages |
-| `pnpm test` | 209/209（21 files） |
-| `pnpm eval` | 27/27 |
-| `pnpm mcp:smoke` | 6 tools |
-| `pnpm mcp:http:smoke` | 6 tools |
-| `pnpm vercel:probe` | OK |
-| `pnpm probe:protocols` | 4/4 live |
-| `pnpm probe:yields` | 2/2 live DEX venues |
-| `git diff --check` | clean（無 whitespace error） |
+| Gate                   | 預期                              |
+| ---------------------- | --------------------------------- |
+| `git status -sb`       | clean（除 `.env` 未追蹤外無修改） |
+| `pnpm build`           | 3/3 packages                      |
+| `pnpm test`            | 209/209（21 files）               |
+| `pnpm eval`            | 27/27                             |
+| `pnpm mcp:smoke`       | 6 tools                           |
+| `pnpm mcp:http:smoke`  | 6 tools                           |
+| `pnpm vercel:probe`    | OK                                |
+| `pnpm probe:protocols` | 4/4 live                          |
+| `pnpm probe:yields`    | 2/2 live DEX venues               |
+| `git diff --check`     | clean（無 whitespace error）      |
 
 ### 4.3 判讀規則
 
@@ -115,16 +115,16 @@ pnpm probe:protocols
 
 > 注意：原 narrative 寫於 5-tool 時期，shot list 中「5 個工具」一律改為 **6 個**；W3 後追加 **DEX beat**（`discover_yields` + `crossDexWinner`）。總長目標 3:10，上限 4:00。
 
-| Beat | 時間 | 畫面 + 口白要點 |
-|---|---|---|
-| 開場定位 | 0:00-0:20 | 痛點：「沒有來源、沒有時間、沒有區塊高度的數字等於零」；報定位金句「graph-lending-mcp 讓你問得到，AskChing 讓你信得過」 |
-| 我們是什麼 | 0:20-0:45 | `curl <app>/api/health` → `live:true`；強調遠端 MCP server、一行 URL、7 平台 |
-| Q1 + citation | 0:45-1:15 | Claude Desktop 問 USDC supply APY（Aave V3 / Compound V3 / Spark Lend）；指 ranked + subgraph ID + block + query hash + asOf |
-| 🎯 W1 換平台 | 1:15-1:50 | VS Code Copilot 問完全同一題，證據結構一致；terminal `gemini mcp list` → Connected + 6 tools |
-| 🎯 W2 拒絕回答 | 1:50-2:20 | `ASKCHING_DEBUG=1 pnpm askching -- "Compare USDC supply APY on Aave V3 only"` → fail-closed（需 ≥2 cited sources，不給 row）；字幕 `Evidence is a structural invariant, not a display option.` |
-| 🎯 W3 時間維度 | 2:20-2:55 | `analyze_trends` 7d（slope / direction / volatility，每點 block+timestamp）；再示範 spot-only objective + 歷史窗 → explicit gap |
+| Beat                | 時間      | 畫面 + 口白要點                                                                                                                                                                                                                                                             |
+| ------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 開場定位            | 0:00-0:20 | 痛點：「沒有來源、沒有時間、沒有區塊高度的數字等於零」；報定位金句「graph-lending-mcp 讓你問得到，AskChing 讓你信得過」                                                                                                                                                     |
+| 我們是什麼          | 0:20-0:45 | `curl <app>/api/health` → `live:true`；強調遠端 MCP server、一行 URL、7 平台                                                                                                                                                                                                |
+| Q1 + citation       | 0:45-1:15 | Claude Desktop 問 USDC supply APY（Aave V3 / Compound V3 / Spark Lend）；指 ranked + subgraph ID + block + query hash + asOf                                                                                                                                                |
+| 🎯 W1 換平台        | 1:15-1:50 | VS Code Copilot 問完全同一題，證據結構一致；terminal `gemini mcp list` → Connected + 6 tools                                                                                                                                                                                |
+| 🎯 W2 拒絕回答      | 1:50-2:20 | `ASKCHING_DEBUG=1 pnpm askching -- "Compare USDC supply APY on Aave V3 only"` → fail-closed（需 ≥2 cited sources，不給 row）；字幕 `Evidence is a structural invariant, not a display option.`                                                                              |
+| 🎯 W3 時間維度      | 2:20-2:55 | `analyze_trends` 7d（slope / direction / volatility，每點 block+timestamp）；再示範 spot-only objective + 歷史窗 → explicit gap                                                                                                                                             |
 | ➕ DEX beat（新增） | 2:55-3:20 | `ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching -- "Where can I earn yield on USDC across lending, Uniswap V3, and Curve?"` → lending/LP 分開排名 + 公式 + `crossDexWinner`（Uniswap V3 DAI/USDC `0x5777d92f…` 歷史 fee APR）+ risk flags；強調 citation window 皆為同一 UTC 天 |
-| 收尾 | 3:20-3:35 | 「The Graph 提供不可變、可驗證的鏈上歷史；AskChing 把它變成 AI 敢引用、也敢承認不知道的研究報告」；字卡 repo URL + endpoint |
+| 收尾                | 3:20-3:35 | 「The Graph 提供不可變、可驗證的鏈上歷史；AskChing 把它變成 AI 敢引用、也敢承認不知道的研究報告」；字卡 repo URL + endpoint                                                                                                                                                 |
 
 ### 5.2 開錄前 5 分鐘 probe 重跑步驟（必做，對抗 R1）
 
@@ -161,13 +161,13 @@ ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching -- "Where can I earn yield on USDC ac
 
 ### 5.4 Fallback（沿用 narrative §5，錄影當下直接切，不停機排查）
 
-| 若… | 改用 |
-|---|---|
-| Grok Bot connectors 不可用 | 跳過，W1 用 VS Code + Cursor 即可成立 |
+| 若…                                        | 改用                                                             |
+| ------------------------------------------ | ---------------------------------------------------------------- |
+| Grok Bot connectors 不可用                 | 跳過，W1 用 VS Code + Cursor 即可成立                            |
 | Live Graph 查詢失敗（連續兩次 probe FAIL） | 該段改 `DEMO_LIVE=0` fixture 並口頭說明是 fixture；絕不假裝 live |
-| Claude Desktop 不支援 remote | 用 `docs/platform-integration.md` §10 的 `mcp-remote` 橋接 |
-| 網路不穩 | 用 5.2 預錄的 curl 文字檔 + 已錄備份段 |
-| 時間不足 | **保 W2（fail-closed）**，其餘可剪 |
+| Claude Desktop 不支援 remote               | 用 `docs/platform-integration.md` §10 的 `mcp-remote` 橋接       |
+| 網路不穩                                   | 用 5.2 預錄的 curl 文字檔 + 已錄備份段                           |
+| 時間不足                                   | **保 W2（fail-closed）**，其餘可剪                               |
 
 ---
 
@@ -192,8 +192,8 @@ ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching -- "Where can I earn yield on USDC ac
 
 只做以下三項，任一擴大範圍即停。做完重跑受影響 gate；若引入任何 FAIL，`git revert` 回提交狀態。
 
-| # | 修復項（精確到檔案/行為） | 操作 |
-|---|---|---|
-| F1 | `HANDOFF.md` checkpoint 落後（`da2b40c` → `24f7b34` + 後續） | 更新 `checkpoint:`、`status:`、`Current checkpoint` 三處；`git log --oneline` 核對；只動 `HANDOFF.md` |
-| F2 | `packages/shared/src/yield-discovery.ts:216-221` `windowKey` `Math.round` → `Math.floor`，與 `packages/shared/src/yield-client.ts:413` `utcDayStart` 一致 | 單行改動；重跑 `pnpm test` + `pnpm eval` + `pnpm probe:yields`；若 DEX 行為變化超出預期則 revert |
-| F3 | correction log 註記 | 在 `HANDOFF.md` §Corrections 追加 R1 抖動記錄 + F2 統一記錄（一句話各一）；只動 `HANDOFF.md` |
+| #   | 修復項（精確到檔案/行為）                                                                                                                                 | 操作                                                                                                  |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| F1  | `HANDOFF.md` checkpoint 落後（`da2b40c` → `24f7b34` + 後續）                                                                                              | 更新 `checkpoint:`、`status:`、`Current checkpoint` 三處；`git log --oneline` 核對；只動 `HANDOFF.md` |
+| F2  | `packages/shared/src/yield-discovery.ts:216-221` `windowKey` `Math.round` → `Math.floor`，與 `packages/shared/src/yield-client.ts:413` `utcDayStart` 一致 | 單行改動；重跑 `pnpm test` + `pnpm eval` + `pnpm probe:yields`；若 DEX 行為變化超出預期則 revert      |
+| F3  | correction log 註記                                                                                                                                       | 在 `HANDOFF.md` §Corrections 追加 R1 抖動記錄 + F2 統一記錄（一句話各一）；只動 `HANDOFF.md`          |

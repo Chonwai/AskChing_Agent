@@ -149,9 +149,7 @@ Build first, then replace the placeholder path in this Cursor/Claude-style confi
   "mcpServers": {
     "askching": {
       "command": "node",
-      "args": [
-        "/absolute/path/to/AskChing_Agent/packages/mcp-server/dist/index.js"
-      ],
+      "args": ["/absolute/path/to/AskChing_Agent/packages/mcp-server/dist/index.js"],
       "env": {
         "DEMO_LIVE": "0"
       }

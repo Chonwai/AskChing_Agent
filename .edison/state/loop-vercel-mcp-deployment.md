@@ -43,16 +43,17 @@
 - 支援 Fluid compute（適合 MCP 突發流量）、Instant Rollback
 
 **平台側遠端 MCP 支援（demo 敘事關鍵）**
-| 平台 | 遠端 MCP | 設定方式 |
-|---|---|---|
-| Claude (Desktop/Code) | ✅ | `mcpServers.<n>.url` |
-| Cursor | ✅ | `.cursor/mcp.json` → `url` |
-| VS Code Copilot | ✅ | `.vscode/mcp.json` → `type: http` |
-| Codex | ✅ | `~/.codex/config.toml` |
-| **Gemini CLI** | ✅ | `httpUrl`（Streamable HTTP）；`gemini mcp add --transport http`。⚠️ 已於 2026-06-18 由 **Antigravity CLI** 取代（免費層） |
-| **Grok Bot** | ✅ | 官方文件：「It can use **connectors/MCP where available**」；Grok Bot 有持久雲端 VM（browser/filesystem/terminal） |
-| ChatGPT | ✅ | Connectors（Vercel 有官方 kb 教學） |
-| Gemini API / AI Studio | ✅ | Function calling（tools）— 可用 AI SDK 接 MCP |
+
+| 平台                   | 遠端 MCP | 設定方式                                                                                                                  |
+| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Claude (Desktop/Code)  | ✅       | `mcpServers.<n>.url`                                                                                                      |
+| Cursor                 | ✅       | `.cursor/mcp.json` → `url`                                                                                                |
+| VS Code Copilot        | ✅       | `.vscode/mcp.json` → `type: http`                                                                                         |
+| Codex                  | ✅       | `~/.codex/config.toml`                                                                                                    |
+| **Gemini CLI**         | ✅       | `httpUrl`（Streamable HTTP）；`gemini mcp add --transport http`。⚠️ 已於 2026-06-18 由 **Antigravity CLI** 取代（免費層） |
+| **Grok Bot**           | ✅       | 官方文件：「It can use **connectors/MCP where available**」；Grok Bot 有持久雲端 VM（browser/filesystem/terminal）        |
+| ChatGPT                | ✅       | Connectors（Vercel 有官方 kb 教學）                                                                                       |
+| Gemini API / AI Studio | ✅       | Function calling（tools）— 可用 AI SDK 接 MCP                                                                             |
 
 **順帶解決的懸案**
 

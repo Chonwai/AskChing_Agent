@@ -6,6 +6,7 @@ Quality Mode: strict (threshold 93)
 Depth Level: L3 Deep Dive
 
 ## Done Contract
+
 - D1: 產出「原始 idea vs 已實作」差距分析（逐項對照 attachment 中 5 差異 + P0/P1/P2 階梯 + MVP 清單）
 - D2: 產出 The Graph / MCP / API 使用盤點報告（用了哪些、是否 load-bearing、是否 live、multi-source）
 - D3: 產出獲獎可行性評估（vs The Graph prize criteria、10 秒測試、多源對照、證據）
@@ -15,14 +16,14 @@ Depth Level: L3 Deep Dive
 
 ## Stage Round Counters
 
-| Stage | Current Round | Max Rounds (Stop Rule) | Status |
-|-------|:---:|:---:|--------|
-| DISCOVER (research) | 1 | 2 | complete |
-| PLAN (gap analysis) | 1 | 2 | complete |
-| EXECUTE (evals) | 1 | 2 | complete |
-| VERIFY (code-review) | 1 | 2 (strict) | complete (PASS 96.77) |
-| EXECUTE (audit doc) | 1 | 2 | complete |
-| VERIFY (doc-review) | 2 | 2 (strict) | complete (R1 89 REPAIRABLE → R2 93.45 PASS) |
+| Stage                | Current Round | Max Rounds (Stop Rule) | Status                                      |
+| -------------------- | :-----------: | :--------------------: | ------------------------------------------- |
+| DISCOVER (research)  |       1       |           2            | complete                                    |
+| PLAN (gap analysis)  |       1       |           2            | complete                                    |
+| EXECUTE (evals)      |       1       |           2            | complete                                    |
+| VERIFY (code-review) |       1       |       2 (strict)       | complete (PASS 96.77)                       |
+| EXECUTE (audit doc)  |       1       |           2            | complete                                    |
+| VERIFY (doc-review)  |       2       |       2 (strict)       | complete (R1 89 REPAIRABLE → R2 93.45 PASS) |
 
 ## Iterations
 
@@ -30,6 +31,7 @@ Depth Level: L3 Deep Dive
 
 Agent: architect
 Result:
+
 - 達成度: 5 差異 4/5（x402 stretch 未做）、P0 全達成、P1 大部分（eval 5 cases 部分、gap detection 部分）、P2 未做
 - 10 秒測試: 3/4 通過（follow-up stateless 部分通過）
 - The Graph 盤點: 3 subgraphs (Messari schema) + gateway API + grok API 全 load-bearing + live + multi-source
@@ -44,6 +46,7 @@ Outcome: PASS（進入 EXECUTE）
 
 Agent: trinity (Maker) → smith (Checker)
 Result:
+
 - 新增 5 eval cases（cases.json 5→10，kind 欄位，既有 cases 不變）
 - run.ts 支援三 kind 分派（compare_markets / research_brief / risk_scan），protocols 放寬含 spark-lend
 - Commits: b40648a (cases) + 3412518 (runner)
@@ -54,6 +57,7 @@ Result:
 
 Agent: Neo 彙整研究 (Maker) → edison-doc-reviewer (Checker)
 Result:
+
 - 產出 docs/2026-09-09-idea-completion-audit.md（255 行審計報告）commit ad55144
 - doc-review R1: 89/100 REPAIRABLE (1 High: grok-4.6 矛盾; 3 Medium: 行數/commit 數/Lisbon 來源)
 - 修復 findings commit ef9a106
@@ -63,6 +67,7 @@ Result:
 
 Agent: morpheus (deep research)
 Result:
+
 - ETHOnline 2026: 9/4–9/16, submit deadline 9/13 12:00 PM EDT 確認
 - From Scratch 規則: repo git history 必須在 9/4 後 → ✅ first commit 2026-09-08 (88eaf4e), 120 commits 全在 hackathon 期間
 - Demo video: Required, 2-4 min, ≥720p

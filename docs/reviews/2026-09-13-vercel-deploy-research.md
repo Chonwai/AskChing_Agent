@@ -16,14 +16,14 @@ AskChing 具備 **6 個 MCP 工具**，以「**Other**」Framework Preset + pnpm
 
 **6 個工具**（單一註冊源 `packages/mcp-server/src/register.ts`）：
 
-| # | 工具名 | 類型 | 說明 |
-|---|---|---|---|
-| 1 | `compare_markets` | spot | 即時 best rate 比較（supply_apy / borrow_apy / tvl / utilization），跨 ≥2 protocols |
-| 2 | `research_brief` | spot | 單一 metric/asset 的 cited brief（結論 + key figures + 來源 + 風險） |
-| 3 | `risk_scan` | spot | peer-relative spot signals + time-series gap 偵測 |
-| 4 | `analyze_markets` | spot + calc | yield_opportunity / liquidity_stress / evidence_quality，含計算與 confidence |
-| 5 | `analyze_trends` | historical | 7d/30d daily history：slope、direction、volatility |
-| 6 | `discover_yields` | cross-venue | USDC yield discovery：lending + DEX LP（Uniswap V3 / Curve）分開 ranking |
+| #   | 工具名            | 類型        | 說明                                                                                |
+| --- | ----------------- | ----------- | ----------------------------------------------------------------------------------- |
+| 1   | `compare_markets` | spot        | 即時 best rate 比較（supply_apy / borrow_apy / tvl / utilization），跨 ≥2 protocols |
+| 2   | `research_brief`  | spot        | 單一 metric/asset 的 cited brief（結論 + key figures + 來源 + 風險）                |
+| 3   | `risk_scan`       | spot        | peer-relative spot signals + time-series gap 偵測                                   |
+| 4   | `analyze_markets` | spot + calc | yield_opportunity / liquidity_stress / evidence_quality，含計算與 confidence        |
+| 5   | `analyze_trends`  | historical  | 7d/30d daily history：slope、direction、volatility                                  |
+| 6   | `discover_yields` | cross-venue | USDC yield discovery：lending + DEX LP（Uniswap V3 / Curve）分開 ranking            |
 
 stdio + Streamable HTTP **雙傳輸**，工具面完全一致（同一個 `register.ts`）。
 
@@ -31,11 +31,11 @@ stdio + Streamable HTTP **雙傳輸**，工具面完全一致（同一個 `regis
 
 **Framework Preset = `Other`（非 Node.js、非 Next.js）。**
 
-| 選項 | 結果 | 理由 |
-|---|---|---|
-| Next.js | ❌ 失敗 | Vercel 找 `next build`，此專案無 Next.js |
-| Node | ❌ 不適合 | 給 `server.ts` 監聽用的，本專案走 `/api` functions |
-| **Other** | ✅ 正確 | `/api/` 底下每個檔案自動部署成一個 Function |
+| 選項      | 結果      | 理由                                               |
+| --------- | --------- | -------------------------------------------------- |
+| Next.js   | ❌ 失敗   | Vercel 找 `next build`，此專案無 Next.js           |
+| Node      | ❌ 不適合 | 給 `server.ts` 監聽用的，本專案走 `/api` functions |
+| **Other** | ✅ 正確   | `/api/` 底下每個檔案自動部署成一個 Function        |
 
 **`vercel.json` 必須「不寫 `framework`」**（= 自動偵測 / Other）。不可寫 `"framework": "other"`（非法值，schema enum 無此值，會 fail build）— 這是 smith 審查抓到的 **H1 High** finding（已修復並記錄於 `docs/deployment-vercel.md`）。
 
@@ -65,10 +65,10 @@ stdio + Streamable HTTP **雙傳輸**，工具面完全一致（同一個 `regis
 6. Node.js Version：**22.x**（engines.node = >=20）
 7. Environment Variables：
 
-| Variable | Production | Preview |
-|---|---|---|
-| `DEMO_LIVE` | `1` | `0` |
-| `GRAPH_API_KEY` | `<your key>` | 留空 |
+| Variable        | Production   | Preview |
+| --------------- | ------------ | ------- |
+| `DEMO_LIVE`     | `1`          | `0`     |
+| `GRAPH_API_KEY` | `<your key>` | 留空    |
 
 8. **Deploy** → 等 2-4 min → 取得 `https://<app>.vercel.app/`
 
@@ -84,14 +84,15 @@ vercel --prod         # production deploy
 
 ## 3. pnpm Monorepo 在 Vercel 的打包
 
-| 項目 | 狀態 | 說明 |
-|---|---|---|
-| pnpm 偵測 | ✅ | lockfileVersion 9.0 → pnpm 9/10，自動偵測 |
-| workspace 依賴 | ✅ | `includeFiles: ["packages/{shared,mcp-server}/dist/**"]` 打包進 Function bundle |
-| `500 Cannot find module` 風險 | 🟡 | 唯一有效驗證 = 部署後打 `/api/mcp` tools/list |
-| `ERR_PNPM_OUTDATED_LOCKFILE` | 🟡 | lockfile 過期時失敗；本地 `pnpm install` 更新後 commit |
+| 項目                          | 狀態 | 說明                                                                            |
+| ----------------------------- | ---- | ------------------------------------------------------------------------------- |
+| pnpm 偵測                     | ✅   | lockfileVersion 9.0 → pnpm 9/10，自動偵測                                       |
+| workspace 依賴                | ✅   | `includeFiles: ["packages/{shared,mcp-server}/dist/**"]` 打包進 Function bundle |
+| `500 Cannot find module` 風險 | 🟡   | 唯一有效驗證 = 部署後打 `/api/mcp` tools/list                                   |
+| `ERR_PNPM_OUTDATED_LOCKFILE`  | 🟡   | lockfile 過期時失敗；本地 `pnpm install` 更新後 commit                          |
 
 **`vercel.json` 打包設定（已正確）：**
+
 ```json
 "includeFiles": ["packages/shared/dist/**", "packages/mcp-server/dist/**"]
 ```
@@ -100,14 +101,14 @@ vercel --prod         # production deploy
 
 ## 4. MCP Streamable HTTP 在 Vercel Serverless 的限制
 
-| 項目 | 狀態 | 說明 |
-|---|---|---|
-| stateless 模式 | ✅ | `sessionIdGenerator: undefined`，每請求建全新 server |
-| POST-only | ✅ | GET → 405（不支援 SSE 長連線，serverless 不適合） |
-| maxDuration | ✅ | 60s（Hobby 免費），足够大部分工具 |
-| 冷啟動 | 🟡 | 首次請求多 1-2s，Warm instance <100ms |
-| `analyze_trends` 30d | 🟡 | 多協議 fan-out 有 60s timeout 風險，部署後需實測 |
-| `waitForResponse` header | ✅ 不需要 | Streamable HTTP 已移除此 header |
+| 項目                     | 狀態      | 說明                                                 |
+| ------------------------ | --------- | ---------------------------------------------------- |
+| stateless 模式           | ✅        | `sessionIdGenerator: undefined`，每請求建全新 server |
+| POST-only                | ✅        | GET → 405（不支援 SSE 長連線，serverless 不適合）    |
+| maxDuration              | ✅        | 60s（Hobby 免費），足够大部分工具                    |
+| 冷啟動                   | 🟡        | 首次請求多 1-2s，Warm instance <100ms                |
+| `analyze_trends` 30d     | 🟡        | 多協議 fan-out 有 60s timeout 風險，部署後需實測     |
+| `waitForResponse` header | ✅ 不需要 | Streamable HTTP 已移除此 header                      |
 
 ---
 
@@ -162,20 +163,20 @@ time curl -s -X POST https://<app>.vercel.app/api/mcp \
 
 ## 7. 本 Repo Readiness Assessment
 
-| 項目 | 狀態 |
-|---|---|
-| Framework Preset = Other | ✅（`vercel.json` 不含 `framework`） |
-| Output Directory = public | ✅ |
-| Install = pnpm install --frozen-lockfile | ✅ |
-| Build = pnpm build | ✅ |
-| includeFiles 打包 workspace dist | ✅ |
-| Node.js runtime（非 Edge） | ✅ |
-| maxDuration: 60 / memory: 1024 | ✅ |
-| stateless MCP | ✅ |
-| POST-only（GET → 405） | ✅ |
-| /mcp rewrite | ✅ |
-| export default fetch shape | ✅（已修 3 個部署坑） |
-| docs tools count = 6 | ✅（smith M1 修復後） |
+| 項目                                     | 狀態                                 |
+| ---------------------------------------- | ------------------------------------ |
+| Framework Preset = Other                 | ✅（`vercel.json` 不含 `framework`） |
+| Output Directory = public                | ✅                                   |
+| Install = pnpm install --frozen-lockfile | ✅                                   |
+| Build = pnpm build                       | ✅                                   |
+| includeFiles 打包 workspace dist         | ✅                                   |
+| Node.js runtime（非 Edge）               | ✅                                   |
+| maxDuration: 60 / memory: 1024           | ✅                                   |
+| stateless MCP                            | ✅                                   |
+| POST-only（GET → 405）                   | ✅                                   |
+| /mcp rewrite                             | ✅                                   |
+| export default fetch shape               | ✅（已修 3 個部署坑）                |
+| docs tools count = 6                     | ✅（smith M1 修復後）                |
 
 **結論：repo 已具備完整的部署條件，只需在 Dashboard Import 並設定 env 即可。**
 

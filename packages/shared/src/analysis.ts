@@ -19,8 +19,8 @@ import {
   type TrendSeries,
   type TrendStats,
   type TrendWindow,
-  type Unit
-} from "./schemas.js";
+  type Unit,
+} from './schemas.js';
 
 export interface AnalyzeObservationInput {
   objective: AnalysisObjective;
@@ -32,39 +32,37 @@ export interface AnalyzeObservationInput {
   timeframe?: string;
 }
 
-export function analyzeMarketObservations(
-  input: AnalyzeObservationInput
-): AnalyzeMarketsResult {
-  const observations = input.observations.map(item => MarketObservationSchema.parse(item));
+export function analyzeMarketObservations(input: AnalyzeObservationInput): AnalyzeMarketsResult {
+  const observations = input.observations.map((item) => MarketObservationSchema.parse(item));
   for (const item of observations) {
     if (
       item.asset !== input.asset ||
       !input.protocols.includes(item.protocol) ||
       !input.metrics.includes(item.metric)
     ) {
-      throw new Error("Mixed or unexpected observation in analysis input");
+      throw new Error('Mixed or unexpected observation in analysis input');
     }
   }
 
-  if (input.objective === "liquidity_stress") {
+  if (input.objective === 'liquidity_stress') {
     return analyzeLiquidityStress(input, observations);
   }
-  if (input.objective === "evidence_quality") {
+  if (input.objective === 'evidence_quality') {
     return analyzeEvidenceQuality(input, observations);
   }
 
   const supply = comparable(
-    observations.filter(item => item.metric === "supply_apy"),
-    "supply_apy"
+    observations.filter((item) => item.metric === 'supply_apy'),
+    'supply_apy',
   );
   const ranked = [...supply].sort(
-    (a, b) => b.value - a.value || a.protocol.localeCompare(b.protocol)
+    (a, b) => b.value - a.value || a.protocol.localeCompare(b.protocol),
   );
   const leader = ranked[0]!;
   const runnerUp = ranked[1]!;
   const spread = leader.value - runnerUp.value;
   const utilization = observations.find(
-    item => item.metric === "utilization" && item.protocol === leader.protocol
+    (item) => item.metric === 'utilization' && item.protocol === leader.protocol,
   );
   const supportingValues = utilization ? [...ranked, utilization] : ranked;
   const citations = dedupeCitations(supportingValues);
@@ -78,40 +76,50 @@ export function analyzeMarketObservations(
     summary: `${leader.protocol} has the highest current ${input.asset} supply APY among the analyzed peers.`,
     findings: [
       {
-        severity: "info",
+        severity: 'info',
         claim: `${leader.protocol} leads current ${input.asset} supply APY at ${leader.value}%, ahead of ${runnerUp.protocol} at ${runnerUp.value}%.`,
         calculation: `${leader.value} - ${runnerUp.value} = ${spread.toFixed(2)} percentage points`,
         supportingValues,
         citations,
         confidence,
         caveats: [
-          "Spot APY is not a forecast or financial recommendation.",
+          'Spot APY is not a forecast or financial recommendation.',
           ...(utilization
             ? [`Leader utilization context: ${utilization.value}%.`]
-            : ["No comparable utilization context was available for the leader."])
-        ]
-      }
+            : ['No comparable utilization context was available for the leader.']),
+        ],
+      },
     ],
     gaps: withTimeframeGap(input),
-    asOf: latest
+    asOf: latest,
   };
   return AnalyzeMarketsResultSchema.parse(result);
 }
 
 function analyzeLiquidityStress(
   input: AnalyzeObservationInput,
-  observations: MarketObservation[]
+  observations: MarketObservation[],
 ): AnalyzeMarketsResult {
   const utilization = comparable(
-    observations.filter(item => item.metric === "utilization"),
-    "utilization"
+    observations.filter((item) => item.metric === 'utilization'),
+    'utilization',
   ).sort((a, b) => b.value - a.value || a.protocol.localeCompare(b.protocol));
-  const context = observations.filter(item => item.metric === "tvl");
+  const context = observations.filter((item) => item.metric === 'tvl');
   const confidence = determineConfidence(utilization, input.gaps);
   const findings = utilization.map((item, index) => {
-    const severity = item.value > 90 ? "high" as const : item.value >= 80 ? "watch" as const : "info" as const;
-    const band = severity === "high" ? "above the 90% high threshold" : severity === "watch" ? "within the 80–90% watch band" : "below the 80% watch threshold";
-    const tvl = context.find(value => value.protocol === item.protocol);
+    const severity =
+      item.value > 90
+        ? ('high' as const)
+        : item.value >= 80
+          ? ('watch' as const)
+          : ('info' as const);
+    const band =
+      severity === 'high'
+        ? 'above the 90% high threshold'
+        : severity === 'watch'
+          ? 'within the 80–90% watch band'
+          : 'below the 80% watch threshold';
+    const tvl = context.find((value) => value.protocol === item.protocol);
     const supportingValues = tvl ? [item, tvl] : [item];
     return {
       severity,
@@ -121,9 +129,9 @@ function analyzeLiquidityStress(
       citations: dedupeCitations([...utilization, ...(tvl ? [tvl] : [])]),
       confidence,
       caveats: [
-        "Utilization is a spot heuristic signal, not a liquidation or solvency assessment.",
-        ...(tvl ? [`TVL of ${tvl.value} USD is scale context, not available liquidity.`] : [])
-      ]
+        'Utilization is a spot heuristic signal, not a liquidation or solvency assessment.',
+        ...(tvl ? [`TVL of ${tvl.value} USD is scale context, not available liquidity.`] : []),
+      ],
     };
   });
   return AnalyzeMarketsResultSchema.parse({
@@ -134,31 +142,29 @@ function analyzeLiquidityStress(
     summary: `${utilization[0]!.protocol} has the highest current ${input.asset} utilization among the analyzed peers.`,
     findings,
     gaps: withTimeframeGap(input),
-    asOf: latestTimestamp([...utilization, ...context])
+    asOf: latestTimestamp([...utilization, ...context]),
   });
 }
 
 function analyzeEvidenceQuality(
   input: AnalyzeObservationInput,
-  observations: MarketObservation[]
+  observations: MarketObservation[],
 ): AnalyzeMarketsResult {
   const citations = dedupeCitations(observations);
-  const sourceCount = new Set(observations.map(item => item.subgraphId)).size;
+  const sourceCount = new Set(observations.map((item) => item.subgraphId)).size;
   if (sourceCount < 2) {
-    throw new Error("Need at least 2 cited sources for evidence_quality");
+    throw new Error('Need at least 2 cited sources for evidence_quality');
   }
   const expected = input.protocols.length * input.metrics.length;
-  const covered = new Set(
-    observations.map(item => `${item.protocol}|${item.metric}`)
-  ).size;
-  const timestamps = observations.map(item => Date.parse(item.timestamp));
+  const covered = new Set(observations.map((item) => `${item.protocol}|${item.metric}`)).size;
+  const timestamps = observations.map((item) => Date.parse(item.timestamp));
   const skewMs = Math.max(...timestamps) - Math.min(...timestamps);
   const confidence: AnalysisConfidence =
     sourceCount >= 3 && input.gaps.length === 0 && skewMs <= 10 * 60 * 1000
-      ? "high"
+      ? 'high'
       : covered / expected < 0.5
-        ? "low"
-        : "medium";
+        ? 'low'
+        : 'medium';
   return AnalyzeMarketsResultSchema.parse({
     objective: input.objective,
     asset: input.asset,
@@ -167,38 +173,34 @@ function analyzeEvidenceQuality(
     summary: `${covered} of ${expected} requested protocol-metric observations are supported by ${sourceCount} cited sources.`,
     findings: [
       {
-        severity: confidence === "low" ? "watch" : "info",
+        severity: confidence === 'low' ? 'watch' : 'info',
         claim: `Evidence coverage is ${covered}/${expected} across ${sourceCount} distinct cited sources.`,
         calculation: `${covered}/${expected} protocol-metric observations; ${sourceCount} distinct sources; ${Math.round(skewMs / 1000)} seconds timestamp skew`,
         supportingValues: observations,
         citations,
         confidence,
-        caveats: [
-          "Evidence quality describes coverage and recency, not protocol safety."
-        ]
-      }
+        caveats: ['Evidence quality describes coverage and recency, not protocol safety.'],
+      },
     ],
     gaps: withTimeframeGap(input),
-    asOf: latestTimestamp(observations)
+    asOf: latestTimestamp(observations),
   });
 }
 
 function comparable(
   observations: MarketObservation[],
-  metric: MarketMetricId
+  metric: MarketMetricId,
 ): MarketObservation[] {
-  const valid = observations.filter(item => item.metric === metric);
-  const sources = new Set(valid.map(item => item.subgraphId));
+  const valid = observations.filter((item) => item.metric === metric);
+  const sources = new Set(valid.map((item) => item.subgraphId));
   if (valid.length < 2 || sources.size < 2) {
     throw new Error(`Need at least 2 cited sources for ${metric}`);
   }
   const first = valid[0]!;
   if (
     valid.some(
-      item =>
-        item.asset !== first.asset ||
-        item.unit !== first.unit ||
-        item.rateType !== first.rateType
+      (item) =>
+        item.asset !== first.asset || item.unit !== first.unit || item.rateType !== first.rateType,
     )
   ) {
     throw new Error(`Cannot compare mixed definitions for ${metric}`);
@@ -208,41 +210,47 @@ function comparable(
 
 function dedupeCitations(values: MarketObservation[]): AnalysisCitation[] {
   const seen = new Set<string>();
-  return values.flatMap(item => {
-    const key = [item.metric, item.protocol, item.asset, item.subgraphId, item.timestamp, item.queryHash].join("|");
+  return values.flatMap((item) => {
+    const key = [
+      item.metric,
+      item.protocol,
+      item.asset,
+      item.subgraphId,
+      item.timestamp,
+      item.queryHash,
+    ].join('|');
     if (seen.has(key)) return [];
     seen.add(key);
-    return [{
-      metric: item.metric,
-      protocol: item.protocol,
-      asset: item.asset,
-      subgraphId: item.subgraphId,
-      deploymentId: item.deploymentId,
-      block: item.block,
-      timestamp: item.timestamp,
-      queryHash: item.queryHash
-    }];
+    return [
+      {
+        metric: item.metric,
+        protocol: item.protocol,
+        asset: item.asset,
+        subgraphId: item.subgraphId,
+        deploymentId: item.deploymentId,
+        block: item.block,
+        timestamp: item.timestamp,
+        queryHash: item.queryHash,
+      },
+    ];
   });
 }
 
 function latestTimestamp(values: MarketObservation[]): string {
   return values.reduce(
-    (latest, item) => item.timestamp > latest ? item.timestamp : latest,
-    values[0]!.timestamp
+    (latest, item) => (item.timestamp > latest ? item.timestamp : latest),
+    values[0]!.timestamp,
   );
 }
 
-function determineConfidence(
-  values: MarketObservation[],
-  gaps: AnalysisGap[]
-): AnalysisConfidence {
-  const timestamps = values.map(item => Date.parse(item.timestamp));
+function determineConfidence(values: MarketObservation[], gaps: AnalysisGap[]): AnalysisConfidence {
+  const timestamps = values.map((item) => Date.parse(item.timestamp));
   const skew = Math.max(...timestamps) - Math.min(...timestamps);
-  return new Set(values.map(item => item.subgraphId)).size >= 3 &&
+  return new Set(values.map((item) => item.subgraphId)).size >= 3 &&
     gaps.length === 0 &&
     skew <= 10 * 60 * 1000
-    ? "high"
-    : "medium";
+    ? 'high'
+    : 'medium';
 }
 
 function withTimeframeGap(input: AnalyzeObservationInput): AnalysisGap[] {
@@ -250,8 +258,8 @@ function withTimeframeGap(input: AnalyzeObservationInput): AnalysisGap[] {
     ? [
         ...input.gaps,
         {
-          reason: `Requested timeframe '${input.timeframe}' was not applied; analysis is spot-only.`
-        }
+          reason: `Requested timeframe '${input.timeframe}' was not applied; analysis is spot-only.`,
+        },
       ]
     : [...input.gaps];
 }
@@ -267,8 +275,7 @@ export interface AnalyzeTrendInput {
   gaps: AnalysisGap[];
 }
 
-const TREND_CAVEAT =
-  "Historical trend is descriptive, not a forecast or financial recommendation.";
+const TREND_CAVEAT = 'Historical trend is descriptive, not a forecast or financial recommendation.';
 /** Relative slope band that still counts as "flat" — 0.5% of the series mean. */
 const FLAT_SLOPE_RATIO = 0.005;
 
@@ -280,7 +287,7 @@ const FLAT_SLOPE_RATIO = 0.005;
  */
 export function computeTrendStats(points: readonly TrendPoint[]): TrendStats {
   if (points.length < 2) {
-    throw new Error("Trend statistics require at least two points");
+    throw new Error('Trend statistics require at least two points');
   }
   const ordered = [...points].sort((a, b) => a.days - b.days);
   const values = ordered.map((point) => point.value);
@@ -290,8 +297,7 @@ export function computeTrendStats(points: readonly TrendPoint[]): TrendStats {
 
   // Least-squares slope against the real snapshot day index, so a series with
   // missing days is not distorted by treating gaps as adjacent points.
-  const meanDays =
-    ordered.reduce((sum, point) => sum + point.days, 0) / ordered.length;
+  const meanDays = ordered.reduce((sum, point) => sum + point.days, 0) / ordered.length;
   let covariance = 0;
   let dayVariance = 0;
   ordered.forEach((point, index) => {
@@ -303,15 +309,9 @@ export function computeTrendStats(points: readonly TrendPoint[]): TrendStats {
 
   const flatBand = Math.abs(mean) * FLAT_SLOPE_RATIO;
   const direction: TrendDirection =
-    Math.abs(slopePerDay) <= flatBand
-      ? "flat"
-      : slopePerDay > 0
-        ? "rising"
-        : "falling";
+    Math.abs(slopePerDay) <= flatBand ? 'flat' : slopePerDay > 0 ? 'rising' : 'falling';
 
-  const deltas = values
-    .slice(1)
-    .map((value, index) => value - values[index]!);
+  const deltas = values.slice(1).map((value, index) => value - values[index]!);
 
   return {
     latest,
@@ -319,21 +319,18 @@ export function computeTrendStats(points: readonly TrendPoint[]): TrendStats {
     min: Math.min(...values),
     max: Math.max(...values),
     change: roundStatistic(latest - earliest),
-    changePct:
-      earliest === 0 ? 0 : roundStatistic(((latest - earliest) / earliest) * 100),
+    changePct: earliest === 0 ? 0 : roundStatistic(((latest - earliest) / earliest) * 100),
     slopePerDay: roundStatistic(slopePerDay),
     direction,
-    volatility: roundStatistic(standardDeviation(deltas))
+    volatility: roundStatistic(standardDeviation(deltas)),
   };
 }
 
-export function analyzeTrendSeries(
-  input: AnalyzeTrendInput
-): AnalyzeTrendsResult {
+export function analyzeTrendSeries(input: AnalyzeTrendInput): AnalyzeTrendsResult {
   const series = input.series.map((item) => TrendSeriesSchema.parse(item));
   for (const item of series) {
     if (item.metric !== input.metric) {
-      throw new Error("Mixed or unexpected metric in trend input");
+      throw new Error('Mixed or unexpected metric in trend input');
     }
     for (const point of item.points) {
       if (
@@ -342,18 +339,16 @@ export function analyzeTrendSeries(
         point.protocol !== item.protocol ||
         point.unit !== item.unit
       ) {
-        throw new Error("Mixed or unexpected point in trend input");
+        throw new Error('Mixed or unexpected point in trend input');
       }
     }
   }
 
   const usable = series.filter((item) => item.points.length >= 2);
-  const sources = new Set(
-    usable.flatMap((item) => item.points.map((point) => point.subgraphId))
-  );
+  const sources = new Set(usable.flatMap((item) => item.points.map((point) => point.subgraphId)));
   if (usable.length < 2 || sources.size < 2) {
     throw new Error(
-      `Need at least 2 cited trend series for analysis; got ${usable.length} from ${sources.size} source(s). Gaps: ${formatGaps(input.gaps)}`
+      `Need at least 2 cited trend series for analysis; got ${usable.length} from ${sources.size} source(s). Gaps: ${formatGaps(input.gaps)}`,
     );
   }
 
@@ -365,26 +360,22 @@ export function analyzeTrendSeries(
       gaps.push({
         metric: input.metric,
         protocol: item.protocol,
-        reason: `Requested ${input.window} window has ${item.points.length} usable ${input.asset} ${input.metric} snapshot(s) for ${item.protocol}; the trend is computed from the available points.`
+        reason: `Requested ${input.window} window has ${item.points.length} usable ${input.asset} ${input.metric} snapshot(s) for ${item.protocol}; the trend is computed from the available points.`,
       });
     }
   }
 
   const confidence: AnalysisConfidence =
-    sources.size >= 3 &&
-    gaps.length === 0 &&
-    usable.every((item) => item.points.length >= 5)
-      ? "high"
-      : "medium";
+    sources.size >= 3 && gaps.length === 0 && usable.every((item) => item.points.length >= 5)
+      ? 'high'
+      : 'medium';
 
   const findings = usable.map((item) => {
     const points = [...item.points].sort((a, b) => a.days - b.days);
     const stats = computeTrendStats(points);
     const citations = dedupeCitations(points);
     if (citations.length < 2) {
-      throw new Error(
-        `Trend for ${item.protocol} has fewer than 2 distinct cited points`
-      );
+      throw new Error(`Trend for ${item.protocol} has fewer than 2 distinct cited points`);
     }
     const firstDay = points[0]!.days;
     const lastDay = points[points.length - 1]!.days;
@@ -400,8 +391,8 @@ export function analyzeTrendSeries(
       confidence,
       caveats: [
         TREND_CAVEAT,
-        `Trend computed from ${points.length} cited daily snapshot(s) spanning snapshot days ${firstDay}-${lastDay}.`
-      ]
+        `Trend computed from ${points.length} cited daily snapshot(s) spanning snapshot days ${firstDay}-${lastDay}.`,
+      ],
     };
   });
 
@@ -409,9 +400,9 @@ export function analyzeTrendSeries(
     (current, item) =>
       item.points.reduce(
         (inner, point) => (point.timestamp > inner ? point.timestamp : inner),
-        current
+        current,
       ),
-    usable[0]!.points[0]!.timestamp
+    usable[0]!.points[0]!.timestamp,
   );
 
   return AnalyzeTrendsResultSchema.parse({
@@ -422,12 +413,12 @@ export function analyzeTrendSeries(
     summary: `${input.asset} ${input.metric} over ${input.window}: ${findings
       .map(
         (finding) =>
-          `${finding.protocol} ${finding.stats.direction} (${formatSigned(finding.stats.changePct)}%)`
+          `${finding.protocol} ${finding.stats.direction} (${formatSigned(finding.stats.changePct)}%)`,
       )
-      .join(", ")} across ${sources.size} cited source(s).`,
+      .join(', ')} across ${sources.size} cited source(s).`,
     findings,
     gaps,
-    asOf: latest
+    asOf: latest,
   });
 }
 
@@ -435,8 +426,7 @@ export function analyzeTrendSeries(
 function standardDeviation(values: readonly number[]): number {
   if (values.length === 0) return 0;
   const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
-  const variance =
-    values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
+  const variance = values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
   return Math.sqrt(variance);
 }
 
@@ -450,11 +440,11 @@ function roundStatistic(value: number): number {
 
 function trendSeverity(changePct: number): AnalysisSeverity {
   const magnitude = Math.abs(changePct);
-  return magnitude >= 30 ? "high" : magnitude >= 15 ? "watch" : "info";
+  return magnitude >= 30 ? 'high' : magnitude >= 15 ? 'watch' : 'info';
 }
 
 function unitSuffix(unit: Unit): string {
-  return unit === "usd" ? " USD" : "%";
+  return unit === 'usd' ? ' USD' : '%';
 }
 
 function formatSigned(value: number): string {
@@ -463,8 +453,6 @@ function formatSigned(value: number): string {
 
 function formatGaps(gaps: AnalysisGap[]): string {
   return gaps.length === 0
-    ? "none reported"
-    : gaps
-        .map((gap) => `${gap.protocol ?? "unknown"}: ${gap.reason}`)
-        .join("; ");
+    ? 'none reported'
+    : gaps.map((gap) => `${gap.protocol ?? 'unknown'}: ${gap.reason}`).join('; ');
 }

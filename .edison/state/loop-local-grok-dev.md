@@ -12,6 +12,7 @@
 ## 研究結論（本地 Grok 測試）
 
 **不一定需要 XAI_API_KEY！** 有本地替代方案：
+
 - **Ollama**（首選）：Mac 支援、tool calling ✅、OpenAI-compatible（`localhost:11434/v1`）
 - **LM Studio / llama.cpp**：同樣 OpenAI-compatible
 - **VS Code 內建 MCP client**：可測我們 server
@@ -21,6 +22,7 @@
 ## Iterations
 
 ### Iteration 1 (2026-09-08) — 完成 4 項開發
+
 - **Demo CLI** ✅ `npm run demo` / `demo:live`（fixture + live 雙模式，3 sources）
 - **risk_scan** ✅ 誠實 spot-snapshot 版：peer 最高 APY + spread + 明確 time-series gap
 - **settled fan-out** ✅ `Promise.allSettled`，失敗 source → lastGaps 並指名
@@ -29,6 +31,7 @@
 - **16 tests + build + demo 全綠**
 
 ## Commits (Iteration 1)
+
 - dc87dcd feat(demo): add one-click demo CLI
 - 42b1f04 feat(mcp): implement risk_scan with honest time-series gap
 - a53e4e7 feat(shared): settled fan-out with per-source gap collection
@@ -37,5 +40,6 @@
 - c2f5153 docs(spec): mark features implemented
 
 ## Circuit Breaker Status
+
 - 連續失敗: 0
 - 剩餘：Grok orchestrator（Phase 1b，需 Ollama 或 XAI key）— 下一步最高價值

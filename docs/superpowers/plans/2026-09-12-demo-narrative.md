@@ -16,11 +16,11 @@
 
 ## 1. 三個 Wow 時刻（腳本圍繞這三點設計）
 
-| # | Wow | 為什麼評審會記住 |
-|---|---|---|
-| **W1** | **同一個問題，三個不同 AI 平台，同一份 evidence chain** | 證明這是「基礎設施」而不是「一個 demo」。評審在別的參賽者身上看不到這個。 |
-| **W2** | **它會說「我不知道」** | 故意做一個 fail-closed 的示範：只給一個協議 → 系統**拒絕回答**。AI 工具最缺的就是這個。 |
-| **W3** | **時間維度：從 spot 到趨勢，且每個點都可溯源** | 展示 The Graph 的歷史數據被真正用上，不是拿即時價敷衍。 |
+| #      | Wow                                                     | 為什麼評審會記住                                                                        |
+| ------ | ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **W1** | **同一個問題，三個不同 AI 平台，同一份 evidence chain** | 證明這是「基礎設施」而不是「一個 demo」。評審在別的參賽者身上看不到這個。               |
+| **W2** | **它會說「我不知道」**                                  | 故意做一個 fail-closed 的示範：只給一個協議 → 系統**拒絕回答**。AI 工具最缺的就是這個。 |
+| **W3** | **時間維度：從 spot 到趨勢，且每個點都可溯源**          | 展示 The Graph 的歷史數據被真正用上，不是拿即時價敷衍。                                 |
 
 ---
 
@@ -47,9 +47,11 @@
 ### 0:45–1:15 — 問題 1 + citation（第一層證據）
 
 **畫面**：Claude Desktop，輸入：
+
 > Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend. Cite every source.
 
 **講解重點**（指著畫面）：
+
 > 「注意三件事：
 > 一是 **ranked**，不是條列；
 > 二是每個數字後面有 **subgraph ID、block、query hash**；
@@ -62,9 +64,11 @@
 > 「同一份 server，同一行 URL。換一個 AI 平台，答案的**證據結構完全一樣**。」
 
 再切到 terminal：
+
 ```bash
 gemini mcp list
 ```
+
 → 顯示 `askching … (http) - Connected` 與 5 個工具。
 
 > 「Claude、Cursor、VS Code、Codex、Gemini、Grok Bot——
@@ -73,6 +77,7 @@ gemini mcp list
 ### 1:50–2:20 — 🎯 **W2：它會拒絕回答**
 
 **畫面**：故意只給一個協議：
+
 ```bash
 ASKCHING_DEBUG=1 pnpm askching -- "Compare USDC supply APY on Aave V3 only"
 ```
@@ -88,19 +93,23 @@ ASKCHING_DEBUG=1 pnpm askching -- "Compare USDC supply APY on Aave V3 only"
 ### 2:20–2:55 — 🎯 **W3：時間維度 + 誠實缺口**
 
 **畫面**：
+
 ```bash
 pnpm askching -- "How has USDC supply APY trended across Aave V3, Compound V3 and Spark Lend over the last seven days?"
 ```
 
 **講解**：
+
 > 「這不是即時快照，是 **7 天的每日快照序列**——
 > 每個點都帶自己的 block 和 timestamp。
 > 你看得到 slope、direction、volatility。」
 
 再示範誠實缺口：
+
 ```bash
 pnpm askching -- "Analyze the best USDC yield opportunity over the last seven days"
 ```
+
 （用 spot-only objective + 歷史時間窗 → 產生 **explicit gap**）
 
 > 「如果我們要的是 spot 分析、而你問了歷史，
@@ -135,25 +144,25 @@ pnpm askching -- "Analyze the best USDC yield opportunity over the last seven da
 
 ## 4. 必須避免的五件事
 
-| ❌ 不要 | 原因 |
-|---|---|
-| 展示 fixture 模式卻說 live | 查得到真假。錄影前務必 `curl /api/health` 確認 `live: true` |
-| 說「預測」或「建議買入」 | 我們是描述性研究工具。caveat 已寫明 not a forecast |
-| 炫耀「90 個協議」 | 我們是 3–10 個協議。硬碰覆蓋數會輸，**證據深度才是我們的戰場** |
-| 把 Gemini 的工具名 `mcp_askching_analyze_trends` 當成我們的 API 名 | 那是 CLI 的命名空間 |
-| 錄到 API key | 錄影前檢查 terminal 與 URL bar |
+| ❌ 不要                                                            | 原因                                                           |
+| ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| 展示 fixture 模式卻說 live                                         | 查得到真假。錄影前務必 `curl /api/health` 確認 `live: true`    |
+| 說「預測」或「建議買入」                                           | 我們是描述性研究工具。caveat 已寫明 not a forecast             |
+| 炫耀「90 個協議」                                                  | 我們是 3–10 個協議。硬碰覆蓋數會輸，**證據深度才是我們的戰場** |
+| 把 Gemini 的工具名 `mcp_askching_analyze_trends` 當成我們的 API 名 | 那是 CLI 的命名空間                                            |
+| 錄到 API key                                                       | 錄影前檢查 terminal 與 URL bar                                 |
 
 ---
 
 ## 5. Fallback 計畫
 
-| 若… | 改用 |
-|---|---|
-| Grok Bot connectors 不可用 | 跳過，改問 VS Code + Cursor（W1 依然成立） |
-| Live Graph 查詢失敗 | 該段改用 `DEMO_LIVE=0` fixture 示範並**說明**是 fixture；不要假裝 live |
-| Claude Desktop 版本不支援 remote | 用 §`docs/platform-integration.md` §10 的 `mcp-remote` 橋接 |
-| 網路不穩 | 事前錄好備份；把 curl 結果先存成文字檔備用 |
-| 時間不足 | **保留 W2（fail-closed）**——那是最不可替代的一段 |
+| 若…                              | 改用                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| Grok Bot connectors 不可用       | 跳過，改問 VS Code + Cursor（W1 依然成立）                             |
+| Live Graph 查詢失敗              | 該段改用 `DEMO_LIVE=0` fixture 示範並**說明**是 fixture；不要假裝 live |
+| Claude Desktop 版本不支援 remote | 用 §`docs/platform-integration.md` §10 的 `mcp-remote` 橋接            |
+| 網路不穩                         | 事前錄好備份；把 curl 結果先存成文字檔備用                             |
+| 時間不足                         | **保留 W2（fail-closed）**——那是最不可替代的一段                       |
 
 ---
 
@@ -182,10 +191,10 @@ curl -s https://<app>.vercel.app/api/mcp -H 'Content-Type: application/json' \
 
 ## 7. 相關文件
 
-| 文件 | 用途 |
-|---|---|
-| `docs/deployment-vercel.md` | 部署步驟 |
-| `docs/platform-integration.md` | 各平台接入設定 |
-| `docs/improvement-blueprint.md` | 剩餘改善藍圖 |
-| `demos/prompts.md` | Demo A–F prompts 底稿 |
-| `docs/superpowers/plans/2026-09-09-showcase-run-script.md` | 原始錄影 runbook |
+| 文件                                                       | 用途                  |
+| ---------------------------------------------------------- | --------------------- |
+| `docs/deployment-vercel.md`                                | 部署步驟              |
+| `docs/platform-integration.md`                             | 各平台接入設定        |
+| `docs/improvement-blueprint.md`                            | 剩餘改善藍圖          |
+| `demos/prompts.md`                                         | Demo A–F prompts 底稿 |
+| `docs/superpowers/plans/2026-09-09-showcase-run-script.md` | 原始錄影 runbook      |

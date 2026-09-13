@@ -1,10 +1,6 @@
-import { MARKET_FIXTURES, MARKET_HISTORY_FIXTURES } from "./fixtures.js";
-import { GraphGatewayClient } from "./graph-client.js";
-import {
-  getMetricDescriptor,
-  resolveMetricId,
-  type MetricDescriptor
-} from "./metrics.js";
+import { MARKET_FIXTURES, MARKET_HISTORY_FIXTURES } from './fixtures.js';
+import { GraphGatewayClient } from './graph-client.js';
+import { getMetricDescriptor, resolveMetricId, type MetricDescriptor } from './metrics.js';
 import type {
   MarketMetric,
   MarketMetricId,
@@ -12,23 +8,16 @@ import type {
   ProtocolSlug,
   TrendPoint,
   TrendSeries,
-  TrendWindow
-} from "./schemas.js";
+  TrendWindow,
+} from './schemas.js';
 import {
   AssetSymbolSchema,
   TREND_WINDOW_DAYS,
   TrendSeriesSchema,
-  type AssetSymbol
-} from "./schemas.js";
-import {
-  LIVE_SOURCES,
-  assertLiveProtocols,
-  type SubgraphSource
-} from "./source-config.js";
-import {
-  createDexYieldDataSource,
-  type DexYieldDataSource
-} from "./yield-data-source.js";
+  type AssetSymbol,
+} from './schemas.js';
+import { LIVE_SOURCES, assertLiveProtocols, type SubgraphSource } from './source-config.js';
+import { createDexYieldDataSource, type DexYieldDataSource } from './yield-data-source.js';
 
 export interface AskChingEnvironment {
   DEMO_LIVE?: string;
@@ -39,7 +28,7 @@ export interface MarketDataSource extends DexYieldDataSource {
   getObservations(
     metric: MarketMetric | MarketMetricId,
     protocols?: readonly ProtocolSlug[],
-    asset?: string
+    asset?: string,
   ): Promise<MarketObservation[]>;
   /**
    * v1.1: one cited history series per protocol over the requested window.
@@ -50,7 +39,7 @@ export interface MarketDataSource extends DexYieldDataSource {
     metric: MarketMetric | MarketMetricId,
     window: TrendWindow,
     protocols?: readonly ProtocolSlug[],
-    asset?: string
+    asset?: string,
   ): Promise<TrendSeries[]>;
 }
 
@@ -58,7 +47,7 @@ export interface LiveDataSource extends MarketDataSource {
   lastGaps: string[];
 }
 
-const DEFAULT_ASSET = "USDC" as const;
+const DEFAULT_ASSET = 'USDC' as const;
 
 interface LiveFanOut {
   apiKey: string;
@@ -72,15 +61,15 @@ function prepareLiveFanOut(
   environment: AskChingEnvironment,
   metric: MarketMetric | MarketMetricId,
   protocols: readonly ProtocolSlug[] | undefined,
-  asset: string | undefined
+  asset: string | undefined,
 ): LiveFanOut {
   if (!environment.GRAPH_API_KEY) {
-    throw new Error("GRAPH_API_KEY is required when DEMO_LIVE=1");
+    throw new Error('GRAPH_API_KEY is required when DEMO_LIVE=1');
   }
   const { metricId, assetHint } = resolveMetricId(metric);
   const descriptor = getMetricDescriptor(metricId);
   const normalizedAsset: AssetSymbol = AssetSymbolSchema.parse(
-    (asset ?? assetHint ?? DEFAULT_ASSET).toUpperCase()
+    (asset ?? assetHint ?? DEFAULT_ASSET).toUpperCase(),
   );
   const requested = protocols ?? LIVE_SOURCES.map((source) => source.protocol);
   assertLiveProtocols(requested);
@@ -88,7 +77,7 @@ function prepareLiveFanOut(
     apiKey: environment.GRAPH_API_KEY,
     asset: normalizedAsset,
     descriptor,
-    selected: LIVE_SOURCES.filter((source) => requested.includes(source.protocol))
+    selected: LIVE_SOURCES.filter((source) => requested.includes(source.protocol)),
   };
 }
 
@@ -101,7 +90,7 @@ function buildFixtureSeries(
   metricId: MarketMetricId,
   asset: AssetSymbol,
   days: number,
-  protocols: readonly ProtocolSlug[] | undefined
+  protocols: readonly ProtocolSlug[] | undefined,
 ): TrendSeries[] {
   const grouped = new Map<string, TrendPoint[]>();
   for (const point of MARKET_HISTORY_FIXTURES) {
@@ -125,18 +114,18 @@ function buildFixtureSeries(
             protocol,
             metric: metricId,
             unit,
-            points: recent
-          })
+            points: recent,
+          }),
         ];
   });
 }
 
 export function createMarketDataSource(
   environment: AskChingEnvironment,
-  fetchImpl: typeof fetch = fetch
+  fetchImpl: typeof fetch = fetch,
 ): MarketDataSource {
   const dexYieldDataSource = createDexYieldDataSource(environment, fetchImpl);
-  if (environment.DEMO_LIVE !== "1") {
+  if (environment.DEMO_LIVE !== '1') {
     return {
       getDexYieldOpportunities: dexYieldDataSource.getDexYieldOpportunities,
       async getObservations(metric, protocols, asset) {
@@ -144,27 +133,22 @@ export function createMarketDataSource(
         // metric id (+ asset hint) so fixture filtering is metric-aware.
         const { metricId, assetHint } = resolveMetricId(metric);
         const normalizedAsset = AssetSymbolSchema.parse(
-          (asset ?? assetHint ?? DEFAULT_ASSET).toUpperCase()
+          (asset ?? assetHint ?? DEFAULT_ASSET).toUpperCase(),
         );
         return MARKET_FIXTURES.filter(
           (observation) =>
             observation.metric === metricId &&
             observation.asset === normalizedAsset &&
-            (!protocols || protocols.includes(observation.protocol))
+            (!protocols || protocols.includes(observation.protocol)),
         );
       },
       async getHistory(metric, window, protocols, asset) {
         const { metricId, assetHint } = resolveMetricId(metric);
         const normalizedAsset = AssetSymbolSchema.parse(
-          (asset ?? assetHint ?? DEFAULT_ASSET).toUpperCase()
+          (asset ?? assetHint ?? DEFAULT_ASSET).toUpperCase(),
         );
-        return buildFixtureSeries(
-          metricId,
-          normalizedAsset,
-          TREND_WINDOW_DAYS[window],
-          protocols
-        );
-      }
+        return buildFixtureSeries(metricId, normalizedAsset, TREND_WINDOW_DAYS[window], protocols);
+      },
     };
   }
 
@@ -178,36 +162,32 @@ export function createMarketDataSource(
         apiKey,
         asset: normalizedAsset,
         descriptor,
-        selected
+        selected,
       } = prepareLiveFanOut(environment, metric, protocols, asset);
       if (selected.length < 2) {
-        throw new Error(
-          "Live comparison requires at least two configured sources"
-        );
+        throw new Error('Live comparison requires at least two configured sources');
       }
 
       const client = new GraphGatewayClient({ apiKey, fetchImpl });
       const settled = await Promise.allSettled(
         selected.map((source) =>
-          client.getMarketObservation(source, descriptor.id, normalizedAsset)
-        )
+          client.getMarketObservation(source, descriptor.id, normalizedAsset),
+        ),
       );
 
       const fulfilled: MarketObservation[] = [];
       lastGaps.length = 0;
       settled.forEach((result, index) => {
-        if (result.status === "fulfilled") {
+        if (result.status === 'fulfilled') {
           fulfilled.push(result.value);
         } else {
-          lastGaps.push(
-            `${selected[index]!.protocol}: ${(result.reason as Error).message}`
-          );
+          lastGaps.push(`${selected[index]!.protocol}: ${(result.reason as Error).message}`);
         }
       });
 
       if (fulfilled.length < 2) {
         throw new Error(
-          `Need at least 2 cited sources for comparison; got ${fulfilled.length}. Gaps: ${lastGaps.join("; ")}`
+          `Need at least 2 cited sources for comparison; got ${fulfilled.length}. Gaps: ${lastGaps.join('; ')}`,
         );
       }
 
@@ -218,38 +198,36 @@ export function createMarketDataSource(
         apiKey,
         asset: normalizedAsset,
         descriptor,
-        selected
+        selected,
       } = prepareLiveFanOut(environment, metric, protocols, asset);
       const days = TREND_WINDOW_DAYS[window];
 
       const client = new GraphGatewayClient({ apiKey, fetchImpl });
       const settled = await Promise.allSettled(
         selected.map((source) =>
-          client.getMarketHistory(source, descriptor.id, normalizedAsset, days)
-        )
+          client.getMarketHistory(source, descriptor.id, normalizedAsset, days),
+        ),
       );
 
       const series: TrendSeries[] = [];
       lastGaps.length = 0;
       settled.forEach((result, index) => {
-        if (result.status === "fulfilled") {
+        if (result.status === 'fulfilled') {
           series.push(
             TrendSeriesSchema.parse({
               protocol: selected[index]!.protocol,
               metric: descriptor.id,
               unit: descriptor.unit,
-              points: result.value
-            })
+              points: result.value,
+            }),
           );
         } else {
-          lastGaps.push(
-            `${selected[index]!.protocol}: ${(result.reason as Error).message}`
-          );
+          lastGaps.push(`${selected[index]!.protocol}: ${(result.reason as Error).message}`);
         }
       });
 
       return series;
-    }
+    },
   };
 
   return liveSource;

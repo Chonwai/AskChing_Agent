@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { MARKET_FIXTURES, MARKET_HISTORY_FIXTURES } from "./fixtures.js";
-import { LIVE_PROTOCOLS, PROTOCOL_REGISTRY } from "./source-config.js";
-import { DEX_YIELD_FIXTURES } from "./yield-fixtures.js";
-import { DEX_YIELD_SOURCES } from "./yield-sources.js";
+import { MARKET_FIXTURES, MARKET_HISTORY_FIXTURES } from './fixtures.js';
+import { LIVE_PROTOCOLS, PROTOCOL_REGISTRY } from './source-config.js';
+import { DEX_YIELD_FIXTURES } from './yield-fixtures.js';
+import { DEX_YIELD_SOURCES } from './yield-sources.js';
 
 /**
  * Guards the fixture/live contract.
@@ -17,9 +17,9 @@ import { DEX_YIELD_SOURCES } from "./yield-sources.js";
  *
  * These tests make that class of drift fail loudly.
  */
-describe("fixture / live consistency", () => {
-  it("keeps every DEX fixture on a registered source with fixture-labelled deployment evidence", () => {
-    const sources = new Map(DEX_YIELD_SOURCES.map(source => [source.venue, source]));
+describe('fixture / live consistency', () => {
+  it('keeps every DEX fixture on a registered source with fixture-labelled deployment evidence', () => {
+    const sources = new Map(DEX_YIELD_SOURCES.map((source) => [source.venue, source]));
     for (const fixture of DEX_YIELD_FIXTURES) {
       const source = sources.get(fixture.venue);
       expect(source, `${fixture.venue} is not registered`).toBeDefined();
@@ -28,8 +28,8 @@ describe("fixture / live consistency", () => {
     }
   });
 
-  it("requires precise notes for disabled DEX sources and fixtures for enabled ones", () => {
-    const fixtureVenues = new Set(DEX_YIELD_FIXTURES.map(value => value.venue));
+  it('requires precise notes for disabled DEX sources and fixtures for enabled ones', () => {
+    const fixtureVenues = new Set(DEX_YIELD_FIXTURES.map((value) => value.venue));
     for (const source of DEX_YIELD_SOURCES) {
       if (source.live) {
         expect(fixtureVenues).toContain(source.venue);
@@ -40,11 +40,11 @@ describe("fixture / live consistency", () => {
     }
   });
 
-  it("only uses protocols that are registered", () => {
+  it('only uses protocols that are registered', () => {
     const registered = new Set(PROTOCOL_REGISTRY.map((source) => source.protocol));
     const used = new Set([
       ...MARKET_FIXTURES.map((row) => row.protocol),
-      ...MARKET_HISTORY_FIXTURES.map((row) => row.protocol)
+      ...MARKET_HISTORY_FIXTURES.map((row) => row.protocol),
     ]);
 
     for (const protocol of used) {
@@ -52,42 +52,36 @@ describe("fixture / live consistency", () => {
     }
   });
 
-  it("only uses live protocols, so every fixture row is reachable live", () => {
+  it('only uses live protocols, so every fixture row is reachable live', () => {
     const used = new Set([
       ...MARKET_FIXTURES.map((row) => row.protocol),
-      ...MARKET_HISTORY_FIXTURES.map((row) => row.protocol)
+      ...MARKET_HISTORY_FIXTURES.map((row) => row.protocol),
     ]);
 
     for (const protocol of used) {
-      expect(LIVE_PROTOCOLS, `${protocol} has fixtures but is not live`).toContain(
-        protocol
-      );
+      expect(LIVE_PROTOCOLS, `${protocol} has fixtures but is not live`).toContain(protocol);
     }
   });
 
-  it("gives the default asset a fixture for every live protocol", () => {
+  it('gives the default asset a fixture for every live protocol', () => {
     // USDC is the default asset, so a live protocol without a USDC fixture
     // would make fixture mode and live mode disagree on the happy path.
     const usdcProtocols = new Set(
-      MARKET_FIXTURES.filter((row) => row.asset === "USDC").map((row) => row.protocol)
+      MARKET_FIXTURES.filter((row) => row.asset === 'USDC').map((row) => row.protocol),
     );
 
     for (const protocol of LIVE_PROTOCOLS) {
-      expect(usdcProtocols, `${protocol} is live but has no USDC fixture`).toContain(
-        protocol
-      );
+      expect(usdcProtocols, `${protocol} is live but has no USDC fixture`).toContain(protocol);
     }
   });
 
-  it("gives every live protocol a supply_apy fixture", () => {
+  it('gives every live protocol a supply_apy fixture', () => {
     const supplyApy = new Set(
-      MARKET_FIXTURES.filter((row) => row.metric === "supply_apy").map((row) => row.protocol)
+      MARKET_FIXTURES.filter((row) => row.metric === 'supply_apy').map((row) => row.protocol),
     );
 
     for (const protocol of LIVE_PROTOCOLS) {
-      expect(supplyApy, `${protocol} is live but has no supply_apy fixture`).toContain(
-        protocol
-      );
+      expect(supplyApy, `${protocol} is live but has no supply_apy fixture`).toContain(protocol);
     }
   });
 });

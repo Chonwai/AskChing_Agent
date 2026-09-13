@@ -13,11 +13,11 @@ AskChing: Grok-Reasoning Agent for Multi-Subgraph DeFi Research
 
 ### Shortlisted Titles（< 60 chars）
 
-| Title | Length | 說明 |
-| --- | --- | --- |
-| AskChing: Multi-Subgraph DeFi Research Agent | 44 | ✅ 推薦 |
-| AskChing: Grok DeFi Research Agent | 34 | ✅ 精簡 |
-| AskChing: Cited DeFi Research Agent | 35 | ✅ 強調證據 |
+| Title                                        | Length | 說明        |
+| -------------------------------------------- | ------ | ----------- |
+| AskChing: Multi-Subgraph DeFi Research Agent | 44     | ✅ 推薦     |
+| AskChing: Grok DeFi Research Agent           | 34     | ✅ 精簡     |
+| AskChing: Cited DeFi Research Agent          | 35     | ✅ 強調證據 |
 
 **標題規則：** 避免「Trading」「Yield」「Bot」字眼；強調 research + evidence。
 
@@ -31,10 +31,10 @@ AskChing is a cited DeFi research agent that compares and analyzes live lending 
 
 ### 備選
 
-| 版本 | Length | 說明 |
-| --- | --- | --- |
-| Ask one DeFi research question, get a normalized cross-protocol answer with citations back to live subgraphs. | 109 | ✅ |
-| A Grok-orchestrated research MCP that fans out across live subgraphs and returns evidence-traceable DeFi analysis. | 118 | ✅ |
+| 版本                                                                                                               | Length | 說明 |
+| ------------------------------------------------------------------------------------------------------------------ | ------ | ---- |
+| Ask one DeFi research question, get a normalized cross-protocol answer with citations back to live subgraphs.      | 109    | ✅   |
+| A Grok-orchestrated research MCP that fans out across live subgraphs and returns evidence-traceable DeFi analysis. | 118    | ✅   |
 
 ---
 
@@ -66,16 +66,16 @@ AskChing is a cited DeFi research agent that compares and analyzes live lending 
 
 ## Tech List
 
-| Tech | 用途 |
-| --- | --- |
-| The Graph | Live subgraph fan-out（Aave V3 / Compound V3 / Spark Lend, Ethereum mainnet, Messari standardized schema） |
-| xAI Grok | Natural-language reasoning + tool selection + synthesis |
-| Model Context Protocol (MCP) | `compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` over stdio |
-| TypeScript | 全端型別安全 |
-| pnpm monorepo | `packages/shared` / `packages/mcp-server` / `packages/grok-orchestrator` |
-| Vitest | 行為測試（comparison/evidence/analysis/risk 邏輯） |
-| Subgraph Studio | Live gateway 存取（`GRAPH_API_KEY`） |
-| Agent0 / ERC-8004（future） | Agent economy discovery on The Graph（roadmap） |
+| Tech                         | 用途                                                                                                       |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| The Graph                    | Live subgraph fan-out（Aave V3 / Compound V3 / Spark Lend, Ethereum mainnet, Messari standardized schema） |
+| xAI Grok                     | Natural-language reasoning + tool selection + synthesis                                                    |
+| Model Context Protocol (MCP) | `compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` over stdio                          |
+| TypeScript                   | 全端型別安全                                                                                               |
+| pnpm monorepo                | `packages/shared` / `packages/mcp-server` / `packages/grok-orchestrator`                                   |
+| Vitest                       | 行為測試（comparison/evidence/analysis/risk 邏輯）                                                         |
+| Subgraph Studio              | Live gateway 存取（`GRAPH_API_KEY`）                                                                       |
+| Agent0 / ERC-8004（future）  | Agent economy discovery on The Graph（roadmap）                                                            |
 
 ---
 
@@ -97,13 +97,13 @@ AskChing is a cited DeFi research agent that compares and analyzes live lending 
 
 本文件所有陳述皆對應已實作功能：
 
-| 聲明 | 對應實作 |
-| --- | --- |
-| 三源 fan-out | `packages/shared/src/source-config.ts` — LIVE_SOURCES 三條 |
-| Messari schema | 三 subgraph 皆使用 Messari lending schema |
-| `compare_markets` / `research_brief` / `risk_scan` | `packages/mcp-server/src/tools.ts` |
-| OpenAI-compatible in-process loop | `packages/grok-orchestrator/src/loop.ts` runGrokOrchestrator |
-| 證據（subgraph/block/queryHash） | `compareObservations` + citation enforcement |
-| Risk = spot snapshot，非歷史 | `riskScan` gaps 明確標示 |
-| Evidence = structural invariant | `CitationSchema` 缺欄位即 fail + `compareObservations` 少於 2 源即 fail |
-| research software, 非 trading bot | README + 本文件皆明示 |
+| 聲明                                               | 對應實作                                                                |
+| -------------------------------------------------- | ----------------------------------------------------------------------- |
+| 三源 fan-out                                       | `packages/shared/src/source-config.ts` — LIVE_SOURCES 三條              |
+| Messari schema                                     | 三 subgraph 皆使用 Messari lending schema                               |
+| `compare_markets` / `research_brief` / `risk_scan` | `packages/mcp-server/src/tools.ts`                                      |
+| OpenAI-compatible in-process loop                  | `packages/grok-orchestrator/src/loop.ts` runGrokOrchestrator            |
+| 證據（subgraph/block/queryHash）                   | `compareObservations` + citation enforcement                            |
+| Risk = spot snapshot，非歷史                       | `riskScan` gaps 明確標示                                                |
+| Evidence = structural invariant                    | `CitationSchema` 缺欄位即 fail + `compareObservations` 少於 2 源即 fail |
+| research software, 非 trading bot                  | README + 本文件皆明示                                                   |

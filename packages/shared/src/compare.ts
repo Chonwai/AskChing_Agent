@@ -4,20 +4,18 @@ import {
   MarketMetricIdSchema,
   MarketObservationSchema,
   type Comparison,
-  type MarketMetricId
-} from "./schemas.js";
+  type MarketMetricId,
+} from './schemas.js';
 
 export function compareObservations(
   observations: readonly unknown[],
-  requestedMetric: MarketMetricId
+  requestedMetric: MarketMetricId,
 ): Comparison {
   const metric = MarketMetricIdSchema.parse(requestedMetric);
-  const parsed = observations.map((observation) =>
-    MarketObservationSchema.parse(observation)
-  );
+  const parsed = observations.map((observation) => MarketObservationSchema.parse(observation));
 
   if (parsed.length < 2) {
-    throw new Error("compare_markets requires at least two cited observations");
+    throw new Error('compare_markets requires at least two cited observations');
   }
 
   if (parsed.some((observation) => observation.metric !== metric)) {
@@ -27,9 +25,7 @@ export function compareObservations(
   // Cross-asset guard: all observations must share the same asset
   const assets = new Set(parsed.map((observation) => observation.asset));
   if (assets.size > 1) {
-    throw new Error(
-      `All observations must share the same asset. Found: ${[...assets].join(", ")}`
-    );
+    throw new Error(`All observations must share the same asset. Found: ${[...assets].join(', ')}`);
   }
   const asset = [...assets][0]!;
 
@@ -39,25 +35,21 @@ export function compareObservations(
 
   const distinctSources = new Set(rows.map((row) => row.subgraphId));
   if (distinctSources.size < 2) {
-    throw new Error("compare_markets requires at least two distinct subgraph sources");
+    throw new Error('compare_markets requires at least two distinct subgraph sources');
   }
 
   const timestamps = rows.map((row) => row.timestamp);
-  const asOf = timestamps.reduce((latest, current) =>
-    current > latest ? current : latest
-  );
+  const asOf = timestamps.reduce((latest, current) => (current > latest ? current : latest));
   const caveats: string[] = [];
   if (new Set(timestamps).size > 1) {
-    caveats.push("Source observations were recorded at different timestamps.");
+    caveats.push('Source observations were recorded at different timestamps.');
   }
-  if (metric === "tvl") {
-    caveats.push(
-      "TVL reflects the largest market for this asset, not total protocol TVL."
-    );
+  if (metric === 'tvl') {
+    caveats.push('TVL reflects the largest market for this asset, not total protocol TVL.');
   }
-  if (metric === "utilization") {
+  if (metric === 'utilization') {
     caveats.push(
-      "Utilization is ranked highest-first; higher utilization is a higher risk signal, not a better outcome."
+      'Utilization is ranked highest-first; higher utilization is a higher risk signal, not a better outcome.',
     );
   }
 
@@ -67,6 +59,6 @@ export function compareObservations(
     asOf,
     rows,
     caveats,
-    sources: rows.map((row) => ComparisonSourceSchema.parse(row))
+    sources: rows.map((row) => ComparisonSourceSchema.parse(row)),
   });
 }

@@ -44,6 +44,7 @@
 ### DECISION（Neo 自主，deadline 極近）
 
 **不壓線實作 ETH staking**（單源會破 ≥2 sources 品牌 invariant + 動 adapter 風險高）：
+
 - 產出完整實作 spec：`docs/superpowers/specs/2026-09-13-compare-staking-design.md`
 - 加 Demo H prompt（$10K 問題作為誠實 fail-closed demo 素材）
 - 研究報告：`docs/reviews/2026-09-13-staking-analysis-thegraph-depth.md`

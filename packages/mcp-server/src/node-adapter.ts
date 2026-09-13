@@ -1,5 +1,5 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
-import { Readable } from "node:stream";
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { Readable } from 'node:stream';
 
 /**
  * Adapter between Node's `IncomingMessage`/`ServerResponse` and the Web
@@ -13,7 +13,7 @@ import { Readable } from "node:stream";
 
 /** Build a Web `Request` from a Node request, resolving relative URLs against `base`. */
 export function toWebRequest(req: IncomingMessage, base: string): Request {
-  const url = new URL(req.url ?? "/", base);
+  const url = new URL(req.url ?? '/', base);
 
   const headers = new Headers();
   for (const [key, value] of Object.entries(req.headers)) {
@@ -24,20 +24,17 @@ export function toWebRequest(req: IncomingMessage, base: string): Request {
     }
   }
 
-  const init: RequestInit = { method: req.method ?? "GET", headers };
-  if (req.method !== "GET" && req.method !== "HEAD") {
+  const init: RequestInit = { method: req.method ?? 'GET', headers };
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
     init.body = Readable.toWeb(req) as ReadableStream;
     // Node requires an explicit duplex mode when the body is a stream.
-    (init as RequestInit & { duplex: "half" }).duplex = "half";
+    (init as RequestInit & { duplex: 'half' }).duplex = 'half';
   }
   return new Request(url, init);
 }
 
 /** Write a Web `Response` back to a Node response. */
-export async function writeWebResponse(
-  response: Response,
-  res: ServerResponse
-): Promise<void> {
+export async function writeWebResponse(response: Response, res: ServerResponse): Promise<void> {
   res.statusCode = response.status;
   response.headers.forEach((value, key) => res.setHeader(key, value));
   if (response.body) {

@@ -11,6 +11,7 @@
 ## 已知事實（DISCOVER 完成）
 
 ### 已完成功能（含 commit）
+
 - **compare_markets**（John Ku 早期 + 完整測試）— MCP tool
 - **research_brief**（74b80e9）— cited brief，live 驗證
 - **demo CLI**（dc87dcd）— `npm run demo` / `demo:live`
@@ -20,10 +21,12 @@
 - **smith review**（e208658）— 93.15 PASS, 修復 M1/M2/A4
 
 ### 測試驗證
+
 - 16 tests ✅ / build ✅ / demo ✅
 - Live 3-source: Compound 4.86% / Aave 3.62% / Spark 3.54%（block 25932799）
 
 ### 待辦（今晚 johnku2011 可接手）
+
 - **Grok Orchestrator**（Phase 1b）— 最高價值，可用 Ollama 本地開發 或 真 Grok（需 XAI key）
 - Phase 3: README 升級 + showcase
 - Phase 4: demo video + submit
@@ -31,6 +34,7 @@
 ## Iterations
 
 ### Iteration 1 (2026-09-08) — Handoff + Progress Docs
+
 - **HANDOFF.md** 重寫：給 johnku2011 的今晚甩手文檔（今日完成 10 項開發 + Phase 進度 + Grok Orchestrator 指引 + 環境/指令/紀律）
 - **product-overview** 更新：live 3-source 驗證、v1.0 scope 擴充
 - **engineering-spec** 更新：進度 banner、§5.4 3-source 證據、v1.3
@@ -38,5 +42,6 @@
 - **Commits**: e6402ce (handoff), f8b8bc9 (progress docs)
 
 ## Circuit Breaker Status
+
 - 連續失敗: 0
 - 交付：HANDOFF.md + 3 份進度文檔已更新，johnku2011 可接手

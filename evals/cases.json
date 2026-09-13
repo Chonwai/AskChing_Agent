@@ -138,12 +138,7 @@
     "input": {
       "metric": "supply_apy",
       "asset": "USDC",
-      "protocols": [
-        "aave-v3",
-        "compound-v3",
-        "spark-lend",
-        "aave-v2"
-      ]
+      "protocols": ["aave-v3", "compound-v3", "spark-lend", "aave-v2"]
     }
   },
   {

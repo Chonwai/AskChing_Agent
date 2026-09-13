@@ -9,13 +9,13 @@
 
 ## 0. 搜尋資料來源（ui-ux-pro-max，本地設計資料庫）
 
-| Query | Domain | 結果 | 用途 |
-| --- | --- | --- | --- |
-| `cyberpunk matrix sci-fi dark crypto` | `--design-system` | **HUD / Sci-Fi FUI**（Immersive/Interactive Experience pattern） | 整體骨架：主色板、卡、HUD 氛圍、pre-delivery checklist |
-| `matrix digital rain neon glow terminal` | `--domain style` | **cyberpunk-ui**（#00FF00 / #FF00FF / #00FFFF / #0D0D0D）、**retro-futurism**、**dark-mode-oled** | Matrix 色板、scanlines / glitch / neon glow 效果、implementation checklist |
-| `web3 crypto blockchain landing page` | `--domain web` | **0 結果（兩次重試）** — 資料庫無 landing 模式，**無 verified match** | 依 adapter 規則改採 general guidance：沉浸式 hero + 任務導向 CTA + 細線繪製 |
-| `sci-fi display terminal mono pairing` | `--domain typography` | **Terminal CLI Monospace**（JetBrains Mono 單家族）、**Cyberpunk Mobile**（Orbitron + JetBrains Mono） | 字體策略：monospace-only；無 CDN 限制下以系統 mono 實作 |
-| `degen crypto neon terminal green` | `--domain color` | **Coding Bootcamp — "Terminal dark + success green"**（#020617 / #22C55E）、**Fintech/Crypto — gold + purple** | 綠色 terminal 色板對照、對比度驗證基準 |
+| Query                                    | Domain                | 結果                                                                                                           | 用途                                                                        |
+| ---------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `cyberpunk matrix sci-fi dark crypto`    | `--design-system`     | **HUD / Sci-Fi FUI**（Immersive/Interactive Experience pattern）                                               | 整體骨架：主色板、卡、HUD 氛圍、pre-delivery checklist                      |
+| `matrix digital rain neon glow terminal` | `--domain style`      | **cyberpunk-ui**（#00FF00 / #FF00FF / #00FFFF / #0D0D0D）、**retro-futurism**、**dark-mode-oled**              | Matrix 色板、scanlines / glitch / neon glow 效果、implementation checklist  |
+| `web3 crypto blockchain landing page`    | `--domain web`        | **0 結果（兩次重試）** — 資料庫無 landing 模式，**無 verified match**                                          | 依 adapter 規則改採 general guidance：沉浸式 hero + 任務導向 CTA + 細線繪製 |
+| `sci-fi display terminal mono pairing`   | `--domain typography` | **Terminal CLI Monospace**（JetBrains Mono 單家族）、**Cyberpunk Mobile**（Orbitron + JetBrains Mono）         | 字體策略：monospace-only；無 CDN 限制下以系統 mono 實作                     |
+| `degen crypto neon terminal green`       | `--domain color`      | **Coding Bootcamp — "Terminal dark + success green"**（#020617 / #22C55E）、**Fintech/Crypto — gold + purple** | 綠色 terminal 色板對照、對比度驗證基準                                      |
 
 ### 合成後的方向決策
 
@@ -36,42 +36,42 @@
   color-scheme: dark;
 
   /* 基底（帶藍綠的近黑，避免死黑） */
-  --bg:        #05070a;   /* 頁面背景 */
-  --bg-deep:   #020304;   /* 終端窗 / 最深層 */
-  --panel:     #0a100e;   /* 卡片，帶綠調 */
-  --panel-2:   #0d1713;   /* 卡片 hover / 輸入區 */
-  --border:    #1d2b24;   /* 細網格線 */
-  --border-glow:#1f8a5a;  /* 聚焦 / hover 邊框的光 */
+  --bg: #05070a; /* 頁面背景 */
+  --bg-deep: #020304; /* 終端窗 / 最深層 */
+  --panel: #0a100e; /* 卡片，帶綠調 */
+  --panel-2: #0d1713; /* 卡片 hover / 輸入區 */
+  --border: #1d2b24; /* 細網格線 */
+  --border-glow: #1f8a5a; /* 聚焦 / hover 邊框的光 */
 
   /* 文字（對比度 ≥ 4.5:1，主文 ≥ 7:1） */
-  --text:      #dcf3e5;   /* 主文字 vs --bg ≈ 15:1 */
-  --muted:     #8aa79a;   /* 次要文字 vs --bg ≈ 6.9:1 */
-  --faint:     #5c7368;   /* 極弱標籤（僅限非必要資訊） */
+  --text: #dcf3e5; /* 主文字 vs --bg ≈ 15:1 */
+  --muted: #8aa79a; /* 次要文字 vs --bg ≈ 6.9:1 */
+  --faint: #5c7368; /* 極弱標籤（僅限非必要資訊） */
 
   /* Matrix 綠家族（調和版） */
-  --green:     #3df59a;   /* 主 accent，大標/連結/成功 */
-  --green-dim: #21b977;   /* 靜態 code / 次要 */
-  --green-faint:#0f4a33;  /* 大面積底光、rain 暗流（不可做文字色） */
+  --green: #3df59a; /* 主 accent，大標/連結/成功 */
+  --green-dim: #21b977; /* 靜態 code / 次要 */
+  --green-faint: #0f4a33; /* 大面積底光、rain 暗流（不可做文字色） */
 
   /* 次 accent（資料/協議語意色） */
-  --cyan:      #35d6ff;   /* The Graph 資料節點、鏈接、subgraph id */
-  --magenta:   #ff5aa0;   /* 風險、警示、">" 輸入 prompt（小面積） */
-  --warn:      #ffc857;   /* 既有 warn（cannot cite 之拒答語意） */
-  --red:       #ff6b6b;   /* 405 / 錯誤輸出 */
+  --cyan: #35d6ff; /* The Graph 資料節點、鏈接、subgraph id */
+  --magenta: #ff5aa0; /* 風險、警示、">" 輸入 prompt（小面積） */
+  --warn: #ffc857; /* 既有 warn（cannot cite 之拒答語意） */
+  --red: #ff6b6b; /* 405 / 錯誤輸出 */
 }
 ```
 
 **對比度驗證（APCA 精神 / WCAG 2.2）**：
 
-| 使用 | 前景 | 背景 | 對比 | 通過 |
-| --- | --- | --- | --- | --- |
-| body 主文字 | `#dcf3e5` | `#05070a` | ≈15:1 | ✅ AAA |
-| muted 文字 | `#8aa79a` | `#05070a` | ≈6.9:1 | ✅ AAA |
-| 綠連結 / code | `#3df59a` | `#05070a` | ≈11:1 | ✅ AAA |
+| 使用            | 前景      | 背景      | 對比   | 通過   |
+| --------------- | --------- | --------- | ------ | ------ |
+| body 主文字     | `#dcf3e5` | `#05070a` | ≈15:1  | ✅ AAA |
+| muted 文字      | `#8aa79a` | `#05070a` | ≈6.9:1 | ✅ AAA |
+| 綠連結 / code   | `#3df59a` | `#05070a` | ≈11:1  | ✅ AAA |
 | 綠 code（較小） | `#21b977` | `#0a100e` | ≈7.5:1 | ✅ AAA |
-| cyan 資料元素 | `#35d6ff` | `#05070a` | ≈10:1 | ✅ AAA |
-| magenta prompt | `#ff5aa0` | `#0a100e` | ≈6:1 | ✅ AA |
-| panel 內 muted | `#8aa79a` | `#0a100e` | ≈5.8:1 | ✅ AA |
+| cyan 資料元素   | `#35d6ff` | `#05070a` | ≈10:1  | ✅ AAA |
+| magenta prompt  | `#ff5aa0` | `#0a100e` | ≈6:1   | ✅ AA  |
+| panel 內 muted  | `#8aa79a` | `#0a100e` | ≈5.8:1 | ✅ AA  |
 
 > 規則：`--green-faint` / `--bg-deep` 對比僅 ~1.8:1，**只能**當背景光暈或動畫裝飾，禁止承載文字。
 
@@ -85,16 +85,16 @@
 
 ### 1.3 視覺元素清單（對應 HUD checklist）
 
-| 元素 | 用途 | 實作 |
-| --- | --- | --- |
-| Matrix 數位雨 | 沉浸背景（hero 區） | Canvas A（見 §3） |
-| Data nodes 網絡 | The Graph 語意背景 | Canvas B（見 §4） |
-| Scanlines overlay | CRT 深度 | `body::after` repeating-linear-gradient，opacity ≤ .05 |
-| Vignette | 聚焦中央內容 | `body::before` radial-gradient |
-| 角標 / 切角 | HUD 技術感 | `clip-path: polygon(...)` 於卡片角 |
-| `▮` blink cursor | Terminal 互動 | `@keyframes blink` + `prefers-reduced-motion` 關閉 |
-| Glitch（極輕量） | H1 一瞬 | 僅 hover 或 2s 一次 60ms skew，避免閱讀干擾 |
-| Block height 標籤 | 每個 section 前 | 如 `BLK 21,784,325 · SUBGRAPH 0x…` 靜態文案 + `--cyan` |
+| 元素              | 用途                | 實作                                                   |
+| ----------------- | ------------------- | ------------------------------------------------------ |
+| Matrix 數位雨     | 沉浸背景（hero 區） | Canvas A（見 §3）                                      |
+| Data nodes 網絡   | The Graph 語意背景  | Canvas B（見 §4）                                      |
+| Scanlines overlay | CRT 深度            | `body::after` repeating-linear-gradient，opacity ≤ .05 |
+| Vignette          | 聚焦中央內容        | `body::before` radial-gradient                         |
+| 角標 / 切角       | HUD 技術感          | `clip-path: polygon(...)` 於卡片角                     |
+| `▮` blink cursor  | Terminal 互動       | `@keyframes blink` + `prefers-reduced-motion` 關閉     |
+| Glitch（極輕量）  | H1 一瞬             | 僅 hover 或 2s 一次 60ms skew，避免閱讀干擾            |
+| Block height 標籤 | 每個 section 前     | 如 `BLK 21,784,325 · SUBGRAPH 0x…` 靜態文案 + `--cyan` |
 
 ---
 
@@ -131,8 +131,10 @@ flowchart TB
 const rain = (() => {
   const canvas = document.getElementById('rain');
   const ctx = canvas.getContext('2d');
-  const GREEN = 'rgba(61,245,154,';   // 調和綠，非純 00FF00
-  let cols = 0, drops = [], fs = 14;
+  const GREEN = 'rgba(61,245,154,'; // 調和綠，非純 00FF00
+  let cols = 0,
+    drops = [],
+    fs = 14;
 
   function resize() {
     const { devicePixelRatio: dpr } = window;
@@ -146,12 +148,13 @@ const rain = (() => {
   }
 
   function tick() {
-    ctx.fillStyle = 'rgba(5,7,10,0.08)';   // 拖尾殘影（非全清除，成本低）
+    ctx.fillStyle = 'rgba(5,7,10,0.08)'; // 拖尾殘影（非全清除，成本低）
     ctx.fillRect(0, 0, innerWidth, innerHeight);
     ctx.font = fs + 'px ui-monospace, Menlo, monospace';
     for (let i = 0; i < cols; i++) {
-      const ch = String.fromCharCode(0x30A0 + Math.random() * 96); // katakana 感
-      const x = i * fs, y = drops[i] * fs;
+      const ch = String.fromCharCode(0x30a0 + Math.random() * 96); // katakana 感
+      const x = i * fs,
+        y = drops[i] * fs;
       ctx.fillStyle = GREEN + (y / innerHeight).toFixed(2) + ')'; // 越底越淡
       ctx.fillText(ch, x, y);
       if (y > innerHeight && Math.random() > 0.975) drops[i] = 0;
@@ -171,6 +174,7 @@ const rain = (() => {
 ```
 
 **效能與可及性規則**：
+
 - `prefers-reduced-motion: reduce` → 不啟動 rAF，只畫 1–2 幀靜止暗影（綠色 opacity ≤ 0.15）。
 - `document.hidden` / `IntersectionObserver`（hero 離開視窗）→ 暫停 rAF。
 - 每幀只 `fillText`（無 shadowBlur — shadowBlur 是 canvas 效能殺手）；glow 由 CSS 在**靜態元素**上做。
@@ -210,30 +214,30 @@ const rain = (() => {
 
 ## 5. 保持內容完整（sections 對照）
 
-| 既有 section | 重設計後 | 內容差異 |
-| --- | --- | --- |
-| H1 + tagline + lead | Hero（rain 背景）+ 證據鏈帶 | 文案**原封不動**（含 "If it cannot cite at least two sources, it refuses to answer." 加粗） |
-| Six tools | 6-卡網格（2 欄，mobile 1 欄） | 每卡：`tool_id`（綠）、描述（muted）、語意色 dot（compare=cyan, trends=green, risk=magenta…） |
-| Try it now | 互動 terminal 窗 | 3 個範例問題全部保留 + 拒答範例行保留；新增一鍵複製 |
-| Connect any MCP client | 終端窗 config JSON + tabs 式 client 註記 | JSON 內容不變；VS Code/Codex/Gemini/stdio 註記全部保留 |
-| Health | curl + 即時 status 燈 | curl 內容不變；`"live":true` 以綠燈 + 呼吸效果呈現 |
-| Endpoints | 3 行 method/path 表格化 | 3 個端點 + 405 note 全部保留 |
-| footer | 保留 disclaimer 全文 | 加 1px 上邊框 + faint 色 |
+| 既有 section           | 重設計後                                 | 內容差異                                                                                      |
+| ---------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------- |
+| H1 + tagline + lead    | Hero（rain 背景）+ 證據鏈帶              | 文案**原封不動**（含 "If it cannot cite at least two sources, it refuses to answer." 加粗）   |
+| Six tools              | 6-卡網格（2 欄，mobile 1 欄）            | 每卡：`tool_id`（綠）、描述（muted）、語意色 dot（compare=cyan, trends=green, risk=magenta…） |
+| Try it now             | 互動 terminal 窗                         | 3 個範例問題全部保留 + 拒答範例行保留；新增一鍵複製                                           |
+| Connect any MCP client | 終端窗 config JSON + tabs 式 client 註記 | JSON 內容不變；VS Code/Codex/Gemini/stdio 註記全部保留                                        |
+| Health                 | curl + 即時 status 燈                    | curl 內容不變；`"live":true` 以綠燈 + 呼吸效果呈現                                            |
+| Endpoints              | 3 行 method/path 表格化                  | 3 個端點 + 405 note 全部保留                                                                  |
+| footer                 | 保留 disclaimer 全文                     | 加 1px 上邊框 + faint 色                                                                      |
 
 ---
 
 ## 6. 可及性（WCAG 2.2）
 
-| 項目 | 做法 |
-| --- | --- |
-| 對比度 | 見 §1.1 表 — 主文 AAA、次要 AA，禁用 `--green-faint` 承載文字 |
-| 鍵盤 | `:focus-visible` 2px `--green` 外框 + 1px 內部 dark gap；所有互動元素（copy 按鈕）是可 focus 的 `<button>` |
-| Reduced motion | 單一 media query 關閉 rain / nodes / blink / 脈衝 / glitch；靜止裝飾以低 opacity 保留 |
-| 光敏性 | 掃描線 ≤0.05、無大面積紅閃爍、glitch 僅 hover 才觸發 |
-| 語意 | `<main>`、section 標題 `<h1>…<h2>` 階層不變；新增元素不加非語意 div 海 |
-| 字體 | body ≥16px；code 14px 以上；`pre` 水平捲動保留 |
-| 鍵盤複製 | copy 按鈕用 `<button aria-label="Copy config">`，成功時 `aria-live="polite"` 輸出 "copied" |
-| 游標 | blink cursor 用 `opacity` 動畫而非 `display:none`（AT 不會誤讀） |
+| 項目           | 做法                                                                                                       |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| 對比度         | 見 §1.1 表 — 主文 AAA、次要 AA，禁用 `--green-faint` 承載文字                                              |
+| 鍵盤           | `:focus-visible` 2px `--green` 外框 + 1px 內部 dark gap；所有互動元素（copy 按鈕）是可 focus 的 `<button>` |
+| Reduced motion | 單一 media query 關閉 rain / nodes / blink / 脈衝 / glitch；靜止裝飾以低 opacity 保留                      |
+| 光敏性         | 掃描線 ≤0.05、無大面積紅閃爍、glitch 僅 hover 才觸發                                                       |
+| 語意           | `<main>`、section 標題 `<h1>…<h2>` 階層不變；新增元素不加非語意 div 海                                     |
+| 字體           | body ≥16px；code 14px 以上；`pre` 水平捲動保留                                                             |
+| 鍵盤複製       | copy 按鈕用 `<button aria-label="Copy config">`，成功時 `aria-live="polite"` 輸出 "copied"                 |
+| 游標           | blink cursor 用 `opacity` 動畫而非 `display:none`（AT 不會誤讀）                                           |
 
 **鍵盤動畫守則**：所有「持續閃爍」元素（cursor、status 燈）在 `prefers-reduced-motion` 下轉為靜態高亮而非閃爍。
 
@@ -257,23 +261,55 @@ const rain = (() => {
 ```css
 /* scanlines + vignette（body::before/::after） */
 body::after {
-  content: "";
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background: repeating-linear-gradient(
-    0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+    0deg,
+    rgba(255, 255, 255, 0.025) 0 1px,
+    transparent 1px 3px
+  );
 }
 
 /* blink cursor（reduced-motion 下靜態） */
-@keyframes blink { 0%,55% { opacity: 1 } 56%,100% { opacity: 0 } }
-.cursor { animation: blink 1.1s steps(1) infinite; }
-@media (prefers-reduced-motion: reduce) { .cursor { animation: none; opacity: .8 } }
+@keyframes blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+.cursor {
+  animation: blink 1.1s steps(1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor {
+    animation: none;
+    opacity: 0.8;
+  }
+}
 
 /* HUD corner clip */
 .corner {
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px,
-                     100% 100%, 14px 100%, 0 calc(100% - 14px));
+  clip-path: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% 100%,
+    14px 100%,
+    0 calc(100% - 14px)
+  );
 }
 
 /* neon text（僅 H1 與 section 標籤） */
-.glow-green { text-shadow: 0 0 18px rgba(61,245,154,.4), 0 0 2px rgba(61,245,154,.6); }
+.glow-green {
+  text-shadow:
+    0 0 18px rgba(61, 245, 154, 0.4),
+    0 0 2px rgba(61, 245, 154, 0.6);
+}
 ```

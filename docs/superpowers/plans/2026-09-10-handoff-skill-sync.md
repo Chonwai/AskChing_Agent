@@ -6,11 +6,11 @@
 
 ## 📋 文檔目錄
 
-| 文檔編號 | 文檔名稱 | 範圍 | 預估工時 | 狀態 |
-| -------- | -------- | ---- | -------- | ---- |
-| 00 | 本方案 | HANDOFF 更新 + SKILL 同步 + commit 計畫 | — | 📋 規劃中 |
-| §HANDOFF | [HANDOFF.md 完整草稿](#handoffmd-完整草稿) | 可直接 copy 的 final content | ~1 hr | ✍️ 草稿完成 |
-| §B | [Skill 同步命令](#b-skill-同步方案) | 確切 shell 命令 + 驗證 | ~10 min | ⬜ 待執行 |
+| 文檔編號 | 文檔名稱                                   | 範圍                                    | 預估工時 | 狀態        |
+| -------- | ------------------------------------------ | --------------------------------------- | -------- | ----------- |
+| 00       | 本方案                                     | HANDOFF 更新 + SKILL 同步 + commit 計畫 | —        | 📋 規劃中   |
+| §HANDOFF | [HANDOFF.md 完整草稿](#handoffmd-完整草稿) | 可直接 copy 的 final content            | ~1 hr    | ✍️ 草稿完成 |
+| §B       | [Skill 同步命令](#b-skill-同步方案)        | 確切 shell 命令 + 驗證                  | ~10 min  | ⬜ 待執行   |
 
 **總預估工時**: 約 1.5–2 小時（含 commit + 驗證）
 
@@ -28,12 +28,12 @@
 
 ### 核心決策
 
-| 決策點 | 選擇 | 理由 |
-| ----- | ---- | ---- |
-| HANDOFF 格式 | 沿用既有骨架 + 輕量 YAML frontmatter | Neo DISCOVER 確認最佳格式；維持 John 已熟悉的結構，frontmatter 讓工具可快速 parse |
-| 全局同步方式 | **symlink**（非 copy） | 單一真相來源：改 repo 即生效、零 drift、無需 sync script 基礎設施（本 repo 無 sync script 文化）；`~/.agents/skills/` 為 Cursor/Gemini/Copilot 官方全域路徑 |
-| Codex 覆蓋 | 條件式 copy（僅 Codex 用戶需要） | Codex 明文跳過 symlink；John 若用 Codex 才需 copy |
-| Commit 拆分 | 3 commits（hackathon 風格） | 與 repo 既有 commit 慣例一致（`docs(handoff):` / `chore(skill):` / `chore(state):`） |
+| 決策點       | 選擇                                 | 理由                                                                                                                                                        |
+| ------------ | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HANDOFF 格式 | 沿用既有骨架 + 輕量 YAML frontmatter | Neo DISCOVER 確認最佳格式；維持 John 已熟悉的結構，frontmatter 讓工具可快速 parse                                                                           |
+| 全局同步方式 | **symlink**（非 copy）               | 單一真相來源：改 repo 即生效、零 drift、無需 sync script 基礎設施（本 repo 無 sync script 文化）；`~/.agents/skills/` 為 Cursor/Gemini/Copilot 官方全域路徑 |
+| Codex 覆蓋   | 條件式 copy（僅 Codex 用戶需要）     | Codex 明文跳過 symlink；John 若用 Codex 才需 copy                                                                                                           |
+| Commit 拆分  | 3 commits（hackathon 風格）          | 與 repo 既有 commit 慣例一致（`docs(handoff):` / `chore(skill):` / `chore(state):`）                                                                        |
 
 ### Mermaid：HANDOFF 更新 + SKILL 同步流程
 
@@ -68,9 +68,9 @@ flowchart LR
 
 ### 設計模式決策
 
-| Layer | Pattern | Signal | Scope | Effort Impact |
-| ----- | ------- | ------ | ----- | ------------- |
-| SKILL 部署 | 無（symlink 非 pattern） | — | — | — |
+| Layer      | Pattern                  | Signal | Scope | Effort Impact |
+| ---------- | ------------------------ | ------ | ----- | ------------- |
+| SKILL 部署 | 無（symlink 非 pattern） | —      | —     | —             |
 
 **當前需求複雜度不需要額外設計模式。** 不引進 sync script / 抽象複製層——symlink 即滿足單一真相需求，anti-overengineering。
 
@@ -78,42 +78,46 @@ flowchart LR
 
 ## 三、影響範圍分析
 
-| 檔案/路徑 | 動作 | 影響 |
-| --------- | ---- | ---- |
-| `HANDOFF.md` | 更新（重寫草稿） | John 接手依據，git-tracked |
-| `docs/superpowers/plans/2026-09-10-handoff-skill-sync.md` | 建立（本方案） | git-tracked |
-| `.edison/state/loop-handoff-update.md` | 加入 C3 commit | 目前 untracked，loop state 慣例 |
-| `~/.agents/skills/askching` | `ln -s` 建立 | OS 層，不入 git |
-| `~/.claude/skills/askching` | `mkdir -p` + `ln -s` 建立 | OS 層，不入 git |
-| `skills/askching/SKILL.md` | 不變（真相來源） | 無 |
+| 檔案/路徑                                                 | 動作                      | 影響                            |
+| --------------------------------------------------------- | ------------------------- | ------------------------------- |
+| `HANDOFF.md`                                              | 更新（重寫草稿）          | John 接手依據，git-tracked      |
+| `docs/superpowers/plans/2026-09-10-handoff-skill-sync.md` | 建立（本方案）            | git-tracked                     |
+| `.edison/state/loop-handoff-update.md`                    | 加入 C3 commit            | 目前 untracked，loop state 慣例 |
+| `~/.agents/skills/askching`                               | `ln -s` 建立              | OS 層，不入 git                 |
+| `~/.claude/skills/askching`                               | `mkdir -p` + `ln -s` 建立 | OS 層，不入 git                 |
+| `skills/askching/SKILL.md`                                | 不變（真相來源）          | 無                              |
 
 **不在範圍**：SKILL.md 內容修改、sync script 建立、Codex copy（條件式）、其他 skills 同步。
 
 ## 四、風險分析與緩解
 
-| 風險 | 嚴重度 | 緩解 |
-| ---- | :----: | ---- |
-| 編造 subgraph IDs / commit hashes / 驗證數字 | High | 本方案所有數字均來自已驗證事實（git log、任務背景、session memory）；HANDOFF 不列 subgraph IDs，指向 `packages/shared/src/source-config.ts` 為真相 |
-| symlink 指向 repo 絕對路徑，repo 移動會斷 | Medium | HANDOFF Skills section 註明；`ln -sfn` 可重建 |
-| Windows clone 隊友 symlink 失效 | Low | 本專案隊友皆 macOS；HANDOFF 註明 `core.symlinks=true` 需求 |
-| 重複執行同步命令產生 nested symlink | Low | 使用 `ln -sfn`（先刪後建，冪等） |
-| John 用 Codex 讀不到 symlink | Medium | 條件式 copy section 標明 |
-| HANDOFF 超過 600 行甜蜜點 | Low | 控制草稿 ~180 行；歷史 commits 精簡為摘要表 |
+| 風險                                         | 嚴重度 | 緩解                                                                                                                                               |
+| -------------------------------------------- | :----: | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 編造 subgraph IDs / commit hashes / 驗證數字 |  High  | 本方案所有數字均來自已驗證事實（git log、任務背景、session memory）；HANDOFF 不列 subgraph IDs，指向 `packages/shared/src/source-config.ts` 為真相 |
+| symlink 指向 repo 絕對路徑，repo 移動會斷    | Medium | HANDOFF Skills section 註明；`ln -sfn` 可重建                                                                                                      |
+| Windows clone 隊友 symlink 失效              |  Low   | 本專案隊友皆 macOS；HANDOFF 註明 `core.symlinks=true` 需求                                                                                         |
+| 重複執行同步命令產生 nested symlink          |  Low   | 使用 `ln -sfn`（先刪後建，冪等）                                                                                                                   |
+| John 用 Codex 讀不到 symlink                 | Medium | 條件式 copy section 標明                                                                                                                           |
+| HANDOFF 超過 600 行甜蜜點                    |  Low   | 控制草稿 ~180 行；歷史 commits 精簡為摘要表                                                                                                        |
 
 ## 五、開發階段規劃
 
 ### Phase 1：寫入方案文件（本次交付 ✅）
+
 本文件建立完成。
 
 ### Phase 2：執行 HANDOFF 更新
+
 1. 用 §HANDOFF 草稿覆寫 `HANDOFF.md`。
 2. `pnpm test` 不受影響（無代碼變更），確認 git diff 僅含 HANDOFF.md。
 
 ### Phase 3：執行 Skill 全局同步（§B 命令）
+
 1. 依序執行 §B 命令。
 2. 執行驗證命令（`ls -la` / `readlink` / `cat SKILL.md head`）。
 
 ### Phase 4：Commit（§C 計畫）
+
 1. `git add HANDOFF.md` → commit C1。
 2. （可選）文件說明變更 → commit C2。
 3. `git add` state + plan 文件 → commit C3。
@@ -133,7 +137,7 @@ flowchart LR
 
 > 以下為 `HANDOFF.md` 的 final content。英文、沿用既有骨架、控制行數（~180 行，在 300-600 甜蜜點內）、細節用連結。
 
-```markdown
+````markdown
 ---
 title: AskChing handoff
 updated: 2026-09-10
@@ -204,6 +208,7 @@ pnpm eval  -> 16/16 passed
 pnpm build -> all 3 workspace packages built successfully
 pnpm mcp:smoke -> OK (3 tools)
 ```
+````
 
 Code review: VERIFY PASS 95/100 (strict 93). Remaining out-of-scope Medium from that review: the `~/.agents` + `~/.claude` SKILL copies were not yet synced — now addressed by the "Skills location" section below.
 
@@ -266,7 +271,8 @@ Do not claim recording or submission is complete until John confirms it.
 - `packages/shared/src/source-config.ts` — protocol registry (subgraph IDs, live flags)
 - `packages/shared/src/metrics.ts` — metric registry (definitions, legacy aliases)
 - `skills/askching/SKILL.md` — agent evidence rules
-```
+
+````
 
 ---
 
@@ -277,7 +283,7 @@ Do not claim recording or submission is complete until John confirms it.
 ```text
 ~/.agents/skills/askching   → <repo>/skills/askching
 ~/.claude/skills/askching   → <repo>/skills/askching
-```
+````
 
 repo 絕對路徑：`/Users/chonwai/Desktop/Self/Lab/AskChing_Agent/skills/askching`
 
@@ -307,6 +313,7 @@ echo "=== SKILL.md head ===" && head -6 ~/.agents/skills/askching/SKILL.md && ec
 ```
 
 預期輸出：
+
 - `ls -la` 顯示 `askching -> /Users/chonwai/Desktop/Self/Lab/AskChing_Agent/skills/askching`
 - `readlink` 回傳完整目標路徑
 - `head` 顯示 SKILL.md frontmatter（`---` / `name: askching` / `version: 0.1.0`）
@@ -325,11 +332,11 @@ cp -R "$REPO_SKILL" ~/.codex/skills/askching
 
 ### B.5 風險註記
 
-| 風險 | 說明 | 緩解 |
-| ---- | ---- | ---- |
-| repo 路徑移動 | 絕對路徑 symlink 斷裂 | HANDOFF Skills section 已註明重建命令 |
-| 重複執行 | nested symlink | `ln -sfn` 冪等 |
-| Windows clone | 隊友 symlink 失效 | 本專案隊友皆 macOS；HANDOFF 註明 `core.symlinks=true` |
+| 風險          | 說明                  | 緩解                                                  |
+| ------------- | --------------------- | ----------------------------------------------------- |
+| repo 路徑移動 | 絕對路徑 symlink 斷裂 | HANDOFF Skills section 已註明重建命令                 |
+| 重複執行      | nested symlink        | `ln -sfn` 冪等                                        |
+| Windows clone | 隊友 symlink 失效     | 本專案隊友皆 macOS；HANDOFF 註明 `core.symlinks=true` |
 
 ---
 
@@ -359,6 +366,7 @@ chore(state): handoff-skill-sync loop complete — VERIFY PASS <依實際結果>
 ```
 
 範圍：`.edison/state/loop-handoff-update.md` + `docs/superpowers/plans/2026-09-10-handoff-skill-sync.md`。
+
 > VERIFY 分數以實際 review gate 結果填寫，**不可預先編造**。
 
 ### C4 — Push
@@ -382,15 +390,15 @@ git push origin main
 
 ### Self-Audit 分數卡
 
-| 維度 | 權重 | 分數 | 評註 |
-| ---- | :--: | :--: | ---- |
-| DR-D1 需求完整性 | 20% | 95 | 兩交付物（HANDOFF 草稿 + 同步方案 + commit 計畫）全覆蓋；deadline 明細含 4.1/4.2/4.3/4.5/4.6 |
-| DR-D2 技術可行性 | 20% | 95 | 命令經 `ln -sfn` 冪等設計；`~/.claude/skills` 不存在已實測確認 |
-| DR-D3 架構一致性 | 15% | 95 | symlink 與 repo 既有模式一致（b5bd31b）；HANDOFF 沿用既有骨架 |
-| DR-D4 安全性 | 15% | 90 | Credential 原則維持；無新憑證暴露面；Codex copy 條件式標明 |
-| DR-D5 效能與規模 | 15% | 90 | 無效能議題（文件/OS 層操作）；HANDOFF 控制在 600 行內 |
-| DR-D6 文件完整性 | 15% | 92 | Mermaid 圖正確；命令可複製執行；HANDOFF 草稿可直接 copy |
-| **總分** | | **93** | ≥ 90 threshold（strict 93）✅ |
+| 維度             | 權重 |  分數  | 評註                                                                                         |
+| ---------------- | :--: | :----: | -------------------------------------------------------------------------------------------- |
+| DR-D1 需求完整性 | 20%  |   95   | 兩交付物（HANDOFF 草稿 + 同步方案 + commit 計畫）全覆蓋；deadline 明細含 4.1/4.2/4.3/4.5/4.6 |
+| DR-D2 技術可行性 | 20%  |   95   | 命令經 `ln -sfn` 冪等設計；`~/.claude/skills` 不存在已實測確認                               |
+| DR-D3 架構一致性 | 15%  |   95   | symlink 與 repo 既有模式一致（b5bd31b）；HANDOFF 沿用既有骨架                                |
+| DR-D4 安全性     | 15%  |   90   | Credential 原則維持；無新憑證暴露面；Codex copy 條件式標明                                   |
+| DR-D5 效能與規模 | 15%  |   90   | 無效能議題（文件/OS 層操作）；HANDOFF 控制在 600 行內                                        |
+| DR-D6 文件完整性 | 15%  |   92   | Mermaid 圖正確；命令可複製執行；HANDOFF 草稿可直接 copy                                      |
+| **總分**         |      | **93** | ≥ 90 threshold（strict 93）✅                                                                |
 
 ### Self-Audit Artefact
 
@@ -424,8 +432,8 @@ git push origin main
 
 ## 十、需交由 review skill 再審的項目
 
-| 項目 | 類型 | 說明 |
-| ---- | ---- | ---- |
-| C3 VERIFY 分數 | Open | 執行後以實際結果填寫 |
+| 項目             | 類型       | 說明                            |
+| ---------------- | ---------- | ------------------------------- |
+| C3 VERIFY 分數   | Open       | 執行後以實際結果填寫            |
 | HANDOFF 草稿實讀 | Assumption | 建議 John 實讀確認無誤後再 push |
-| Codex 使用與否 | Assumption | 影響 C2 範圍與 B.4 是否執行 |
+| Codex 使用與否   | Assumption | 影響 C2 範圍與 B.4 是否執行     |

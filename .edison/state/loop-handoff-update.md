@@ -10,10 +10,10 @@ Depth Level: L3 Deep Dive
 
 | Stage                | Current Round | Max Rounds (Stop Rule) | Status  |
 | -------------------- | :-----------: | :--------------------: | ------- |
-| DISCOVER (research)  |       0       |          2             | pending |
-| PLAN (architecture)  |       0       |          2             | pending |
-| EXECUTE (dev)        |       0       |          3             | pending |
-| VERIFY (code-review) |       0       |          2 (strict)    | pending |
+| DISCOVER (research)  |       0       |           2            | pending |
+| PLAN (architecture)  |       0       |           2            | pending |
+| EXECUTE (dev)        |       0       |           3            | pending |
+| VERIFY (code-review) |       0       |       2 (strict)       | pending |
 
 ## Iterations
 
@@ -22,6 +22,7 @@ Depth Level: L3 Deep Dive
 Agent: jarvis-deep-research（研究部）
 Result: ✅ PASS — 12+ sources，交叉驗證
 Key Findings:
+
 1. repo 內 `.agents/skills/` + `.claude/skills/` symlink 是 Agent Skills 開放標準核心路徑（Claude Code/Cursor/Gemini/Copilot 皆讀）→ 隊友 clone 即用
 2. `~/.agents/skills/` 是跨工具通用全域路徑（Cursor/Gemini/Copilot 官方支援）；`~/.claude/skills/` 是 Claude Code 個人層（不存在需補建）
 3. **Codex 明文跳過 symlink** → 若要覆蓋 Codex 需真實 copy
@@ -33,6 +34,7 @@ Key Findings:
 
 Agent: architect（規劃部）
 Result: ✅ PASS — 方案文件 `docs/superpowers/plans/2026-09-10-handoff-skill-sync.md`
+
 - Self-audit DR-D1..D6 = 93/100（達 strict 93）
 - HANDOFF.md 完整草稿（§HANDOFF，~180 行，含 YAML frontmatter + 15 commits 摘要 + 泛化能力 + Skills location + Phase 4 明細）
 - Skill 同步命令（§B）：ln -sfn 建 ~/.agents/skills/askching + ~/.claude/skills/askching
@@ -42,6 +44,7 @@ Result: ✅ PASS — 方案文件 `docs/superpowers/plans/2026-09-10-handoff-ski
 
 Agent: Neo 直接執行（文件型任務；VERIFY 由 smith 審查）
 Result: ✅ PASS
+
 - HANDOFF.md 完整更新（132 行，含 YAML frontmatter / 15 commits 摘要 / 泛化能力 / Skills location / Phase 4 明細）
 - Commit 1: `815b09d` docs(handoff): reflect generalized query system for teammate handoff
 - 全局 symlink 建立：`~/.agents/skills/askching` + `~/.claude/skills/askching` → repo/skills/askching
@@ -52,6 +55,7 @@ Result: ✅ PASS
 
 Agent: smith（品管部 — 獨立審查）
 Result: ✅ PASS — Measured Score 95/100（≥93 strict）
+
 - Critical: 0 / High: 0 / Medium: 0 / Low: 2
 - L1: frontmatter checkpoint da25f8a 語義應加註（下次 handoff 處理）
 - L2: 方案文件狀態欄未更新（backlog）
@@ -61,14 +65,14 @@ Result: ✅ PASS — Measured Score 95/100（≥93 strict）
 
 ## Done Contract 驗證
 
-| 條件 | 狀態 |
-|------|------|
-| HANDOFF.md 反映泛化系統（15 commits/6 protocols/4 metrics/4 assets） | ✅ smith 逐字核對 |
-| Skills location section（in-repo symlink + 全局同步 + Codex/Windows 註記） | ✅ |
-| 全局 symlink 建立且 SKILL.md IDENTICAL | ✅ |
-| Phase 4 明細（deadline + 5 項 + 文件錨點） | ✅ |
-| VERIFY ≥ 93 (strict) | ✅ 95/100 |
-| push 到 origin | 待執行（smith 標記） |
+| 條件                                                                       | 狀態                 |
+| -------------------------------------------------------------------------- | -------------------- |
+| HANDOFF.md 反映泛化系統（15 commits/6 protocols/4 metrics/4 assets）       | ✅ smith 逐字核對    |
+| Skills location section（in-repo symlink + 全局同步 + Codex/Windows 註記） | ✅                   |
+| 全局 symlink 建立且 SKILL.md IDENTICAL                                     | ✅                   |
+| Phase 4 明細（deadline + 5 項 + 文件錨點）                                 | ✅                   |
+| VERIFY ≥ 93 (strict)                                                       | ✅ 95/100            |
+| push 到 origin                                                             | 待執行（smith 標記） |
 
 ## 最終狀態
 

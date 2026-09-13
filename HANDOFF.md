@@ -71,14 +71,14 @@ Read this box, then read §Corrections before trusting any older document.
 
 All six are registered from a single source — `packages/mcp-server/src/register.ts` — so the stdio server and the remote HTTP server cannot drift apart.
 
-| Tool | Answers | Time dimension |
-| --- | --- | --- |
-| `compare_markets` | Which protocol has the best rate right now | spot |
-| `research_brief` | A cited brief for one metric/asset | spot |
-| `risk_scan` | Peer-relative spot signals + explicit time-series gap | spot |
-| `analyze_markets` | `yield_opportunity` / `liquidity_stress` / `evidence_quality` | spot, with calculation + confidence + gaps |
-| `analyze_trends` | 7d / 30d daily history: change, changePct, least-squares slope, direction, volatility | **historical** |
-| `discover_yields` | Cross-venue USDC yield: separate lending/LP rankings, citations, risk flags | **discovery** |
+| Tool              | Answers                                                                               | Time dimension                             |
+| ----------------- | ------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `compare_markets` | Which protocol has the best rate right now                                            | spot                                       |
+| `research_brief`  | A cited brief for one metric/asset                                                    | spot                                       |
+| `risk_scan`       | Peer-relative spot signals + explicit time-series gap                                 | spot                                       |
+| `analyze_markets` | `yield_opportunity` / `liquidity_stress` / `evidence_quality`                         | spot, with calculation + confidence + gaps |
+| `analyze_trends`  | 7d / 30d daily history: change, changePct, least-squares slope, direction, volatility | **historical**                             |
+| `discover_yields` | Cross-venue USDC yield: separate lending/LP rankings, citations, risk flags           | **discovery**                              |
 
 The three-layer story the demo leans on: compare (now) → analyze (now, explained) → analyze_trends (how it got here).
 
@@ -99,12 +99,12 @@ Only `POST` is served. `GET` and `DELETE` return `405` with `Allow: POST, OPTION
 
 Verified on 2026-09-12 through the same code path the server uses. `pnpm probe:protocols` is the evidence.
 
-| Protocol | Subgraph id | Live USDC reading at verification |
-| --- | --- | --- |
-| `aave-v3` | `JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk` | supply 3.521%, utilization 91.43% |
+| Protocol      | Subgraph id                                    | Live USDC reading at verification |
+| ------------- | ---------------------------------------------- | --------------------------------- |
+| `aave-v3`     | `JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk` | supply 3.521%, utilization 91.43% |
 | `compound-v3` | `AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9` | supply 4.089%, utilization 90.27% |
-| `spark-lend` | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` | supply 3.542%, utilization 92.21% |
-| `aave-v2` | `C2zniPn45RnLDGzVeGZCx2Sw3GXrbc9gL4ZfL8B8Em2j` | supply 0.501%, utilization 30.07% |
+| `spark-lend`  | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` | supply 3.542%, utilization 92.21% |
+| `aave-v2`     | `C2zniPn45RnLDGzVeGZCx2Sw3GXrbc9gL4ZfL8B8Em2j` | supply 0.501%, utilization 30.07% |
 
 `PROTOCOL_REGISTRY` holds 13 entries: 4 live, 5 reachable-but-unusable, 4 on an older schema. **Every non-live entry must carry a `note` explaining why** — enforced by test. The registry is the only place the live set is written down; the Grok tool schema derives its protocol enum from it.
 
@@ -112,10 +112,10 @@ Verified on 2026-09-12 through the same code path the server uses. `pnpm probe:p
 
 Verified on 2026-09-12 through `pnpm probe:yields` (exact production query path).
 
-| Venue | Subgraph id | Live reading at verification |
-| --- | --- | --- |
+| Venue        | Subgraph id                                    | Live reading at verification                                                     |
+| ------------ | ---------------------------------------------- | -------------------------------------------------------------------------------- |
 | `uniswap-v3` | `4cKy6QQMc5tpfdx8yxfYeb9TLZmgLQe44ddW1G7NwkA6` | 2 eligible pools; USDC/USDT TVL $33.29M APR 1.06%; USDC/DAI TVL $1.22M APR 4.63% |
-| `curve` | `3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF` | 1 eligible pool; 3pool TVL $154.47M APR 0.17% |
+| `curve`      | `3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF` | 1 eligible pool; 3pool TVL $154.47M APR 0.17%                                    |
 
 Both are Messari-schema subgraphs. The Uniswap adapter uses a two-phase lookup (pools query then per-pool `where:{pool}` snapshots) because the global `liquidityPoolDailySnapshots(first:1000)` query reliably times out on that deployment. `DEX_YIELD_SOURCES` holds exactly these 2 entries, both `live: true` with no `note`. `probe:yields` exits non-zero if a live source cannot deliver an eligible complete snapshot.
 
@@ -133,19 +133,19 @@ That behaviour is unchanged today. What changed since: a fifth tool (`analyze_tr
 
 **63 commits** from `904a680` to `24f7b34`. Full list: `git log --oneline 9a3f592..HEAD`. Grouped by batch:
 
-| Batch | Range | What it did |
-| --- | --- | --- |
-| Competitive research | `06bc1fa` → `beb6edd` | ETHOnline prize structure, past winners, and the differentiation read against the official `graph-lending-mcp` showcase |
-| Historical trends | `fddd0aa` → `60634c7` | Messari `MarketDailySnapshot` feasibility research, then the `analyze_trends` tool |
-| Remote MCP + Vercel | `d3d6b47` → `a9a11d3` | second transport, deploy entry points, multi-platform guide, demo narrative |
-| Verification + repair | `b0460a5` → `0a08721` | the three bug fixes and the protocol correction in §Corrections |
-| State | `c580088`, `40f7923` | loop state files |
-| Yield discovery (johnku) | `051a91a` → `8a986d1` | cross-venue USDC yield discovery design → Task 7 (13 commits, John Ku) |
-| DEX fix + Task 8 (chonwai) | `a745f67` → `6a36b96` | probe, Messari-schema rewrite, two-phase lookup, live flip, UTC-day bucket |
-| Yield release (johnku) | `1e69e05` → `24f7b34` | probe cleanup, adapter UTC-day normalization, docs alignment, handoff rewrite (5 commits) |
-| Competition finish-line | `docs/superpowers/plans/2026-09-12-competition-finish-line.md` | Phase 0 freeze → Phase 1 record → Phase 2 submit → Phase 3 optional fixes |
-| Project context snapshot | `5055da2` → `8505c49` | `docs/.project-context.md` cache for Edison skills (inventory, conventions, rubric anchors) |
-| Phase 3 small fixes | `11aff9b` | F2 `windowKey` UTC-day bucketing aligned to `Math.floor` (see §Corrections) |
+| Batch                      | Range                                                          | What it did                                                                                                             |
+| -------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Competitive research       | `06bc1fa` → `beb6edd`                                          | ETHOnline prize structure, past winners, and the differentiation read against the official `graph-lending-mcp` showcase |
+| Historical trends          | `fddd0aa` → `60634c7`                                          | Messari `MarketDailySnapshot` feasibility research, then the `analyze_trends` tool                                      |
+| Remote MCP + Vercel        | `d3d6b47` → `a9a11d3`                                          | second transport, deploy entry points, multi-platform guide, demo narrative                                             |
+| Verification + repair      | `b0460a5` → `0a08721`                                          | the three bug fixes and the protocol correction in §Corrections                                                         |
+| State                      | `c580088`, `40f7923`                                           | loop state files                                                                                                        |
+| Yield discovery (johnku)   | `051a91a` → `8a986d1`                                          | cross-venue USDC yield discovery design → Task 7 (13 commits, John Ku)                                                  |
+| DEX fix + Task 8 (chonwai) | `a745f67` → `6a36b96`                                          | probe, Messari-schema rewrite, two-phase lookup, live flip, UTC-day bucket                                              |
+| Yield release (johnku)     | `1e69e05` → `24f7b34`                                          | probe cleanup, adapter UTC-day normalization, docs alignment, handoff rewrite (5 commits)                               |
+| Competition finish-line    | `docs/superpowers/plans/2026-09-12-competition-finish-line.md` | Phase 0 freeze → Phase 1 record → Phase 2 submit → Phase 3 optional fixes                                               |
+| Project context snapshot   | `5055da2` → `8505c49`                                          | `docs/.project-context.md` cache for Edison skills (inventory, conventions, rubric anchors)                             |
+| Phase 3 small fixes        | `11aff9b`                                                      | F2 `windowKey` UTC-day bucketing aligned to `Math.floor` (see §Corrections)                                             |
 
 History was not squashed. Every batch was pushed to `origin/main`.
 
@@ -210,7 +210,7 @@ export default { fetch(request) { return new Response(...) } }   // recognised
 export function POST(request) { ... }                            // recognised
 ```
 
-We shipped `export default handler` — a bare `(request) => Response` function, which is **neither**. Vercel would fall back to the Node.js `(req, res)` handler path, which terminates a response by calling `res.end()`. Our handler only *returns* a `Response`, so `res.end()` is never called and the request hangs until the function times out.
+We shipped `export default handler` — a bare `(request) => Response` function, which is **neither**. Vercel would fall back to the Node.js `(req, res)` handler path, which terminates a response by calling `res.end()`. Our handler only _returns_ a `Response`, so `res.end()` is never called and the request hangs until the function times out.
 
 This is the classic "green locally, dead in production" failure, and `pnpm vercel:probe` did not catch it because the probe called the function directly and never exercised Vercel's framework detection.
 
@@ -247,13 +247,13 @@ Two related findings from the same sweep:
 
 ### Invariants added so these cannot come back
 
-| Guard | Where |
-| --- | --- |
-| `/api` default export must be an object with a `fetch` method, and `config.runtime` must be `nodejs` | `demos/vercel-probe.ts` |
-| `vercel.json` must set `outputDirectory: "public"`, and `public/index.html` must exist | `demos/vercel-probe.ts` |
-| Every non-live registry entry must carry a `note`; live entries must not | `packages/shared/src/source-config.test.ts` |
+| Guard                                                                                                                        | Where                                                  |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `/api` default export must be an object with a `fetch` method, and `config.runtime` must be `nodejs`                         | `demos/vercel-probe.ts`                                |
+| `vercel.json` must set `outputDirectory: "public"`, and `public/index.html` must exist                                       | `demos/vercel-probe.ts`                                |
+| Every non-live registry entry must carry a `note`; live entries must not                                                     | `packages/shared/src/source-config.test.ts`            |
 | Fixtures may only use registered **and live** protocols; every live protocol needs a USDC fixture and a `supply_apy` fixture | `packages/shared/src/fixture-live-consistency.test.ts` |
-| Every tool's protocol enum must equal `LIVE_PROTOCOLS` | `packages/grok-orchestrator/src/loop.test.ts` |
+| Every tool's protocol enum must equal `LIVE_PROTOCOLS`                                                                       | `packages/grok-orchestrator/src/loop.test.ts`          |
 
 `pnpm probe:protocols` is the live counterpart: it queries each registry entry through the same code path the server uses, fails only when a **live** entry cannot deliver, and flags a non-live entry that starts returning data as `notlive+` for re-evaluation.
 
@@ -325,17 +325,17 @@ Do not report the video or the submission as complete until John confirms.
 
 Read these in this order when something is unclear; they disagree in places, and the earlier ones win.
 
-| File | Why |
-| --- | --- |
-| `HANDOFF.md` (this file) | Current state and corrections |
-| `docs/reviews/2026-09-12-verification-audit.md` | What was checked, how, and what was wrong |
-| `packages/shared/src/source-config.ts` | The only place the live protocol set is written down |
-| `packages/mcp-server/src/register.ts` | The only place the tool surface is written down |
-| `docs/deployment-vercel.md` | Deploy settings, both fixed pitfalls, troubleshooting |
-| `docs/platform-integration.md` | Per-platform connection config for 8 clients |
-| `docs/improvement-blueprint.md` | What is left, ranked, with the ruled-out candidates |
-| `evals/cases.json` | 23 behavioural cases |
-| `demos/prompts.md` | Demo A–F and the locked source ids |
-| `skills/askching/SKILL.md` | Thin agent playbook |
+| File                                            | Why                                                   |
+| ----------------------------------------------- | ----------------------------------------------------- |
+| `HANDOFF.md` (this file)                        | Current state and corrections                         |
+| `docs/reviews/2026-09-12-verification-audit.md` | What was checked, how, and what was wrong             |
+| `packages/shared/src/source-config.ts`          | The only place the live protocol set is written down  |
+| `packages/mcp-server/src/register.ts`           | The only place the tool surface is written down       |
+| `docs/deployment-vercel.md`                     | Deploy settings, both fixed pitfalls, troubleshooting |
+| `docs/platform-integration.md`                  | Per-platform connection config for 8 clients          |
+| `docs/improvement-blueprint.md`                 | What is left, ranked, with the ruled-out candidates   |
+| `evals/cases.json`                              | 23 behavioural cases                                  |
+| `demos/prompts.md`                              | Demo A–F and the locked source ids                    |
+| `skills/askching/SKILL.md`                      | Thin agent playbook                                   |
 
 Known-stale documents, kept only as history. Each carries a banner saying so: `docs/engineering-spec.md` (stops at v1.0), `docs/product-overview.md` (§5 predates the extra tools). Do not update them casually — rewrite or delete them, but do not half-edit.

@@ -23,10 +23,12 @@
 ### Task 1: Canonical three-source demo prompts
 
 **Files:**
+
 - Create: `evals/showcase-contract.test.ts`
 - Modify: `demos/prompts.md`
 
 **Interfaces:**
+
 - Consumes: supported protocol identifiers and tool behavior already documented in `skills/askching/SKILL.md`.
 - Produces: three copyable prompts used by the recording runbook.
 
@@ -66,10 +68,12 @@ git commit -m "docs(demo): refresh three-source showcase prompts"
 ### Task 2: Human-narrated recording runbook
 
 **Files:**
+
 - Create: `docs/demo-video-script.md`
 - Modify: `evals/showcase-contract.test.ts`
 
 **Interfaces:**
+
 - Consumes: the three canonical prompts from Task 1 and commands `pnpm live:smoke`, `pnpm askching`, and `pnpm demo`.
 - Produces: a shot-by-shot script John can record without improvising claims.
 
@@ -109,11 +113,13 @@ git commit -m "docs(demo): add human-narrated recording runbook"
 ### Task 3: Ready-to-copy ETHGlobal submission package
 
 **Files:**
+
 - Create: `docs/submission.md`
 - Modify: `README.md`
 - Modify: `evals/showcase-contract.test.ts`
 
 **Interfaces:**
+
 - Consumes: verified project capabilities, public repository URL, and the approved analyst-first narrative.
 - Produces: platform-ready copy and discoverable links from the README.
 
@@ -153,9 +159,11 @@ git commit -m "docs: add ETHGlobal submission package"
 ### Task 4: Final verification and durable handoff
 
 **Files:**
+
 - Modify: `HANDOFF.md`
 
 **Interfaces:**
+
 - Consumes: all deliverables from Tasks 1–3 and current git history.
 - Produces: exact verification evidence, open manual actions, and the next safe action.
 

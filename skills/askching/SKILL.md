@@ -19,7 +19,7 @@ compatibility:
   - gemini-cli
 metadata:
   category: research/data
-  author: "AskChing"
+  author: 'AskChing'
 ---
 
 > **⚠️ 平台命名註記（ESC-VPW-001）**：Claude Code 對 MCP tool 的 `allowed-tools` 命名慣例可能需 `mcp__askching__<tool>` 前綴（如 `mcp__askching__compare_markets`）。若裸工具名在 Claude Code 不生效，請改用前綴形式。此項需在目標平台實測驗證。
@@ -32,14 +32,14 @@ Use AskChing as the research tool layer. Treat its cited structured output as ev
 
 ## Choose a tool
 
-| Request | Tool |
-| --- | --- |
-| Compare the same metric across two or more protocols | `compare_markets` |
-| Synthesize a question into a cited brief | `research_brief` |
-| Look for peer-relative metric changes | `risk_scan` |
+| Request                                                                                        | Tool              |
+| ---------------------------------------------------------------------------------------------- | ----------------- |
+| Compare the same metric across two or more protocols                                           | `compare_markets` |
+| Synthesize a question into a cited brief                                                       | `research_brief`  |
+| Look for peer-relative metric changes                                                          | `risk_scan`       |
 | Explain yield opportunity, liquidity stress, or evidence quality with transparent calculations | `analyze_markets` |
-| Ask how a metric moved over the last 7 or 30 days | `analyze_trends` |
-| Discover USDC yield across lending, Uniswap V3, and Curve | `discover_yields` |
+| Ask how a metric moved over the last 7 or 30 days                                              | `analyze_trends`  |
+| Discover USDC yield across lending, Uniswap V3, and Curve                                      | `discover_yields` |
 
 The implementation supports four metrics — `supply_apy`, `borrow_apy`, `tvl`, `utilization` — four assets — `USDC`, `USDT`, `DAI`, `WETH` — and four live protocols — `aave-v3`, `compound-v3`, `spark-lend`, `aave-v2`. Older deployments (`uwu-lend`, `zerolend`, `compound-v2`, `rari-fuse`, `makerdao`, `euler`) are registered but not live: they either lack a USDC market or predate the shared schema, so a request naming them fails closed and comes back as an explicit gap. `compare_markets`, `research_brief`, `risk_scan`, and `analyze_markets` answer from a current snapshot, so `risk_scan` must never be described as historical analysis. Only `analyze_trends` carries the time dimension, over a `7d` or `30d` window of daily snapshots.
 

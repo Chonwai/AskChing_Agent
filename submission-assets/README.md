@@ -2,13 +2,13 @@
 
 Upload these files to the ETHOnline project form:
 
-| Form slot | File | Dimensions |
-| --- | --- | --- |
-| Logo | `askching-logo-512.png` | 512×512 |
-| Cover image | `askching-cover-1600x900.png` | 1600×900 |
-| Screenshot 1 | `01-tool-calling-1600x900.png` | 1600×900 |
-| Screenshot 2 | `02-yield-results-1600x900.png` | 1600×900 |
-| Screenshot 3 | `03-citations-risks-1600x900.png` | 1600×900 |
+| Form slot    | File                              | Dimensions |
+| ------------ | --------------------------------- | ---------- |
+| Logo         | `askching-logo-512.png`           | 512×512    |
+| Cover image  | `askching-cover-1600x900.png`     | 1600×900   |
+| Screenshot 1 | `01-tool-calling-1600x900.png`    | 1600×900   |
+| Screenshot 2 | `02-yield-results-1600x900.png`   | 1600×900   |
+| Screenshot 3 | `03-citations-risks-1600x900.png` | 1600×900   |
 
 The screenshot sequence is **ask → compare → verify**. HTML sources are in `source/` so text-heavy frames can be reproduced without image-generation spelling errors.
 

@@ -1,17 +1,291 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1600,initial-scale=1"><title>AskChing — Citations and Risks</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:1600px;height:900px;overflow:hidden;background:#05070a;color:#eef7ff}body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background-image:linear-gradient(#10202a55 1px,transparent 1px),linear-gradient(90deg,#10202a55 1px,transparent 1px);background-size:72px 72px}.frame{height:100%;padding:48px 64px;display:flex;flex-direction:column}.top{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:14px;font-weight:800;font-size:22px}.brand img{width:46px;height:46px;border-radius:9px}.live{font:600 14px ui-monospace,SFMono-Regular,Menlo,monospace;color:#42d3ff;letter-spacing:1.4px}.eyebrow{margin-top:40px;color:#42d3ff;font:700 14px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:1.7px}h1{font-size:46px;letter-spacing:-1.8px;margin:10px 0 28px}.layout{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;flex:1}.stack{display:grid;gap:20px}.card{background:#080d12;border:1px solid #243b48;border-radius:17px;padding:24px 26px}.label{color:#718793;font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:1.4px}.formula{font:700 25px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#eef7ff;margin-top:14px}.formula b{color:#42d3ff}.window{margin-top:17px;color:#9cafba;font:15px ui-monospace,SFMono-Regular,Menlo,monospace}.source{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #172831}.source:last-child{border-bottom:0}.dot{width:9px;height:9px;border-radius:50%;background:#42d3ff;box-shadow:0 0 16px #42d3ff88}.source strong{font-size:15px}.id{color:#708794;font:12px ui-monospace,SFMono-Regular,Menlo,monospace}.verified{color:#42d3ff;font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace}.risks{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}.pill{border:1px solid #2a4350;background:#0b141a;border-radius:999px;padding:8px 11px;color:#a8bac5;font:12px ui-monospace,SFMono-Regular,Menlo,monospace}.none{display:flex;align-items:center;justify-content:space-between;margin-top:17px;border-top:1px solid #19303b;padding-top:18px;font:16px ui-monospace,SFMono-Regular,Menlo,monospace}.none b{color:#42d3ff}.foot{margin-top:24px;display:flex;justify-content:space-between;color:#718391;font:14px ui-monospace,SFMono-Regular,Menlo,monospace}.foot strong{color:#d7e8f1}
-</style></head><body><main class="frame">
-<header class="top"><div class="brand"><img src="../askching-logo-512.png" alt=""><span>AskChing</span></div><div class="live">● LIVE · ETHEREUM MAINNET</div></header>
-<div class="eyebrow">03 / VERIFY</div><h1>Every answer carries its proof.</h1>
-<div class="layout"><div class="stack"><section class="card"><div class="label">FORMULA · DEX LP</div><div class="formula"><b>fee APR</b> = daily LP fees ÷ snapshot TVL × 365 × 100</div><div class="window">complete UTC window&nbsp; 2026-09-11 00:00 → 2026-09-12 00:00</div></section>
-<section class="card"><div class="label">METHODOLOGY</div><div class="formula" style="font-size:19px;font-weight:500">Same metric · same asset · same rate definition · same UTC day.</div><div class="window">If evidence cannot support a comparison, AskChing returns an explicit gap.</div></section></div>
-<div class="stack"><section class="card"><div class="label">6 CITED SUBGRAPH SOURCES</div>
-<div class="source"><i class="dot"></i><div><strong>Aave V3</strong><div class="id">JCNWR…81zk</div></div><span class="verified">✓ CITED</span></div>
-<div class="source"><i class="dot"></i><div><strong>Compound V3</strong><div class="id">AwoxE…pfz9</div></div><span class="verified">✓ CITED</span></div>
-<div class="source"><i class="dot"></i><div><strong>Spark Lend + Aave V2</strong><div class="id">GbKdm…p1si · C2zni…Em2j</div></div><span class="verified">✓ CITED</span></div>
-<div class="source"><i class="dot"></i><div><strong>Uniswap V3 + Curve</strong><div class="id">4cKy6…wkA6 · 3fy93…FopF</div></div><span class="verified">✓ CITED</span></div>
-</section><section class="card"><div class="label">RISKS & EXCLUSIONS</div><div class="risks"><span class="pill">variable returns</span><span class="pill">stablecoin depeg</span><span class="pill">smart contract</span><span class="pill">impermanent loss</span><span class="pill">excludes incentives</span><span class="pill">excludes gas</span><span class="pill">excludes compounding</span></div><div class="none"><span>transaction execution</span><b>NONE</b></div></section></div></div>
-<footer class="foot"><span>Source ID · deployment · block · timestamp · query hash</span><strong>citations verified</strong></footer>
-</main></body></html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1600,initial-scale=1" />
+    <title>AskChing — Citations and Risks</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1600px;
+        height: 900px;
+        overflow: hidden;
+        background: #05070a;
+        color: #eef7ff;
+      }
+      body {
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        background-image:
+          linear-gradient(#10202a55 1px, transparent 1px),
+          linear-gradient(90deg, #10202a55 1px, transparent 1px);
+        background-size: 72px 72px;
+      }
+      .frame {
+        height: 100%;
+        padding: 48px 64px;
+        display: flex;
+        flex-direction: column;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 800;
+        font-size: 22px;
+      }
+      .brand img {
+        width: 46px;
+        height: 46px;
+        border-radius: 9px;
+      }
+      .live {
+        font:
+          600 14px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        color: #42d3ff;
+        letter-spacing: 1.4px;
+      }
+      .eyebrow {
+        margin-top: 40px;
+        color: #42d3ff;
+        font:
+          700 14px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        letter-spacing: 1.7px;
+      }
+      h1 {
+        font-size: 46px;
+        letter-spacing: -1.8px;
+        margin: 10px 0 28px;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 24px;
+        flex: 1;
+      }
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+      .card {
+        background: #080d12;
+        border: 1px solid #243b48;
+        border-radius: 17px;
+        padding: 24px 26px;
+      }
+      .label {
+        color: #718793;
+        font:
+          700 12px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        letter-spacing: 1.4px;
+      }
+      .formula {
+        font:
+          700 25px/1.5 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        color: #eef7ff;
+        margin-top: 14px;
+      }
+      .formula b {
+        color: #42d3ff;
+      }
+      .window {
+        margin-top: 17px;
+        color: #9cafba;
+        font:
+          15px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      .source {
+        display: grid;
+        grid-template-columns: 14px 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 13px 0;
+        border-bottom: 1px solid #172831;
+      }
+      .source:last-child {
+        border-bottom: 0;
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #42d3ff;
+        box-shadow: 0 0 16px #42d3ff88;
+      }
+      .source strong {
+        font-size: 15px;
+      }
+      .id {
+        color: #708794;
+        font:
+          12px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      .verified {
+        color: #42d3ff;
+        font:
+          700 12px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      .risks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 15px;
+      }
+      .pill {
+        border: 1px solid #2a4350;
+        background: #0b141a;
+        border-radius: 999px;
+        padding: 8px 11px;
+        color: #a8bac5;
+        font:
+          12px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      .none {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 17px;
+        border-top: 1px solid #19303b;
+        padding-top: 18px;
+        font:
+          16px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      .none b {
+        color: #42d3ff;
+      }
+      .foot {
+        margin-top: 24px;
+        display: flex;
+        justify-content: space-between;
+        color: #718391;
+        font:
+          14px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      .foot strong {
+        color: #d7e8f1;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="frame">
+      <header class="top">
+        <div class="brand"><img src="../askching-logo-512.png" alt="" /><span>AskChing</span></div>
+        <div class="live">● LIVE · ETHEREUM MAINNET</div>
+      </header>
+      <div class="eyebrow">03 / VERIFY</div>
+      <h1>Every answer carries its proof.</h1>
+      <div class="layout">
+        <div class="stack">
+          <section class="card">
+            <div class="label">FORMULA · DEX LP</div>
+            <div class="formula"><b>fee APR</b> = daily LP fees ÷ snapshot TVL × 365 × 100</div>
+            <div class="window">complete UTC window&nbsp; 2026-09-11 00:00 → 2026-09-12 00:00</div>
+          </section>
+          <section class="card">
+            <div class="label">METHODOLOGY</div>
+            <div class="formula" style="font-size: 19px; font-weight: 500">
+              Same metric · same asset · same rate definition · same UTC day.
+            </div>
+            <div class="window">
+              If evidence cannot support a comparison, AskChing returns an explicit gap.
+            </div>
+          </section>
+        </div>
+        <div class="stack">
+          <section class="card">
+            <div class="label">6 CITED SUBGRAPH SOURCES</div>
+            <div class="source">
+              <i class="dot"></i>
+              <div>
+                <strong>Aave V3</strong>
+                <div class="id">JCNWR…81zk</div>
+              </div>
+              <span class="verified">✓ CITED</span>
+            </div>
+            <div class="source">
+              <i class="dot"></i>
+              <div>
+                <strong>Compound V3</strong>
+                <div class="id">AwoxE…pfz9</div>
+              </div>
+              <span class="verified">✓ CITED</span>
+            </div>
+            <div class="source">
+              <i class="dot"></i>
+              <div>
+                <strong>Spark Lend + Aave V2</strong>
+                <div class="id">GbKdm…p1si · C2zni…Em2j</div>
+              </div>
+              <span class="verified">✓ CITED</span>
+            </div>
+            <div class="source">
+              <i class="dot"></i>
+              <div>
+                <strong>Uniswap V3 + Curve</strong>
+                <div class="id">4cKy6…wkA6 · 3fy93…FopF</div>
+              </div>
+              <span class="verified">✓ CITED</span>
+            </div>
+          </section>
+          <section class="card">
+            <div class="label">RISKS & EXCLUSIONS</div>
+            <div class="risks">
+              <span class="pill">variable returns</span><span class="pill">stablecoin depeg</span
+              ><span class="pill">smart contract</span><span class="pill">impermanent loss</span
+              ><span class="pill">excludes incentives</span><span class="pill">excludes gas</span
+              ><span class="pill">excludes compounding</span>
+            </div>
+            <div class="none"><span>transaction execution</span><b>NONE</b></div>
+          </section>
+        </div>
+      </div>
+      <footer class="foot">
+        <span>Source ID · deployment · block · timestamp · query hash</span
+        ><strong>citations verified</strong>
+      </footer>
+    </main>
+  </body>
+</html>

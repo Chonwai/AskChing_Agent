@@ -8,19 +8,22 @@ Depth Level: L3 Deep Dive
 
 ## Stage Round Counters（v4.3）
 
-| Stage               | Current Round | Max Rounds (Stop Rule) | Status   |
-| ------------------- | :-----------: | :--------------------: | -------- |
-| DISCOVER (env)      |       1       |          2             | ✅ done  |
-| EXECUTE (run tests) |       1       |          2             | ✅ done  |
-| VERIFY (analysis)   |       1       |          2 (strict)    | ✅ PASS  |
+| Stage               | Current Round | Max Rounds (Stop Rule) | Status  |
+| ------------------- | :-----------: | :--------------------: | ------- |
+| DISCOVER (env)      |       1       |           2            | ✅ done |
+| EXECUTE (run tests) |       1       |           2            | ✅ done |
+| VERIFY (analysis)   |       1       |       2 (strict)       | ✅ PASS |
 
 ## Iterations
 
 ### Iteration 1 - DISCOVER
+
 Agent: Neo | Outcome: ✅ .env has ASKCHING_DEBUG=1, repo clean at d04c951
 
 ### Iteration 2 - EXECUTE
+
 Agent: Neo | Outcome: ✅ 全 8 suites PASS
+
 - pnpm test: 26/26 PASS
 - pnpm build: 3/3
 - pnpm eval: 5/5
@@ -33,7 +36,9 @@ Agent: Neo | Outcome: ✅ 全 8 suites PASS
 修復: demo.ts -- filter (68711ef → 769293b)
 
 ### Iteration 3 - VERIFY (Round 1)
+
 Agent: smith | Score: 100/100 | Threshold: 93 | Verdict: ✅ PASS
+
 - CR-D1=100, CR-D2=100, CR-D3=100, CR-D4=100, CR-D5=100, CR-D6=100, CR-D7=100
 - Critical: 0, High: 0, Medium: 0, Low: 0
 - DEBUG trace 安全性確認（XAI_API_KEY never leaked）

@@ -14,13 +14,13 @@
 
 ## 1. John Ku 最新 5 commits 結構化分析
 
-| Commit | 時間 | 類別 | 實質內容 |
-|---|---|---|---|
-| `1e69e05` | 19:17 | refactor（message 誤標 test） | 清理 `probe-yield-sources.ts`：移除未用 `succeeded`/`error` 變數、刪註解。零行為變更 |
-| `d27eed9` | 19:24 | fix（核心） | 新增 `utcDayStart()`（`Math.floor(ts/86400)*86400`）；Uniswap + Curve adapter 的 `windowStart/windowEnd` 改為 containing UTC day；completeness filter 同步；測試 fixtures 改用邊界 timestamp（`day+86399`、`day-1`、`day+86500`） |
-| `c9955a8` | 19:25 | docs | design/plan/prompts 對齊「Messari DEX schema + two-phase query」已驗證路徑；修正誤引的 Uniswap 官方 schema 連結 |
-| `da2b40c` | 19:25 | docs | README：live DEX 描述改為「09-12 已通過 exact-query probe，錄影前重跑」 |
-| `24f7b34` | 19:44 | docs | HANDOFF.md 重寫為 discover-yields-complete，checkpoint 指向 `da2b40c` |
+| Commit    | 時間  | 類別                          | 實質內容                                                                                                                                                                                                                          |
+| --------- | ----- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `1e69e05` | 19:17 | refactor（message 誤標 test） | 清理 `probe-yield-sources.ts`：移除未用 `succeeded`/`error` 變數、刪註解。零行為變更                                                                                                                                              |
+| `d27eed9` | 19:24 | fix（核心）                   | 新增 `utcDayStart()`（`Math.floor(ts/86400)*86400`）；Uniswap + Curve adapter 的 `windowStart/windowEnd` 改為 containing UTC day；completeness filter 同步；測試 fixtures 改用邊界 timestamp（`day+86399`、`day-1`、`day+86500`） |
+| `c9955a8` | 19:25 | docs                          | design/plan/prompts 對齊「Messari DEX schema + two-phase query」已驗證路徑；修正誤引的 Uniswap 官方 schema 連結                                                                                                                   |
+| `da2b40c` | 19:25 | docs                          | README：live DEX 描述改為「09-12 已通過 exact-query probe，錄影前重跑」                                                                                                                                                           |
+| `24f7b34` | 19:44 | docs                          | HANDOFF.md 重寫為 discover-yields-complete，checkpoint 指向 `da2b40c`                                                                                                                                                             |
 
 **與我方（Chonwai）`44a57ae` 是否重複/衝突？→ 不重複、互補的兩層修復：**
 
@@ -53,15 +53,15 @@ probe 腳本（`a745f67`）→ Uniswap 切 Messari schema（修 johnku batch 1 �
 
 ### Gates（HEAD `24f7b34` 親自實測）
 
-| Gate | 結果 |
-|---|---|
-| `pnpm build` | 3/3 packages ✅ |
-| `pnpm test` | 209/209 (21 files) ✅ |
-| `pnpm eval` | 27/27 ✅ |
-| `pnpm mcp:smoke` | 6 tools ✅ |
-| `pnpm probe:protocols` | 4/4 ✅ |
-| `pnpm probe:yields` | 2/2 ✅（uniswap eligible=2, curve eligible=1） |
-| 工作區 | clean ✅ |
+| Gate                   | 結果                                           |
+| ---------------------- | ---------------------------------------------- |
+| `pnpm build`           | 3/3 packages ✅                                |
+| `pnpm test`            | 209/209 (21 files) ✅                          |
+| `pnpm eval`            | 27/27 ✅                                       |
+| `pnpm mcp:smoke`       | 6 tools ✅                                     |
+| `pnpm probe:protocols` | 4/4 ✅                                         |
+| `pnpm probe:yields`    | 2/2 ✅（uniswap eligible=2, curve eligible=1） |
+| 工作區                 | clean ✅                                       |
 
 ### 還缺什麼（按關鍵度）
 
@@ -71,12 +71,12 @@ probe 腳本（`a745f67`）→ Uniswap 切 Messari schema（修 johnku batch 1 �
 
 ## 4. 風險評估（smith strict 審查結論）
 
-| # | 風險 | 等級 | 狀態 |
-|---|---|---|---|
-| R1 | DEX probe flakiness：gateway 暫態抖動（首跑 0/2 FAIL、重跑 2/2 OK） | 🔴 | 錄影前重跑緩解；README 已寫明 |
-| R2 | `Math.round` (ranking) vs `Math.floor` (adapter) 取整不一致 | 🟡 | **0 實際風險**（production windowStart 全為午夜 → round==floor）；防禦性裂縫，提交後統一 |
-| R3 | `1e69e05` commit message 誤導（稱 add probe 實為 lint） | 🟢 | 無功能影響，HANDOFF correction log 註記 |
-| R4 | HANDOFF checkpoint 落後（`da2b40c` vs HEAD `24f7b34`） | 🟢 | 本次交付即更新 |
+| #   | 風險                                                                | 等級 | 狀態                                                                                     |
+| --- | ------------------------------------------------------------------- | ---- | ---------------------------------------------------------------------------------------- |
+| R1  | DEX probe flakiness：gateway 暫態抖動（首跑 0/2 FAIL、重跑 2/2 OK） | 🔴   | 錄影前重跑緩解；README 已寫明                                                            |
+| R2  | `Math.round` (ranking) vs `Math.floor` (adapter) 取整不一致         | 🟡   | **0 實際風險**（production windowStart 全為午夜 → round==floor）；防禦性裂縫，提交後統一 |
+| R3  | `1e69e05` commit message 誤導（稱 add probe 實為 lint）             | 🟢   | 無功能影響，HANDOFF correction log 註記                                                  |
+| R4  | HANDOFF checkpoint 落後（`da2b40c` vs HEAD `24f7b34`）              | 🟢   | 本次交付即更新                                                                           |
 
 **smith 逐維度分數**：CR-D1 正確性 97 / D2 完整性 100 / D3 可維護性 90 / D4 架構一致性 90 / D5 測試覆蓋 96 / D6 文檔準確性 90 / D7 安全性 99 → **加權 95/100 PASS**
 

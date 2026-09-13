@@ -53,31 +53,51 @@ type MarketDailySnapshot @entity @dailySnapshot {
 ### 2.3 查詢路徑（兩種）
 
 **路徑 A — 嵌套查詢（推薦，一次 query 拿多日資料）：**
+
 ```graphql
 query AskChingMarketHistory {
   markets(first: 100, orderBy: totalValueLockedUSD, orderDirection: desc) {
-    inputToken { symbol }
+    inputToken {
+      symbol
+    }
     dailySnapshots(first: 30, orderBy: days, orderDirection: desc) {
       days
       timestamp
       blockNumber
-      rates { rate side type }
+      rates {
+        rate
+        side
+        type
+      }
       totalDepositBalanceUSD
       totalBorrowBalanceUSD
       totalValueLockedUSD
     }
   }
-  _meta { deployment block { number timestamp } }
+  _meta {
+    deployment
+    block {
+      number
+      timestamp
+    }
+  }
 }
 ```
 
 **路徑 B — 直接查 snapshot 實體（需 market id）：**
+
 ```graphql
 query {
-  marketDailySnapshots(
-    first: 30, orderBy: days, orderDirection: desc,
-    where: { market: "0x..." }
-  ) { days timestamp rates { rate side type } totalDepositBalanceUSD }
+  marketDailySnapshots(first: 30, orderBy: days, orderDirection: desc, where: { market: "0x..." }) {
+    days
+    timestamp
+    rates {
+      rate
+      side
+      type
+    }
+    totalDepositBalanceUSD
+  }
 }
 ```
 
@@ -85,12 +105,12 @@ query {
 
 ### 2.4 風險與已知限制（誠實標注）
 
-| 風險 | 說明 | 緩解 |
-|---|---|---|
+| 風險             | 說明                                                                                                 | 緩解                                                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `rates` 可能為空 | 已知部分 subgraph 的 `marketDailySnapshots.rates` 未填充（Messari issue #1500 Abracadabra Arbitrum） | ① 先用 `totalBorrowBalanceUSD/totalDepositBalanceUSD` 推導 utilization（**絕大多數情況下都有值**）② rates 為空時轉 explicit gap（fail-closed 原則） |
-| Snapshot 數量 | `first: N` 需 ≤1000；7d/30d 足夠 | 用 `first: window days + buffer` |
-| 時區 / days 語義 | `days` = 距 Unix epoch 天數，UTC | 直接使用 `days` 排序、`timestamp` 顯示 |
-| 三源不同步 | 各協議 snapshot 生成時間可能差幾小時 | citation 帶各自 `blockNumber`+`timestamp`；報告 timestamp skew |
+| Snapshot 數量    | `first: N` 需 ≤1000；7d/30d 足夠                                                                     | 用 `first: window days + buffer`                                                                                                                    |
+| 時區 / days 語義 | `days` = 距 Unix epoch 天數，UTC                                                                     | 直接使用 `days` 排序、`timestamp` 顯示                                                                                                              |
+| 三源不同步       | 各協議 snapshot 生成時間可能差幾小時                                                                 | citation 帶各自 `blockNumber`+`timestamp`；報告 timestamp skew                                                                                      |
 
 **驗證結論：技術可行，且有明確的 fail-closed 退路。**
 
@@ -98,13 +118,13 @@ query {
 
 ## 3. 為何這是最高價值的補強
 
-| 面向 | 說明 |
-|---|---|
-| **對齊 The Graph 核心價值** | The Graph 賣點 = 「不可變鏈上歷史，可查」。spot-only 等於只用了他們能力的 10% |
-| **對齊評審期待** | 過往得獎者（DeeJay's Unchained = 歷史價格/volume 趨勢）證明「時間維度」是得獎關鍵 |
+| 面向                            | 說明                                                                                                                                                                  |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **對齊 The Graph 核心價值**     | The Graph 賣點 = 「不可變鏈上歷史，可查」。spot-only 等於只用了他們能力的 10%                                                                                         |
+| **對齊評審期待**                | 過往得獎者（DeeJay's Unchained = 歷史價格/volume 趨勢）證明「時間維度」是得獎關鍵                                                                                     |
 | **差異化 vs graph-lending-mcp** | 對手有 `dailySnapshots` tool（19 tools 之一），但**沒有趨勢統計**（slope / volatility / direction）與 **citation 化的趨勢洞察**。我們可做「有計算、有信心的趨勢判讀」 |
-| **敘事升級** | 從「AskChing 答現況」→「AskChing 判趨勢」——這是研究員真正的需求，也是評審 10 秒測試的 Wow 點 |
-| **技術深度展示** | 線性回歸斜率、波動率、方向判讀 + fail-closed gap = 展示工程深度 |
+| **敘事升級**                    | 從「AskChing 答現況」→「AskChing 判趨勢」——這是研究員真正的需求，也是評審 10 秒測試的 Wow 點                                                                          |
+| **技術深度展示**                | 線性回歸斜率、波動率、方向判讀 + fail-closed gap = 展示工程深度                                                                                                       |
 
 ---
 
@@ -114,14 +134,14 @@ query {
 
 ### 4.1 切入點總表
 
-| # | 切入點 | 價值 | 可行性（距 9/13） | 是否需付款 | 建議 |
-|---|---|---|---|---|---|
-| ① | **歷史時序趨勢分析** | 🔥🔥🔥 | ✅ 高（純 Subgraph 查詢） | ❌ | **本輪實作** |
-| ② | **標準化跨協議擴展**（3 → 6+ protocols live） | 🔥🔥 | ✅ 高（PROTOCOL_REGISTRY 已是 6） | ❌ | 低優先（demo 3 個夠） |
-| ③ | **Subgraph MCP 互補敘事** | 🔥🔥 | ✅ 零成本（文件） | ❌ | 已部分完成 |
-| ④ | **Agent0 / ERC-8004 查詢** | 🔥🔥🔥 | ⚠️ 中（需 API key + 新 schema） | ❌ | 敘事優先，實作次要 |
-| ⑤ | **GRC-20 知識圖譜輸出** | 🔥🔥 | ⚠️ 中（SDK 成熟度未知） | ❌ | 願景敘事 |
-| ⑥ | **Substreams real-time** | 🔥 | ❌ 低（需自建 pipeline） | ❌ | 僅敘事 |
+| #   | 切入點                                        | 價值   | 可行性（距 9/13）                 | 是否需付款 | 建議                  |
+| --- | --------------------------------------------- | ------ | --------------------------------- | ---------- | --------------------- |
+| ①   | **歷史時序趨勢分析**                          | 🔥🔥🔥 | ✅ 高（純 Subgraph 查詢）         | ❌         | **本輪實作**          |
+| ②   | **標準化跨協議擴展**（3 → 6+ protocols live） | 🔥🔥   | ✅ 高（PROTOCOL_REGISTRY 已是 6） | ❌         | 低優先（demo 3 個夠） |
+| ③   | **Subgraph MCP 互補敘事**                     | 🔥🔥   | ✅ 零成本（文件）                 | ❌         | 已部分完成            |
+| ④   | **Agent0 / ERC-8004 查詢**                    | 🔥🔥🔥 | ⚠️ 中（需 API key + 新 schema）   | ❌         | 敘事優先，實作次要    |
+| ⑤   | **GRC-20 知識圖譜輸出**                       | 🔥🔥   | ⚠️ 中（SDK 成熟度未知）           | ❌         | 願景敘事              |
+| ⑥   | **Substreams real-time**                      | 🔥     | ❌ 低（需自建 pipeline）          | ❌         | 僅敘事                |
 
 ### 4.2 為何「歷史時序」是最佳切入點
 
@@ -152,41 +172,41 @@ query {
 
 **新增第 5 個 MCP 工具：`analyze_trends`**
 
-| 項目 | 設計 |
-|---|---|
-| Input | `{ metric, asset, protocols[], window: "7d"\|"30d" }` |
-| 數據源 | `MarketDailySnapshot`（嵌套於 `markets` query） |
+| 項目       | 設計                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------ |
+| Input      | `{ metric, asset, protocols[], window: "7d"\|"30d" }`                                                        |
+| 數據源     | `MarketDailySnapshot`（嵌套於 `markets` query）                                                              |
 | 每協議輸出 | 時間序列 points + 趨勢統計（latest / change / changePct / slopePerDay / direction / volatility / min / max） |
-| 證據 | 每個 point 帶 `subgraphId`+`block`+`timestamp`+`queryHash`；每 finding ≥2 citations；fail-closed |
-| 缺口 | rates 為空 → explicit gap；snapshot 不足 → explicit gap |
-| 敘事 | 「AskChing 不只答現況，還會判趨勢——每個數據點都可追溯到鏈上區塊」 |
+| 證據       | 每個 point 帶 `subgraphId`+`block`+`timestamp`+`queryHash`；每 finding ≥2 citations；fail-closed             |
+| 缺口       | rates 為空 → explicit gap；snapshot 不足 → explicit gap                                                      |
+| 敘事       | 「AskChing 不只答現況，還會判趨勢——每個數據點都可追溯到鏈上區塊」                                            |
 
 **與既有工具的關係（三層敘事）：**
 
-| 工具 | 問題 | 時間維度 |
-|---|---|---|
-| `compare_markets` | 現在哪個協議利率最高？ | 現況快照 |
-| `analyze_markets` | 現在的收益率/流動性/證據品質如何？ | 現況判讀 |
-| **`analyze_trends`** | **過去 7/30 天趨勢如何？** | **時間序列** |
+| 工具                 | 問題                               | 時間維度     |
+| -------------------- | ---------------------------------- | ------------ |
+| `compare_markets`    | 現在哪個協議利率最高？             | 現況快照     |
+| `analyze_markets`    | 現在的收益率/流動性/證據品質如何？ | 現況判讀     |
+| **`analyze_trends`** | **過去 7/30 天趨勢如何？**         | **時間序列** |
 
 ---
 
 ## 6. 來源清單
 
-| 事實 | 來源 |
-|---|---|
-| Messari Lending Schema v3.1.0（MarketDailySnapshot / MarketHourlySnapshot / rates / totalDepositBalanceUSD） | [messari/subgraphs schema-lending.graphql](https://github.com/messari/subgraphs/blob/master/schema-lending.graphql) |
-| DailySnapshots 提供歷史 rollup | [The Graph Blog - graph-lending-mcp](https://thegraph.com/blog/community-builder-queried-defi-lending-protocols-subgraphs-mcp/) |
-| rates 可能為空的已知問題 | [messari/subgraphs issue #1500](https://github.com/messari/subgraphs/issues/1500) |
-| Substreams vs Subgraphs 適用場景 | [The Graph Blog - graph-lending-mcp](https://thegraph.com/blog/community-builder-queried-defi-lending-protocols-subgraphs-mcp/) |
-| Agent0 / ERC-8004 Subgraphs | [The Graph Docs - Agent0](https://thegraph.com/docs/en/subgraphs/existing-subgraphs/agent0/) |
+| 事實                                                                                                         | 來源                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Messari Lending Schema v3.1.0（MarketDailySnapshot / MarketHourlySnapshot / rates / totalDepositBalanceUSD） | [messari/subgraphs schema-lending.graphql](https://github.com/messari/subgraphs/blob/master/schema-lending.graphql)             |
+| DailySnapshots 提供歷史 rollup                                                                               | [The Graph Blog - graph-lending-mcp](https://thegraph.com/blog/community-builder-queried-defi-lending-protocols-subgraphs-mcp/) |
+| rates 可能為空的已知問題                                                                                     | [messari/subgraphs issue #1500](https://github.com/messari/subgraphs/issues/1500)                                               |
+| Substreams vs Subgraphs 適用場景                                                                             | [The Graph Blog - graph-lending-mcp](https://thegraph.com/blog/community-builder-queried-defi-lending-protocols-subgraphs-mcp/) |
+| Agent0 / ERC-8004 Subgraphs                                                                                  | [The Graph Docs - Agent0](https://thegraph.com/docs/en/subgraphs/existing-subgraphs/agent0/)                                    |
 
 ---
 
 ## 7. 不確定性標記
 
-| 項目 | 狀態 |
-|---|---|
+| 項目                                                                                         | 狀態                                                                                                               |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | 三個 live subgraph（Aave V3 / Compound V3 / Spark Lend）的 `dailySnapshots.rates` 是否都填充 | ⚠️ **需 live 實測**（fixture 模式無法驗證）。已知部分 Messari subgraph 的 rates 為空 → 實作必須有 utilization 退路 |
-| `markets { dailySnapshots }` 嵌套查詢在 Gateway 的效能 | ⚠️ 低風險（first: 30 足夠小） |
-| 7d window 對應的 snapshot 數量（可能因協議暫停而 <7） | ⚠️ 需 explicit gap 處理 |
+| `markets { dailySnapshots }` 嵌套查詢在 Gateway 的效能                                       | ⚠️ 低風險（first: 30 足夠小）                                                                                      |
+| 7d window 對應的 snapshot 數量（可能因協議暫停而 <7）                                        | ⚠️ 需 explicit gap 處理                                                                                            |

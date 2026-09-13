@@ -8,13 +8,13 @@
 
 ## 0. 結論摘要
 
-| 類別 | 結果 |
-|---|---|
-| **真實 bug（已修）** | **3 個**：Vercel 函式匯出格式、輸出目錄落回 repo 根、`compound-v2` subgraph ID 錯字 |
-| **錯誤宣稱（已修）** | **1 個重大**：「6 個 live 協議」實為 4 個；另有 3 份文件數字過時 |
-| **重複真相來源（已消）** | 1 個：`loop.ts` 硬編碼協議 enum |
-| 經過驗證為**正確**的宣稱 | 大部分（見 §4） |
-| 最終 gate | build 3/3、test **175**、eval **23/23**、stdio/http smoke 各 5 tools、vercel:probe OK、**4/4 live 協議實測有數據** |
+| 類別                     | 結果                                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| **真實 bug（已修）**     | **3 個**：Vercel 函式匯出格式、輸出目錄落回 repo 根、`compound-v2` subgraph ID 錯字                                |
+| **錯誤宣稱（已修）**     | **1 個重大**：「6 個 live 協議」實為 4 個；另有 3 份文件數字過時                                                   |
+| **重複真相來源（已消）** | 1 個：`loop.ts` 硬編碼協議 enum                                                                                    |
+| 經過驗證為**正確**的宣稱 | 大部分（見 §4）                                                                                                    |
+| 最終 gate                | build 3/3、test **175**、eval **23/23**、stdio/http smoke 各 5 tools、vercel:probe OK、**4/4 live 協議實測有數據** |
 
 **一句話**：程式碼本體品質良好，但**外部宣稱（部署方式、協議數）有兩處嚴重不實**——而這兩處正好是評審與部署最會踩到的地方。
 
@@ -24,13 +24,13 @@
 
 每一項都用可重現的證據，而非閱讀程式碼：
 
-| 複核標的 | 手段 |
-|---|---|
-| Vercel 部署正確性 | 讀 Vercel 官方 Functions API Reference / Node.js runtime 文件，逐條比對我們的檔案 |
-| 協議可用性 | 下載 Messari 官方 `deployment/deployment.json`（375KB）比對 ID；再用 `GraphGatewayClient` 打真實 gateway |
-| 工具面一致性 | 載入編譯後模組，讀出實際 JSON schema |
-| 測試真實性 | 跑 `pnpm test` / `pnpm eval`，並檢視斷言內容 |
-| 文件準確性 | `grep` 全部文件找過時數字，逐一比對實際值 |
+| 複核標的          | 手段                                                                                                     |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| Vercel 部署正確性 | 讀 Vercel 官方 Functions API Reference / Node.js runtime 文件，逐條比對我們的檔案                        |
+| 協議可用性        | 下載 Messari 官方 `deployment/deployment.json`（375KB）比對 ID；再用 `GraphGatewayClient` 打真實 gateway |
+| 工具面一致性      | 載入編譯後模組，讀出實際 JSON schema                                                                     |
+| 測試真實性        | 跑 `pnpm test` / `pnpm eval`，並檢視斷言內容                                                             |
+| 文件準確性        | `grep` 全部文件找過時數字，逐一比對實際值                                                                |
 
 ---
 
@@ -42,7 +42,11 @@
 
 ```ts
 // ✅ 唯一被承認的 Web Standard 形式
-export default { fetch(request: Request) { return new Response("...") } }
+export default {
+  fetch(request: Request) {
+    return new Response('...');
+  },
+};
 // 或 export function GET/POST(request) { ... }
 ```
 
@@ -98,6 +102,7 @@ notlive  euler        同上
 ```
 
 **根因**（直接查 subgraph 原始資料）：
+
 - `uwu-lend` mainnet 市場是 `sifu` / `sDAI` / `sSPELL` / `USDT` / `DUMMY` —— **完全沒有 USDC**
 - `zerolend` mainnet 全部市場 `isActive: false`、`totalValueLockedUSD: 0` —— 實質已死（它活在別的鏈）
 
@@ -111,16 +116,16 @@ notlive  euler        同上
 
 ### 3.3 修正
 
-| 動作 | 內容 |
-|---|---|
-| 註冊表 | `uwu-lend` / `zerolend` → `live: false` + 精確 `note`；新增 `aave-amm/arc/rwa` 為 `live:false` 並記錄原因（避免重複調查） |
-| Fixture | 刪除兩筆造假的 USDC 記錄 |
-| **新不變量測試** | `fixture-live-consistency.test.ts`：fixture 只能用註冊且 live 的協議；每個 live 協議必須有 USDC + supply_apy fixture |
-| **新不變量測試** | 每個非 live 條目必須有 `note`（>20 字）且 live 條目不得有 |
-| Eval | `compare-six-protocol` → `compare-four-protocol`（真實集合） |
-| SKILL.md | 移除「six live protocols」，並在契約測試中斷言該字串不存在 |
-| **新工具** | `pnpm probe:protocols`：用伺服器同一路徑驗證，只對 live 條目判定成敗 |
-| 硬編碼 enum | `loop.ts` 的 `LIVE_PROTOCOL_ENUM` 改為 spread `LIVE_PROTOCOLS`（單一真相來源） |
+| 動作             | 內容                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 註冊表           | `uwu-lend` / `zerolend` → `live: false` + 精確 `note`；新增 `aave-amm/arc/rwa` 為 `live:false` 並記錄原因（避免重複調查） |
+| Fixture          | 刪除兩筆造假的 USDC 記錄                                                                                                  |
+| **新不變量測試** | `fixture-live-consistency.test.ts`：fixture 只能用註冊且 live 的協議；每個 live 協議必須有 USDC + supply_apy fixture      |
+| **新不變量測試** | 每個非 live 條目必須有 `note`（>20 字）且 live 條目不得有                                                                 |
+| Eval             | `compare-six-protocol` → `compare-four-protocol`（真實集合）                                                              |
+| SKILL.md         | 移除「six live protocols」，並在契約測試中斷言該字串不存在                                                                |
+| **新工具**       | `pnpm probe:protocols`：用伺服器同一路徑驗證，只對 live 條目判定成敗                                                      |
+| 硬編碼 enum      | `loop.ts` 的 `LIVE_PROTOCOL_ENUM` 改為 spread `LIVE_PROTOCOLS`（單一真相來源）                                            |
 
 > 💡 **意外的正面結果**：修正後協議數仍是「4 + demo 用 3 個」，但**每一個都經過實測**。這比「宣稱 6 個但 2 個是空的」強得多——我們現在可以說「4 個全部驗證過」。
 
@@ -128,46 +133,46 @@ notlive  euler        同上
 
 ## 4. 經過驗證為正確的宣稱（無需修改）
 
-| 宣稱 | 驗證方式 | 結果 |
-|---|---|---|
-| `register.ts` 是工具面單一真相來源 | 載入模組讀 descriptor | ✅ stdio 與 HTTP 完全一致 |
-| stateless transport 正確 | 12 路併發實測 | ✅ 無跨請求污染 |
-| GET/DELETE 回 405 | 實測 | ✅ 且無 open SSE 路徑 |
-| `/api/health` 不洩漏憑證 | 實測回傳 5 欄位 | ✅ 無 key |
-| GraphQL 無字串插值 | 讀 graph-client | ✅ 固定查詢常數 |
-| fail-closed 由 schema 強制 | 讀 schema | ✅ `.min(2)` |
-| `analyze_trends` 統計為真實回歸 | 讀 `computeTrendStats` | ✅ 最小平方 + 母體標準差 |
-| 官方 Messari schema 3.1.0 有 `MarketDailySnapshot` | 官方 repo | ✅ |
-| `grok-4.6` 為現行 model | xAI 官方文件 | ✅ |
-| Grok Bot 支援 connectors/MCP | xAI 官方文件 | ✅ |
-| Gemini CLI 支援 `httpUrl` | Gemini CLI 文件 | ✅（且已由 Antigravity CLI 取代免費層） |
+| 宣稱                                               | 驗證方式               | 結果                                    |
+| -------------------------------------------------- | ---------------------- | --------------------------------------- |
+| `register.ts` 是工具面單一真相來源                 | 載入模組讀 descriptor  | ✅ stdio 與 HTTP 完全一致               |
+| stateless transport 正確                           | 12 路併發實測          | ✅ 無跨請求污染                         |
+| GET/DELETE 回 405                                  | 實測                   | ✅ 且無 open SSE 路徑                   |
+| `/api/health` 不洩漏憑證                           | 實測回傳 5 欄位        | ✅ 無 key                               |
+| GraphQL 無字串插值                                 | 讀 graph-client        | ✅ 固定查詢常數                         |
+| fail-closed 由 schema 強制                         | 讀 schema              | ✅ `.min(2)`                            |
+| `analyze_trends` 統計為真實回歸                    | 讀 `computeTrendStats` | ✅ 最小平方 + 母體標準差                |
+| 官方 Messari schema 3.1.0 有 `MarketDailySnapshot` | 官方 repo              | ✅                                      |
+| `grok-4.6` 為現行 model                            | xAI 官方文件           | ✅                                      |
+| Grok Bot 支援 connectors/MCP                       | xAI 官方文件           | ✅                                      |
+| Gemini CLI 支援 `httpUrl`                          | Gemini CLI 文件        | ✅（且已由 Antigravity CLI 取代免費層） |
 
 ---
 
 ## 5. 文件準確性修正
 
-| 文件 | 問題 | 處置 |
-|---|---|---|
-| `walkthrough.md` | 操作文件卻寫著 `75 passed`/`16/16 evals`/`3 tools`/`26 passed` | 全數更正為 175/23/5 tools，新增 Station 7（遠端 MCP） |
-| `cross-platform.md` | 「斷言 3 個 tool」 | → 5 |
-| `engineering-spec.md` | 狀態區塊停在 3 tools、88% | 加入過時聲明 + 現行事實 |
-| `product-overview.md` | §5.1 架構圖只列 3 tools | 加入過時聲明 + 現行事實 |
-| `README.md` ×2 | 「Six protocols are live today」 | → Four，並註明已驗證 |
-| `improvement-blueprint.md` §1 | 整個立論基於錯誤的「6 協議」基線 | 重寫；加入「已排除的 7 個候選」表，並指出**最高投報率其實是換鏈**（27 個 Ethereum lending 部署已檢查完，Base/Arbitrum/Polygon 尚未） |
-| `deployment-vercel.md` | 未答 Framework Preset；宣稱本地 probe 可證部署正確 | 新增 §3 完整設定對照表；把 probe 的宣稱降級為「只驗簽名與邏輯」 |
+| 文件                          | 問題                                                           | 處置                                                                                                                                 |
+| ----------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `walkthrough.md`              | 操作文件卻寫著 `75 passed`/`16/16 evals`/`3 tools`/`26 passed` | 全數更正為 175/23/5 tools，新增 Station 7（遠端 MCP）                                                                                |
+| `cross-platform.md`           | 「斷言 3 個 tool」                                             | → 5                                                                                                                                  |
+| `engineering-spec.md`         | 狀態區塊停在 3 tools、88%                                      | 加入過時聲明 + 現行事實                                                                                                              |
+| `product-overview.md`         | §5.1 架構圖只列 3 tools                                        | 加入過時聲明 + 現行事實                                                                                                              |
+| `README.md` ×2                | 「Six protocols are live today」                               | → Four，並註明已驗證                                                                                                                 |
+| `improvement-blueprint.md` §1 | 整個立論基於錯誤的「6 協議」基線                               | 重寫；加入「已排除的 7 個候選」表，並指出**最高投報率其實是換鏈**（27 個 Ethereum lending 部署已檢查完，Base/Arbitrum/Polygon 尚未） |
+| `deployment-vercel.md`        | 未答 Framework Preset；宣稱本地 probe 可證部署正確             | 新增 §3 完整設定對照表；把 probe 的宣稱降級為「只驗簽名與邏輯」                                                                      |
 
 ---
 
 ## 6. 仍未解決 / 建議後續
 
-| # | 項目 | 嚴重度 | 說明 |
-|---|---|---|---|
-| 1 | **未實際部署到 Vercel** | 🟡 | 兩個已修 bug 都是「部署後才會顯現」的類型，但仍有殘餘風險：pnpm workspace 的 `@askching/shared` 在 Vercel bundle 中能否解析，只有部署後打 `/api/health` 才能確認。文件已明示 |
-| 2 | 跨鏈覆蓋 | 🟡 | 最高價值的擴展方向（Base/Arbitrum/Polygon），但需先把字面型別 `network: "mainnet"` 放寬 |
-| 3 | `risk_scan` 缺 `outputSchema` | 🟢 | 五個工具中唯一沒有結構化輸出契約 |
-| 4 | 遠端 `isError` 丟失 `structuredContent` | 🟡 | 錯誤時整個結構化輸出（含 gaps）消失，只剩一句文字 |
-| 5 | `lastGaps` 共享可變狀態 | 🟡 | 現行單次呼叫正確，未來 multi-call 工具會脆弱 |
-| 6 | endpoint 公開無認證 | 🟡 | 刻意的 demo 取捨；上架 registry 前必須加護欄 |
+| #   | 項目                                    | 嚴重度 | 說明                                                                                                                                                                         |
+| --- | --------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **未實際部署到 Vercel**                 | 🟡     | 兩個已修 bug 都是「部署後才會顯現」的類型，但仍有殘餘風險：pnpm workspace 的 `@askching/shared` 在 Vercel bundle 中能否解析，只有部署後打 `/api/health` 才能確認。文件已明示 |
+| 2   | 跨鏈覆蓋                                | 🟡     | 最高價值的擴展方向（Base/Arbitrum/Polygon），但需先把字面型別 `network: "mainnet"` 放寬                                                                                      |
+| 3   | `risk_scan` 缺 `outputSchema`           | 🟢     | 五個工具中唯一沒有結構化輸出契約                                                                                                                                             |
+| 4   | 遠端 `isError` 丟失 `structuredContent` | 🟡     | 錯誤時整個結構化輸出（含 gaps）消失，只剩一句文字                                                                                                                            |
+| 5   | `lastGaps` 共享可變狀態                 | 🟡     | 現行單次呼叫正確，未來 multi-call 工具會脆弱                                                                                                                                 |
+| 6   | endpoint 公開無認證                     | 🟡     | 刻意的 demo 取捨；上架 registry 前必須加護欄                                                                                                                                 |
 
 ---
 

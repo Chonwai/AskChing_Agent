@@ -89,14 +89,14 @@
 
 ### B5. AC 6 條逐條核對（Spec Acceptance Criteria）
 
-| # | AC | 核對方式 | 通過 |
-| --- | --- | --- | --- |
-| AC1 | Viewer understands product & target user within 10 seconds | 請 1–2 位非專案者觀看前 10 秒並複述 | ☐ |
-| AC2 | Main result: 3 live sources, ranked comparable values, blocks, `asOf` | 回看影片 0:50–1:35 畫面 | ☐ |
-| AC3 | Grok's role & The Graph's role both explicit | 回看影片 0:38–0:50（Grok）與 0:50–1:02（The Graph） | ☐ |
-| AC4 | Risk segment distinguishes spot evidence vs unavailable history | 回看影片 2:10–2:25 | ☐ |
-| AC5 | Recording 2–4 min, ≥720p, human narrated | 檢查影片 metadata | ☐ |
-| AC6 | No credential, unsupported claim, trading action, invented citation | 全片重看 + 逐字稿比對 | ☐ |
+| #   | AC                                                                    | 核對方式                                            | 通過 |
+| --- | --------------------------------------------------------------------- | --------------------------------------------------- | ---- |
+| AC1 | Viewer understands product & target user within 10 seconds            | 請 1–2 位非專案者觀看前 10 秒並複述                 | ☐    |
+| AC2 | Main result: 3 live sources, ranked comparable values, blocks, `asOf` | 回看影片 0:50–1:35 畫面                             | ☐    |
+| AC3 | Grok's role & The Graph's role both explicit                          | 回看影片 0:38–0:50（Grok）與 0:50–1:02（The Graph） | ☐    |
+| AC4 | Risk segment distinguishes spot evidence vs unavailable history       | 回看影片 2:10–2:25                                  | ☐    |
+| AC5 | Recording 2–4 min, ≥720p, human narrated                              | 檢查影片 metadata                                   | ☐    |
+| AC6 | No credential, unsupported claim, trading action, invented citation   | 全片重看 + 逐字稿比對                               | ☐    |
 
 ### B6. 提交
 
@@ -112,11 +112,11 @@
 
 ## C. 失敗即停（Fail-stop）
 
-| 狀況 | 動作 |
-| --- | --- |
-| 任一 Pre-recording 項目未過 | 不開錄；先修復 |
-| 任一 Pre-submission 項目未過 | 不提交；先修復 |
+| 狀況                                  | 動作                     |
+| ------------------------------------- | ------------------------ |
+| 任一 Pre-recording 項目未過           | 不開錄；先修復           |
+| 任一 Pre-submission 項目未過          | 不提交；先修復           |
 | 錄影中 live gateway / Grok model 失敗 | 停止錄影，修復後重錄該段 |
-| 發現 fixture 輸出被當 live | 立即重錄 |
+| 發現 fixture 輸出被當 live            | 立即重錄                 |
 
 > **黃金規則：** 誠實 > 完美。任何不確定或未驗證的數字，寧可不展示，也不要捏造。

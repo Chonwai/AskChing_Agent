@@ -1,4 +1,4 @@
-import { createAskChingHttpHandler } from "../packages/mcp-server/dist/http.js";
+import { createAskChingHttpHandler } from '../packages/mcp-server/dist/http.js';
 
 /**
  * Vercel entry point for the AskChing remote MCP server.
@@ -25,12 +25,12 @@ import { createAskChingHttpHandler } from "../packages/mcp-server/dist/http.js";
  */
 
 /** Node.js runtime with the max duration matching `vercel.json`. */
-export const config = { runtime: "nodejs", maxDuration: 60 } as const;
+export const config = { runtime: 'nodejs', maxDuration: 60 } as const;
 
 const handler = createAskChingHttpHandler();
 
 export default {
   fetch(request: Request): Promise<Response> {
     return handler(request);
-  }
+  },
 };

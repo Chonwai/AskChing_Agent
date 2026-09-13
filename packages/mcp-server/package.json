@@ -25,7 +25,9 @@
     "askching-mcp": "dist/index.js",
     "askching-mcp-http": "dist/serve.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "mcp",
     "model-context-protocol",

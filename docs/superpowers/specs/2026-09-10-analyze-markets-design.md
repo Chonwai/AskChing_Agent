@@ -43,35 +43,32 @@ Natural-language question
 ## Input contract
 
 ```ts
-type AnalysisObjective =
-  | "yield_opportunity"
-  | "liquidity_stress"
-  | "evidence_quality";
+type AnalysisObjective = 'yield_opportunity' | 'liquidity_stress' | 'evidence_quality';
 
 interface AnalyzeMarketsInput {
   protocols: string[]; // minimum 2, registry-validated
-  asset: string;       // normalized uppercase symbol
+  asset: string; // normalized uppercase symbol
   metrics?: MarketMetricId[];
   objective: AnalysisObjective;
-  timeframe?: string;  // optional intent; current analysis remains spot-only
+  timeframe?: string; // optional intent; current analysis remains spot-only
 }
 ```
 
 Objective defaults:
 
-| Objective | Default metrics | Purpose |
-| --- | --- | --- |
-| `yield_opportunity` | `supply_apy`, `utilization` | Rank current supply yield and disclose utilization context |
-| `liquidity_stress` | `utilization`, `tvl` | Detect utilization pressure and show TVL as scale context |
-| `evidence_quality` | all four registered metrics | Assess coverage, citation completeness, source gaps, and timestamp skew |
+| Objective           | Default metrics             | Purpose                                                                 |
+| ------------------- | --------------------------- | ----------------------------------------------------------------------- |
+| `yield_opportunity` | `supply_apy`, `utilization` | Rank current supply yield and disclose utilization context              |
+| `liquidity_stress`  | `utilization`, `tvl`        | Detect utilization pressure and show TVL as scale context               |
+| `evidence_quality`  | all four registered metrics | Assess coverage, citation completeness, source gaps, and timestamp skew |
 
 Callers may narrow `metrics`, but an objective's primary metric is mandatory: `supply_apy` for yield opportunity and `utilization` for liquidity stress. Supplying a metric list that omits the primary metric fails validation with a clear error. Evidence quality accepts any non-empty subset.
 
 ## Output contract
 
 ```ts
-type AnalysisSeverity = "info" | "watch" | "high";
-type AnalysisConfidence = "high" | "medium" | "low";
+type AnalysisSeverity = 'info' | 'watch' | 'high';
+type AnalysisConfidence = 'high' | 'medium' | 'low';
 
 interface AnalysisSupportingValue {
   protocol: string;

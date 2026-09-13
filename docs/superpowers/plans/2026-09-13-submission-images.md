@@ -23,9 +23,11 @@
 ### Task 1: Terminal Proof logo
 
 **Files:**
+
 - Create: `submission-assets/askching-logo-512.png`
 
 **Interfaces:**
+
 - Consumes: approved near-black/cyan Terminal Proof direction.
 - Produces: square brand mark used as the submission logo.
 
@@ -54,9 +56,11 @@ git push origin main
 ### Task 2: Terminal Proof cover
 
 **Files:**
+
 - Create: `submission-assets/askching-cover-1600x900.png`
 
 **Interfaces:**
+
 - Consumes: Task 1 visual identity and exact copy from the spec.
 - Produces: 16:9 gallery cover.
 
@@ -81,6 +85,7 @@ git push origin main
 ### Task 3: Ask → compare → verify screenshot story
 
 **Files:**
+
 - Create: `submission-assets/source/01-tool-calling.html`
 - Create: `submission-assets/source/02-yield-results.html`
 - Create: `submission-assets/source/03-citations-risks.html`
@@ -89,6 +94,7 @@ git push origin main
 - Create: `submission-assets/03-citations-risks-1600x900.png`
 
 **Interfaces:**
+
 - Consumes: live deployment URL and verified 2026-09-12 `discover_yields` run recorded in `HANDOFF.md`.
 - Produces: three sequential submission screenshots containing deterministic, factual product content.
 
@@ -127,10 +133,12 @@ git push origin main
 ### Task 4: Final asset manifest and handoff
 
 **Files:**
+
 - Create: `submission-assets/README.md`
 - Modify: `HANDOFF.md`
 
 **Interfaces:**
+
 - Consumes: Tasks 1–3 final assets and validation results.
 - Produces: upload mapping, reproduction notes, exact commit, and durable handoff.
 

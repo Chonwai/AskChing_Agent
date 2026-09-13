@@ -5,6 +5,7 @@
 
 > ⚠️ **本文件部分內容已過時（2026-09-12 複核標註）。** 下方 §3–§8 的部分 schema / 契約 / 狀態區塊停在 v1.0（3 tools、單一 metric、Phase 4 未完成）。
 > **以此為準的最新事實**：
+>
 > - MCP tools **5 個**：`compare_markets` / `research_brief` / `risk_scan` / `analyze_markets` / `analyze_trends`
 > - 支援 4 assets × 4 metrics（`supply_apy` / `borrow_apy` / `tvl` / `utilization`）× **4 個 live 協議**（實測驗証；`pnpm probe:protocols` 為証據）
 > - 傳輸：**stdio + 遠端 Streamable HTTP**（可部署到 Vercel）
@@ -21,16 +22,16 @@
 ## Table of Contents
 
 0. [Problem Statement](#0-problem-statement)
-0b. [Goals & Non-Goals](#0b-goals--non-goals)
-0c. [Glossary](#0c-glossary)
-0d. [完成度摘要](#0d-完成度摘要)
+   0b. [Goals & Non-Goals](#0b-goals--non-goals)
+   0c. [Glossary](#0c-glossary)
+   0d. [完成度摘要](#0d-完成度摘要)
 1. [系統架構](#1-系統架構)
 2. [Package 結構](#2-package-結構)
 3. [核心 Schema 定義](#3-核心-schema-定義)
 4. [MCP Tools API 契約](#4-mcp-tools-api-契約)
 5. [Graph Gateway Client](#5-graph-gateway-client)
 6. [Grok Orchestrator](#6-grok-orchestrator)
-6b. [Demo CLI 規格](#6b-demo-cli-規格)
+   6b. [Demo CLI 規格](#6b-demo-cli-規格)
 7. [Data Source 層](#7-data-source-層)
 8. [Evals 套件](#8-evals-套件)
 9. [Development Plan（5 天 Roadmap）](#9-development-plan)
@@ -48,12 +49,14 @@ DeFi 研究員和 AI agent 開發者需要即時、有來源的鏈上數據分�
 ## 0b. Goals & Non-Goals
 
 **Goals:**
+
 - G1: 在 5 天內交付可用的 Grok Bot + MCP demo（fixture + live）
 - G2: `compare_markets` 支援 ≥2 sources 的 cited comparison
 - G3: `research_brief` 產出 structured brief
 - G4: 通過 ETHOnline 2026 submission 驗收標準
 
 **Non-Goals:**
+
 - NG1: 不做交易執行 / 自動下單
 - NG2: 不做 web UI / Dashboard
 - NG3: 不做 x402 付費（留給 v1.2）
@@ -61,25 +64,25 @@ DeFi 研究員和 AI agent 開發者需要即時、有來源的鏈上數據分�
 
 ## 0c. Glossary
 
-| 術語 | 定義 |
-|------|------|
-| **Citation** | 帶有 subgraphId + block + timestamp + queryHash 的數據來源證明 |
-| **Fan-out** | 同一查詢並行發送至多個 subgraph |
-| **Settled fan-out** | 使用 Promise.allSettled，允許部分 source 失敗 |
-| **Load-bearing** | 拔掉 The Graph 後產品無意義 |
-| **In-process import** | 直接 import MCP handler function，不經 stdio transport |
+| 術語                  | 定義                                                           |
+| --------------------- | -------------------------------------------------------------- |
+| **Citation**          | 帶有 subgraphId + block + timestamp + queryHash 的數據來源證明 |
+| **Fan-out**           | 同一查詢並行發送至多個 subgraph                                |
+| **Settled fan-out**   | 使用 Promise.allSettled，允許部分 source 失敗                  |
+| **Load-bearing**      | 拔掉 The Graph 後產品無意義                                    |
+| **In-process import** | 直接 import MCP handler function，不經 stdio transport         |
 
 ---
 
 ## 0d. 完成度摘要（2026-09-09）
 
-| 區塊 | 狀態 |
-|------|------|
-| 技術實作（三 tools + Grok Orchestrator + 三源 fan-out） | ✅ 100% |
-| Phase 0–3（live smoke → Grok → multi-source → 文書） | ✅ 100% |
-| Showcase 文書（README / run script / ETHGlobal copy / checklist） | ✅ 100% |
-| Phase 4（錄影 + 上傳 + repo 公開 + submit） | ⚠️ ~17%（僅 4.3/4.4） |
-| Open Questions（Q1–Q4） | ⚠️ 75%（Q1 未實測） |
+| 區塊                                                              | 狀態                  |
+| ----------------------------------------------------------------- | --------------------- |
+| 技術實作（三 tools + Grok Orchestrator + 三源 fan-out）           | ✅ 100%               |
+| Phase 0–3（live smoke → Grok → multi-source → 文書）              | ✅ 100%               |
+| Showcase 文書（README / run script / ETHGlobal copy / checklist） | ✅ 100%               |
+| Phase 4（錄影 + 上傳 + repo 公開 + submit）                       | ⚠️ ~17%（僅 4.3/4.4） |
+| Open Questions（Q1–Q4）                                           | ⚠️ 75%（Q1 未實測）   |
 
 **總體：約 88%**。剩餘全為執行型任務（錄影、上傳、填表單、驗證），無核心程式碼風險。完整審計：`docs/reviews/2026-09-09-blueprint-completion-audit.md`。
 
@@ -137,13 +140,13 @@ DeFi 研究員和 AI agent 開發者需要即時、有來源的鏈上數據分�
 
 ### 關鍵設計原則
 
-| 原則 | 說明 |
-|------|------|
-| **The Graph 是 load-bearing** | 拔掉 The Graph → AskChing 沒有意義 |
-| **自研 MCP，不套殼** | 我們的 server 包含 normalization + citation + synthesis，官方 MCP 只是 dependency |
-| **Fixture + Live 雙模式** | `DEMO_LIVE=0` 用 fixture（開發/測試），`DEMO_LIVE=1` 用 live Studio gateway |
-| **Fail-closed** | 缺 credential / schema 錯誤 / 數據不足 → 明確報錯，不猜測 |
-| **Citation 強制** | 每個數字必須帶 subgraphId + block + timestamp + queryHash，缺欄位就 fail |
+| 原則                          | 說明                                                                              |
+| ----------------------------- | --------------------------------------------------------------------------------- |
+| **The Graph 是 load-bearing** | 拔掉 The Graph → AskChing 沒有意義                                                |
+| **自研 MCP，不套殼**          | 我們的 server 包含 normalization + citation + synthesis，官方 MCP 只是 dependency |
+| **Fixture + Live 雙模式**     | `DEMO_LIVE=0` 用 fixture（開發/測試），`DEMO_LIVE=1` 用 live Studio gateway       |
+| **Fail-closed**               | 缺 credential / schema 錯誤 / 數據不足 → 明確報錯，不猜測                         |
+| **Citation 強制**             | 每個數字必須帶 subgraphId + block + timestamp + queryHash，缺欄位就 fail          |
 
 ---
 
@@ -197,14 +200,14 @@ AskChing_Agent/
 ### 3.1 MarketMetric
 
 ```typescript
-const MarketMetricSchema = z.enum(["usdc_supply_apy"]);
+const MarketMetricSchema = z.enum(['usdc_supply_apy']);
 // Future: "eth_supply_apy", "usdc_pool_liquidity", etc.
 ```
 
 ### 3.2 ProtocolSlug
 
 ```typescript
-const ProtocolSchema = z.enum(["aave-v3", "compound-v3"]);
+const ProtocolSchema = z.enum(['aave-v3', 'compound-v3']);
 // Future: "morpho-aave-v3", "spark", "fluid"
 ```
 
@@ -212,14 +215,14 @@ const ProtocolSchema = z.enum(["aave-v3", "compound-v3"]);
 
 ```typescript
 const CitationSchema = z.object({
-  value:        z.number().finite(),        // 數值
-  unit:         z.literal("percent"),       // 單位（目前只支持 percent）
-  protocol:     ProtocolSchema,             // 協議
-  subgraphId:   z.string().min(1),          // Subgraph ID（必填）
+  value: z.number().finite(), // 數值
+  unit: z.literal('percent'), // 單位（目前只支持 percent）
+  protocol: ProtocolSchema, // 協議
+  subgraphId: z.string().min(1), // Subgraph ID（必填）
   deploymentId: z.string().min(1).optional(), // Deployment ID
-  block:        z.number().int().nonnegative().optional(), // Block number
-  timestamp:    z.string().datetime(),      // ISO 8601 timestamp
-  queryHash:    z.string().min(1)           // SHA-256 of the GraphQL query
+  block: z.number().int().nonnegative().optional(), // Block number
+  timestamp: z.string().datetime(), // ISO 8601 timestamp
+  queryHash: z.string().min(1), // SHA-256 of the GraphQL query
 });
 ```
 
@@ -229,8 +232,8 @@ const CitationSchema = z.object({
 
 ```typescript
 const MarketObservationSchema = CitationSchema.extend({
-  metric:   MarketMetricSchema,   // 指標類型
-  rateType: z.literal("variable") // 利率類型
+  metric: MarketMetricSchema, // 指標類型
+  rateType: z.literal('variable'), // 利率類型
 });
 ```
 
@@ -238,11 +241,11 @@ const MarketObservationSchema = CitationSchema.extend({
 
 ```typescript
 const ComparisonSchema = z.object({
-  metric:  MarketMetricSchema,           // 指標
-  asOf:    z.string().datetime(),        // 最新數據時間
-  rows:    z.array(ComparisonRowSchema).min(2), // 排名結果（≥2 行）
-  caveats: z.array(z.string()),          // 風險/缺口提示
-  sources: z.array(ComparisonSourceSchema).min(2) // 來源列表（≥2 個）
+  metric: MarketMetricSchema, // 指標
+  asOf: z.string().datetime(), // 最新數據時間
+  rows: z.array(ComparisonRowSchema).min(2), // 排名結果（≥2 行）
+  caveats: z.array(z.string()), // 風險/缺口提示
+  sources: z.array(ComparisonSourceSchema).min(2), // 來源列表（≥2 個）
 });
 ```
 
@@ -258,7 +261,7 @@ const ComparisonSchema = z.object({
 {
   "metric": "usdc_supply_apy",
   "protocols": ["aave-v3", "compound-v3"],
-  "timeframe": "24h"  // optional, currently ignored with caveat
+  "timeframe": "24h" // optional, currently ignored with caveat
 }
 ```
 
@@ -298,6 +301,7 @@ const ComparisonSchema = z.object({
 ```
 
 **Validation rules:**
+
 - `rows` ≥ 2（至少兩個 cited observations）
 - `sources` ≥ 2（至少兩個 distinct subgraphId）
 - 每個 row 必須有完整的 citation 欄位
@@ -310,7 +314,7 @@ const ComparisonSchema = z.object({
 ```json
 {
   "question": "Compare USDC supply APY across Aave V3 and Compound V3",
-  "protocols": ["aave-v3", "compound-v3"]  // optional, auto-detected from question
+  "protocols": ["aave-v3", "compound-v3"] // optional, auto-detected from question
 }
 ```
 
@@ -336,6 +340,7 @@ const ComparisonSchema = z.object({
 **實作方式:** `research_brief` 內部呼叫 `compare_markets`，然後用模板把結果包成 brief 結構（**非 LLM synthesis**——模板包裝；Grok orchestrator 版本的 synthesis 才由 LLM 負責）。不是獨立的查詢邏輯。
 
 **驗收標準（testable）：**
+
 - ✅ Input valid question + protocols → output 含 `brief.conclusion`（非空字串）
 - ✅ `brief.keyFigures` 陣列長度 ≥ 2
 - ✅ 每個 keyFigure 含 `protocol`, `metric`, `value`, `source`（非空）
@@ -462,23 +467,23 @@ const ComparisonSchema = z.object({
 
 **統計定義：**
 
-| 統計 | 定義 |
-| --- | --- |
-| `earliest` / `latest` | 依 `days` 遞增排序後的首／末點值 |
+| 統計                   | 定義                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `earliest` / `latest`  | 依 `days` 遞增排序後的首／末點值                                                       |
 | `change` / `changePct` | `latest - earliest`；`((latest - earliest) / earliest) * 100`（`earliest = 0` 時為 0） |
-| `slopePerDay` | 最小平方線性回歸，x 採用真實 `days`（非陣列索引，避免缺日失真） |
-| `direction` | `\|slopePerDay\|` ≤ 序列平均值 × 0.5% → `flat`；> 0 → `rising`；< 0 → `falling` |
-| `volatility` | 每日差值（`value[i] - value[i-1]`）的母體標準差 |
-| `min` / `max` | 序列值的極值 |
+| `slopePerDay`          | 最小平方線性回歸，x 採用真實 `days`（非陣列索引，避免缺日失真）                        |
+| `direction`            | `\|slopePerDay\|` ≤ 序列平均值 × 0.5% → `flat`；> 0 → `rising`；< 0 → `falling`        |
+| `volatility`           | 每日差值（`value[i] - value[i-1]`）的母體標準差                                        |
+| `min` / `max`          | 序列值的極值                                                                           |
 
 Derived statistics（`change` / `changePct` / `slopePerDay` / `volatility`）四捨六入至 6 位小數，避免 float artifact 進入 MCP 輸出；citation-backed values（`latest` / `earliest` / `min` / `max`）保持原值。
 
 **Data source：** `MarketDataSource.getHistory(metric, window, protocols?, asset?)` → `TrendSeries[]`
 
-| 模式 | 行為 |
-| --- | --- |
-| fixture | 由 `MARKET_HISTORY_FIXTURES` 分組（USDC × 3 協議 × 7 天 × `{supply_apy, utilization}` = 42 點），取最新 `TREND_WINDOW_DAYS[window]` 點 |
-| live | `GraphGatewayClient.getMarketHistory()` → `GET_MARKET_HISTORY_QUERY`（嵌套 `dailySnapshots(first: 31, orderBy: days, orderDirection: desc)`），`Promise.allSettled` fan-out，失敗記入 `lastGaps`（`protocol: reason`） |
+| 模式    | 行為                                                                                                                                                                                                                   |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| fixture | 由 `MARKET_HISTORY_FIXTURES` 分組（USDC × 3 協議 × 7 天 × `{supply_apy, utilization}` = 42 點），取最新 `TREND_WINDOW_DAYS[window]` 點                                                                                 |
+| live    | `GraphGatewayClient.getMarketHistory()` → `GET_MARKET_HISTORY_QUERY`（嵌套 `dailySnapshots(first: 31, orderBy: days, orderDirection: desc)`），`Promise.allSettled` fan-out，失敗記入 `lastGaps`（`protocol: reason`） |
 
 ---
 
@@ -490,8 +495,8 @@ Derived statistics（`change` / `changePct` / `slopePerDay` / `volatility`）四
 
 ```typescript
 class GraphGatewayClient {
-  constructor({ apiKey, fetchImpl })
-  async getUsdcSupplyApy(source: SubgraphSource): Promise<MarketObservation>
+  constructor({ apiKey, fetchImpl });
+  async getUsdcSupplyApy(source: SubgraphSource): Promise<MarketObservation>;
 }
 ```
 
@@ -500,34 +505,43 @@ class GraphGatewayClient {
 ```graphql
 query AskChingUsdcSupplyApy {
   markets(first: 100) {
-    inputToken { symbol }
-    rates { rate side type }
+    inputToken {
+      symbol
+    }
+    rates {
+      rate
+      side
+      type
+    }
     indexLastUpdatedTimestamp
   }
   _meta {
     deployment
-    block { number timestamp }
+    block {
+      number
+      timestamp
+    }
   }
 }
 ```
 
 ### 5.3 Error Handling
 
-| 情況 | 處理 |
-|------|------|
-| HTTP 非 200 | throw `The Graph request for {protocol} failed with HTTP {status}` |
-| GraphQL errors | throw + 串接 error messages |
-| No data | throw `returned no data` |
-| No USDC rate | throw `returned no USDC lender rate` |
-| No timestamp | throw `returned no source timestamp` |
+| 情況           | 處理                                                               |
+| -------------- | ------------------------------------------------------------------ |
+| HTTP 非 200    | throw `The Graph request for {protocol} failed with HTTP {status}` |
+| GraphQL errors | throw + 串接 error messages                                        |
+| No data        | throw `returned no data`                                           |
+| No USDC rate   | throw `returned no USDC lender rate`                               |
+| No timestamp   | throw `returned no source timestamp`                               |
 
 ### 5.4 Live Sources
 
-| Protocol | Network | Subgraph ID | Schema |
-|----------|---------|-------------|--------|
-| Aave V3 | Ethereum mainnet | `JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk` | Messari lending |
+| Protocol    | Network          | Subgraph ID                                    | Schema          |
+| ----------- | ---------------- | ---------------------------------------------- | --------------- |
+| Aave V3     | Ethereum mainnet | `JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk` | Messari lending |
 | Compound V3 | Ethereum mainnet | `AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9` | Messari lending |
-| Spark Lend | Ethereum mainnet | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` | Messari lending |
+| Spark Lend  | Ethereum mainnet | `GbKdmBe4ycCYCQLQSjqGg6UHYoYfbyJyq5WrG35pv1si` | Messari lending |
 
 **✅ 已驗證（2026-09-08）：** `DEMO_LIVE=1 pnpm live:smoke` 三源全回（Compound V3 4.6453% / Aave V3 3.6283% / Spark Lend 3.5419% @ blocks 25,933,794–795），field mapping 正確，完整 citation 返回。
 
@@ -557,17 +571,17 @@ Return to user
 
 ### 6.2 架構決策：In-process Import vs. Stdio Pipe
 
-| 方案 | 優點 | 缺點 | 決定 |
-|------|------|------|------|
-| **In-process import** | 快、簡單、同一個 Node process | 不走 MCP stdio | ✅ **選這個** — hackathon 時間有限 |
-| Stdio pipe | 更 "MCP 標準" | 需要 fork/pipe MCP server、debug 複雜 | ❌ v2 再說 |
+| 方案                  | 優點                          | 缺點                                  | 決定                               |
+| --------------------- | ----------------------------- | ------------------------------------- | ---------------------------------- |
+| **In-process import** | 快、簡單、同一個 Node process | 不走 MCP stdio                        | ✅ **選這個** — hackathon 時間有限 |
+| Stdio pipe            | 更 "MCP 標準"                 | 需要 fork/pipe MCP server、debug 複雜 | ❌ v2 再說                         |
 
 ### 6.2b In-process Import 機制
 
 ```typescript
 // grok-orchestrator/src/loop.ts
-import { compareMarkets } from "@askching/mcp-server/tools.js";
-import { createMarketDataSource } from "@askching/shared";
+import { compareMarkets } from '@askching/mcp-server/tools.js';
+import { createMarketDataSource } from '@askching/shared';
 
 // 直接呼叫 handler，不經過 MCP stdio transport
 const dataSource = createMarketDataSource(process.env);
@@ -582,22 +596,22 @@ const result = await compareMarkets(input, dataSource);
 
 ```typescript
 // xAI API — 實際實作（packages/grok-orchestrator/src/index.ts:12-13）
-const DEFAULT_BASE_URL = "https://api.x.ai/v1";  // 可被 ASKCHING_LLM_BASE_URL env 覆寫
-const DEFAULT_MODEL = "grok-4.6";  // 可被 ASKCHING_LLM_MODEL env 覆寫
+const DEFAULT_BASE_URL = 'https://api.x.ai/v1'; // 可被 ASKCHING_LLM_BASE_URL env 覆寫
+const DEFAULT_MODEL = 'grok-4.6'; // 可被 ASKCHING_LLM_MODEL env 覆寫
 // ⚠️ Q1 追蹤：grok-4.6 尚未以真實 xAI API 驗證（見 §13 Q1）
 ```
 
 ### 6.4 API Key 配置
 
-| 變數 | 來源 | 用途 |
-|------|------|------|
-| `XAI_API_KEY` | xAI Console (console.x.ai) | Grok API 認證（**可選**：本地 LLM（Ollama）或 fixture 模式可省略；live Grok 模式必需） |
-| `GRAPH_API_KEY` | Subgraph Studio | The Graph Gateway 認證 |
+| 變數            | 來源                       | 用途                                                                                   |
+| --------------- | -------------------------- | -------------------------------------------------------------------------------------- |
+| `XAI_API_KEY`   | xAI Console (console.x.ai) | Grok API 認證（**可選**：本地 LLM（Ollama）或 fixture 模式可省略；live Grok 模式必需） |
+| `GRAPH_API_KEY` | Subgraph Studio            | The Graph Gateway 認證                                                                 |
 
 ```typescript
 // grok-orchestrator/src/loop.ts
 const apiKey = process.env.XAI_API_KEY;
-if (!apiKey) throw new Error("XAI_API_KEY is required for live Grok mode");
+if (!apiKey) throw new Error('XAI_API_KEY is required for live Grok mode');
 ```
 
 `.env.example`:
@@ -652,9 +666,9 @@ pnpm live:smoke
 ### 7.1 雙模式
 
 ```typescript
-function createMarketDataSource(env: AskChingEnvironment): MarketDataSource
-  // env.DEMO_LIVE !== "1" → fixture mode (no network)
-  // env.DEMO_LIVE === "1" → live mode (requires GRAPH_API_KEY)
+function createMarketDataSource(env: AskChingEnvironment): MarketDataSource;
+// env.DEMO_LIVE !== "1" → fixture mode (no network)
+// env.DEMO_LIVE === "1" → live mode (requires GRAPH_API_KEY)
 ```
 
 ### 7.2 Fan-out 策略（✅ 已改為 settled 2026-09-08）
@@ -663,12 +677,8 @@ function createMarketDataSource(env: AskChingEnvironment): MarketDataSource
 
 ```typescript
 // 已實作
-const settled = await Promise.allSettled(
-  selected.map((source) => client.getUsdcSupplyApy(source))
-);
-const fulfilled = settled
-  .filter((r) => r.status === "fulfilled")
-  .map((r) => r.value);
+const settled = await Promise.allSettled(selected.map((source) => client.getUsdcSupplyApy(source)));
+const fulfilled = settled.filter((r) => r.status === 'fulfilled').map((r) => r.value);
 if (fulfilled.length < 2) {
   throw new Error(`Need at least 2 cited sources; got ${fulfilled.length}`);
 }
@@ -683,23 +693,23 @@ if (fulfilled.length < 2) {
 
 ### 8.1 現有 Cases（5 條）
 
-| ID | 測試內容 |
-|----|---------|
-| `compare-default-order` | 兩源比較，預設順序 |
-| `compare-reversed-order` | 反轉順序結果一致 |
-| `compare-as-of` | 結果包含 asOf |
-| `compare-citations` | 每個 row 有完整 citation |
-| `compare-timeframe-gap` | timeframe 參數產生 caveat |
+| ID                       | 測試內容                  |
+| ------------------------ | ------------------------- |
+| `compare-default-order`  | 兩源比較，預設順序        |
+| `compare-reversed-order` | 反轉順序結果一致          |
+| `compare-as-of`          | 結果包含 asOf             |
+| `compare-citations`      | 每個 row 有完整 citation  |
+| `compare-timeframe-gap`  | timeframe 參數產生 caveat |
 
 ### 8.2 Phase 2 目標 Cases（實作方式：unit tests）
 
-| ID | 測試內容 |
-|----|---------|
-| `brief-output` | research_brief 輸出含 conclusion + keyFigures |
-| `settled-fan-out` | 單一 source 失敗仍出結果 + gap caveat |
-| `gap-detection` | 缺數據時明確標示 |
-| `three-source-compare` | 3 sources 排名正確 |
-| `risk-scan-basic` | risk_scan 輸出含 findings |
+| ID                     | 測試內容                                      |
+| ---------------------- | --------------------------------------------- |
+| `brief-output`         | research_brief 輸出含 conclusion + keyFigures |
+| `settled-fan-out`      | 單一 source 失敗仍出結果 + gap caveat         |
+| `gap-detection`        | 缺數據時明確標示                              |
+| `three-source-compare` | 3 sources 排名正確                            |
+| `risk-scan-basic`      | risk_scan 輸出含 findings                     |
 
 > **實際狀態：** `evals/cases.json` 維持 5 條；settled fan-out、gap detection 由 unit tests 覆蓋（`data-source.test.ts`）；三源排名沿用同一 ranking code path（`compareObservations`，2-source test 覆蓋）。如需完整 eval 覆蓋可列為 v1.1 改善，不阻擋 submission。
 
@@ -713,16 +723,17 @@ if (fulfilled.length < 2) {
 
 ### Phase 0 — Live Smoke Validation ✅ 已完成（6/6）
 
-| # | 任務 | 檔案 | AC |
-|---|------|------|-----|
-| 0.1 | 取得 `GRAPH_API_KEY`（Subgraph Studio） | `.env` | ✅ key 存在 |
-| 0.1b | 確認 `XAI_API_KEY` 可用（xAI Console 取得） | `.env` | ✅ key 存在 |
-| 0.2 | 執行 `DEMO_LIVE=1 pnpm live:smoke` | terminal | ✅ 兩個 source 都返回 JSON |
-| 0.3 | 驗證 USDC rate 欄位存在（`rates[].side === "LENDER" && type === "VARIABLE"`） | 輸出 JSON | ✅ 至少一個 rate per source |
-| 0.4 | 若 schema 不通 → 修 `graph-client.ts` field mapping | `graph-client.ts` | ✅ live smoke pass |
-| 0.5 | 記錄 live evidence artifact（截圖/JSON） | docs/ | ✅ |
+| #    | 任務                                                                          | 檔案              | AC                          |
+| ---- | ----------------------------------------------------------------------------- | ----------------- | --------------------------- |
+| 0.1  | 取得 `GRAPH_API_KEY`（Subgraph Studio）                                       | `.env`            | ✅ key 存在                 |
+| 0.1b | 確認 `XAI_API_KEY` 可用（xAI Console 取得）                                   | `.env`            | ✅ key 存在                 |
+| 0.2  | 執行 `DEMO_LIVE=1 pnpm live:smoke`                                            | terminal          | ✅ 兩個 source 都返回 JSON  |
+| 0.3  | 驗證 USDC rate 欄位存在（`rates[].side === "LENDER" && type === "VARIABLE"`） | 輸出 JSON         | ✅ 至少一個 rate per source |
+| 0.4  | 若 schema 不通 → 修 `graph-client.ts` field mapping                           | `graph-client.ts` | ✅ live smoke pass          |
+| 0.5  | 記錄 live evidence artifact（截圖/JSON）                                      | docs/             | ✅                          |
 
 **Phase 0 Pass Criteria:**
+
 - ✅ `GRAPH_API_KEY` 存在且有效
 - ✅ `XAI_API_KEY` 存在且有效
 - ✅ `DEMO_LIVE=1 pnpm live:smoke` 兩個 source 都返回 JSON
@@ -734,13 +745,13 @@ if (fulfilled.length < 2) {
 
 ### Phase 1 — Grok Orchestrator ✅ 已完成（5/5）
 
-| # | 任務 | 檔案 | AC |
-|---|------|------|-----|
-| 1.1 | Grok tool-calling loop（in-process import MCP handlers） | `grok-orchestrator/src/loop.ts` | ✅ 輸入 NL → 輸出 tool call + result |
-| 1.2 | `research_brief` handler 實作（compare → brief template） | `mcp-server/src/tools.ts` | ✅ 回傳 brief JSON 而非 error |
-| 1.3 | `pnpm demo` standalone CLI（fixture mode default, `--live` flag） | `demos/demo.ts` + `package.json` | ✅ `pnpm demo` 跑通 |
-| 1.4 | Grok loop fixture-mode unit test | `grok-orchestrator/src/*.test.ts` | ✅ `pnpm test` 綠 |
-| 1.5 | Commit: `feat(grok): implement tool-calling orchestrator` | git | ✅ |
+| #   | 任務                                                              | 檔案                              | AC                                   |
+| --- | ----------------------------------------------------------------- | --------------------------------- | ------------------------------------ |
+| 1.1 | Grok tool-calling loop（in-process import MCP handlers）          | `grok-orchestrator/src/loop.ts`   | ✅ 輸入 NL → 輸出 tool call + result |
+| 1.2 | `research_brief` handler 實作（compare → brief template）         | `mcp-server/src/tools.ts`         | ✅ 回傳 brief JSON 而非 error        |
+| 1.3 | `pnpm demo` standalone CLI（fixture mode default, `--live` flag） | `demos/demo.ts` + `package.json`  | ✅ `pnpm demo` 跑通                  |
+| 1.4 | Grok loop fixture-mode unit test                                  | `grok-orchestrator/src/*.test.ts` | ✅ `pnpm test` 綠                    |
+| 1.5 | Commit: `feat(grok): implement tool-calling orchestrator`         | git                               | ✅                                   |
 
 **晚間驗收**：`pnpm demo:live` → 輸入 "Compare USDC supply APY" → 拿到 cited brief
 
@@ -748,36 +759,36 @@ if (fulfilled.length < 2) {
 
 ### Phase 2 — Multi-source + Settled Fan-out ✅ 已完成（4/4）
 
-| # | 任務 | 檔案 | AC |
-|---|------|------|-----|
-| 2.1 | 加第三 source（若 Phase 0 確認 Morpho/Spark schema 可用） | `source-config.ts` | ✅ 3 sources |
-| 2.2 | Fan-out 改為 settled（`Promise.allSettled`） | `data-source.ts` | ✅ 單一 source 掛掉仍出結果 |
-| 2.3 | 3 個新 eval cases | `evals/cases.json` + `run.ts` | ✅ 8/8 pass |
-| 2.4 | Commit: `feat(shared): settled fan-out + third source` | git | ✅ |
+| #   | 任務                                                      | 檔案                          | AC                          |
+| --- | --------------------------------------------------------- | ----------------------------- | --------------------------- |
+| 2.1 | 加第三 source（若 Phase 0 確認 Morpho/Spark schema 可用） | `source-config.ts`            | ✅ 3 sources                |
+| 2.2 | Fan-out 改為 settled（`Promise.allSettled`）              | `data-source.ts`              | ✅ 單一 source 掛掉仍出結果 |
+| 2.3 | 3 個新 eval cases                                         | `evals/cases.json` + `run.ts` | ✅ 8/8 pass                 |
+| 2.4 | Commit: `feat(shared): settled fan-out + third source`    | git                           | ✅                          |
 
 ---
 
 ### Phase 3 — README + Showcase + Doc Finalization ✅ 已完成（4/4）
 
-| # | 任務 | 檔案 | AC |
-|---|------|------|-----|
-| 3.1 | README 升級：Start Fresh 聲明 + track positioning + 安裝說明 + vs official MCP 對照 | `README.md` | ✅ 評審 10 秒懂 |
-| 3.2 | Showcase page 完整更新（description + repo + video placeholder） | ethglobal.com | ✅ |
-| 3.3 | SKILL.md 更新（反映 research_brief 已實作） | `skills/askching/SKILL.md` | ✅ |
-| 3.4 | Commit: `docs: submission-ready README and showcase` | git | ✅ |
+| #   | 任務                                                                                | 檔案                       | AC              |
+| --- | ----------------------------------------------------------------------------------- | -------------------------- | --------------- |
+| 3.1 | README 升級：Start Fresh 聲明 + track positioning + 安裝說明 + vs official MCP 對照 | `README.md`                | ✅ 評審 10 秒懂 |
+| 3.2 | Showcase page 完整更新（description + repo + video placeholder）                    | ethglobal.com              | ✅              |
+| 3.3 | SKILL.md 更新（反映 research_brief 已實作）                                         | `skills/askching/SKILL.md` | ✅              |
+| 3.4 | Commit: `docs: submission-ready README and showcase`                                | git                        | ✅              |
 
 ---
 
 ### Phase 4 — Demo Video + Submit 🔄 進行中（2/6：4.3/4.4 ✅，4.1/4.2/4.5/4.6 待執行）
 
-| # | 任務 | 說明 | AC |
-|---|------|------|-----|
-| 4.1 | 錄 demo video（2-4 min, ≥720p, 真人配音, live data） | 場景 A+B+C | ✅ |
-| 4.2 | 上傳 video（YouTube unlisted） | URL | ✅ |
-| 4.3 | 最終 live smoke（`pnpm demo:live`） | terminal | ✅ green |
-| 4.4 | 確認 git log 完整（不 squash） | `git log --oneline` | ✅ 多個 commits |
-| 4.5 | 確認 repo 公開 + README 正常 | GitHub | ✅ |
-| 4.6 | Update showcase + submit | ethglobal.com | ✅ |
+| #   | 任務                                                 | 說明                | AC              |
+| --- | ---------------------------------------------------- | ------------------- | --------------- |
+| 4.1 | 錄 demo video（2-4 min, ≥720p, 真人配音, live data） | 場景 A+B+C          | ✅              |
+| 4.2 | 上傳 video（YouTube unlisted）                       | URL                 | ✅              |
+| 4.3 | 最終 live smoke（`pnpm demo:live`）                  | terminal            | ✅ green        |
+| 4.4 | 確認 git log 完整（不 squash）                       | `git log --oneline` | ✅ 多個 commits |
+| 4.5 | 確認 repo 公開 + README 正常                         | GitHub              | ✅              |
+| 4.6 | Update showcase + submit                             | ethglobal.com       | ✅              |
 
 ---
 
@@ -785,14 +796,14 @@ if (fulfilled.length < 2) {
 
 ### Per-Phase AC Summary
 
-| Phase | Must-Have AC | Pass Criteria |
-|-------|-------------|---------------|
-| **Phase 0** | Live smoke pass with 2+ cited sources | JSON output with USDC rates |
+| Phase       | Must-Have AC                                  | Pass Criteria                            |
+| ----------- | --------------------------------------------- | ---------------------------------------- |
+| **Phase 0** | Live smoke pass with 2+ cited sources         | JSON output with USDC rates              |
 | **Phase 1** | Grok loop produces cited brief from NL prompt | Brief has conclusion + numbers + sources |
-| **Phase 1** | `research_brief` returns structured brief | Not "not-implemented" |
-| **Phase 2** | 3 sources compared, settled fan-out works | Single failure doesn't kill comparison |
-| **Phase 3** | README explains positioning in <10 seconds | "vs official MCP" table present |
-| **Phase 4** | Demo video 2-4 min, live data, no AI voice | Human narrated, ≥720p |
+| **Phase 1** | `research_brief` returns structured brief     | Not "not-implemented"                    |
+| **Phase 2** | 3 sources compared, settled fan-out works     | Single failure doesn't kill comparison   |
+| **Phase 3** | README explains positioning in <10 seconds    | "vs official MCP" table present          |
+| **Phase 4** | Demo video 2-4 min, live data, no AI voice    | Human narrated, ≥720p                    |
 
 ### Final Submission AC
 
@@ -810,41 +821,41 @@ if (fulfilled.length < 2) {
 
 ## 11. Out of Scope
 
-| 不做 | 原因 | 計畫 |
-|------|------|------|
-| 交易執行 / 自動下單 | 研究工具，不是交易工具 | v2.0+ |
-| 自建 indexing pipeline | 用 The Graph 官方 | — |
-| 華麗 UI / Dashboard | MVP 專注 CLI + MCP | v2.0+ |
-| x402 付費 | 有餘力才做 | README roadmap |
-| Standardized schema Composable track | 這次只打 AI tooling track | — |
-| risk_scan 完整版 | 時間不夠，做最簡版 | v1.1 |
+| 不做                                 | 原因                      | 計畫           |
+| ------------------------------------ | ------------------------- | -------------- |
+| 交易執行 / 自動下單                  | 研究工具，不是交易工具    | v2.0+          |
+| 自建 indexing pipeline               | 用 The Graph 官方         | —              |
+| 華麗 UI / Dashboard                  | MVP 專注 CLI + MCP        | v2.0+          |
+| x402 付費                            | 有餘力才做                | README roadmap |
+| Standardized schema Composable track | 這次只打 AI tooling track | —              |
+| risk_scan 完整版                     | 時間不夠，做最簡版        | v1.1           |
 
 ---
 
 ## 12. Risk Register
 
-| ID | 風險 | 嚴重度 | 機率 | 緩解 | Owner |
-|----|------|--------|------|------|-------|
-| R1 | Live schema 不通（Messari 欄位與 mapping 不一致） | 🔴 Critical | Medium | Phase 0 驗證，失敗即改 mapping | Engineering |
-| R2 | xAI API rate limit / timeout | 🔴 Critical | Medium | retry + fixture fallback for dev | Engineering |
-| R3 | Demo 錄製時 live 環境掛 | 🟡 High | Medium | fixture fallback 錄製方案 | Demo Lead |
-| R4 | Scope creep 導致做不完 | 🟡 High | High | 嚴格執行 Phase 順序，不加新功能 | PM |
-| R5 | 第三 subgraph schema 不相容 | 🟡 Medium | Medium | Phase 0 併入驗證，不相容就不加 | Engineering |
-| R6 | Track 定位被質疑 | 🟡 Medium | Low | README 明確 "AI orchestration layer" | PM |
-| R7 | Submission 平台故障（ethglobal.com 提交時不可用） | 🟡 Medium | Low | Day 5 保留 buffer + 提前截圖備份 showcase 內容 | PM |
+| ID  | 風險                                              | 嚴重度      | 機率   | 緩解                                           | Owner       |
+| --- | ------------------------------------------------- | ----------- | ------ | ---------------------------------------------- | ----------- |
+| R1  | Live schema 不通（Messari 欄位與 mapping 不一致） | 🔴 Critical | Medium | Phase 0 驗證，失敗即改 mapping                 | Engineering |
+| R2  | xAI API rate limit / timeout                      | 🔴 Critical | Medium | retry + fixture fallback for dev               | Engineering |
+| R3  | Demo 錄製時 live 環境掛                           | 🟡 High     | Medium | fixture fallback 錄製方案                      | Demo Lead   |
+| R4  | Scope creep 導致做不完                            | 🟡 High     | High   | 嚴格執行 Phase 順序，不加新功能                | PM          |
+| R5  | 第三 subgraph schema 不相容                       | 🟡 Medium   | Medium | Phase 0 併入驗證，不相容就不加                 | Engineering |
+| R6  | Track 定位被質疑                                  | 🟡 Medium   | Low    | README 明確 "AI orchestration layer"           | PM          |
+| R7  | Submission 平台故障（ethglobal.com 提交時不可用） | 🟡 Medium   | Low    | Day 5 保留 buffer + 提前截圖備份 showcase 內容 | PM          |
 
 ---
 
 ## 13. Open Questions (PM)
 
-| ID | 問題 | 狀態 | 誰回答 | Deadline |
-|----|------|------|--------|----------|
-| Q1 | Grok model 選擇：grok-4 vs grok-3.5？ | ⚠️ 部分決定 — grok-4.6 未以真實 API 驗證（checklist A2 fallback 流程已定義） | PM 確認 xAI API 可用性 | Phase 0 |
-| Q2 | Demo video 配音：真人 vs TTS？ | ✅ 已決定 — 真人旁白 | PM 確認 | Phase 4 |
-| Q3 | 第三 source 選擇：Morpho / Spark / 其他？ | ✅ 已決定 — Spark Lend | Engineering | Phase 0 |
-| Q4 | Showcase page description 長度限制？ | ✅ 已決定 — 備選 <60 chars（弱驗證） | PM 查 ethglobal.com | Phase 3 |
+| ID  | 問題                                      | 狀態                                                                         | 誰回答                 | Deadline |
+| --- | ----------------------------------------- | ---------------------------------------------------------------------------- | ---------------------- | -------- |
+| Q1  | Grok model 選擇：grok-4 vs grok-3.5？     | ⚠️ 部分決定 — grok-4.6 未以真實 API 驗證（checklist A2 fallback 流程已定義） | PM 確認 xAI API 可用性 | Phase 0  |
+| Q2  | Demo video 配音：真人 vs TTS？            | ✅ 已決定 — 真人旁白                                                         | PM 確認                | Phase 4  |
+| Q3  | 第三 source 選擇：Morpho / Spark / 其他？ | ✅ 已決定 — Spark Lend                                                       | Engineering            | Phase 0  |
+| Q4  | Showcase page description 長度限制？      | ✅ 已決定 — 備選 <60 chars（弱驗證）                                         | PM 查 ethglobal.com    | Phase 3  |
 
 ---
 
-*Document version: 1.4 — 2026-09-09（Phase 0–3 完成，Phase 4 進行中，總體 88%）*  
-*Status: For team development and ETHOnline 2026 submission*
+_Document version: 1.4 — 2026-09-09（Phase 0–3 完成，Phase 4 進行中，總體 88%）_  
+_Status: For team development and ETHOnline 2026 submission_

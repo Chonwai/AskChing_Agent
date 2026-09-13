@@ -28,6 +28,7 @@
 ### Task 1: Yield contracts and source registry
 
 **Files:**
+
 - Modify: packages/shared/src/schemas.ts
 - Create: packages/shared/src/yield-sources.ts
 - Create: packages/shared/src/yield-sources.test.ts
@@ -35,6 +36,7 @@
 - Modify: packages/shared/src/index.ts
 
 **Interfaces:**
+
 - Produces: YieldVenueSchema, YieldCategorySchema, YieldRiskFlagSchema, YieldCitationSchema, DexYieldObservationSchema, LendingYieldOpportunitySchema, DexLpYieldOpportunitySchema, YieldDiscoveryGapSchema, DiscoverYieldsResultSchema.
 - Produces: DEX_YIELD_SOURCES, LIVE_DEX_YIELD_SOURCES, CORE_STABLECOIN_ADDRESSES.
 
@@ -84,21 +86,23 @@ Export the new modules from packages/shared/src/index.ts. Run the two focused te
 
 - [ ] **Step 6: Commit and push**
 
-    git add packages/shared/src/schemas.ts packages/shared/src/yield-sources.ts packages/shared/src/yield-sources.test.ts packages/shared/src/yield-discovery.test.ts packages/shared/src/index.ts
-    git commit -m "feat(shared): add yield discovery contracts"
-    git push origin main
+  git add packages/shared/src/schemas.ts packages/shared/src/yield-sources.ts packages/shared/src/yield-sources.test.ts packages/shared/src/yield-discovery.test.ts packages/shared/src/index.ts
+  git commit -m "feat(shared): add yield discovery contracts"
+  git push origin main
 
 ---
 
 ### Task 2: Deterministic DEX fixtures and Uniswap adapter
 
 **Files:**
+
 - Create: packages/shared/src/yield-fixtures.ts
 - Create: packages/shared/src/yield-client.ts
 - Create: packages/shared/src/yield-client.test.ts
 - Modify: packages/shared/src/index.ts
 
 **Interfaces:**
+
 - Produces: DEX_YIELD_FIXTURES.
 - Produces: UniswapV3YieldAdapter.getOpportunities(input): Promise of YieldAdapterResult.
 - Consumes: DexYieldObservationSchema and DEX_YIELD_SOURCES from Task 1.
@@ -133,19 +137,21 @@ Run the focused test and shared build. Expected: all pass.
 
 - [ ] **Step 6: Commit and push**
 
-    git add packages/shared/src/yield-fixtures.ts packages/shared/src/yield-client.ts packages/shared/src/yield-client.test.ts packages/shared/src/index.ts
-    git commit -m "feat(shared): query Uniswap stablecoin fee yields"
-    git push origin main
+  git add packages/shared/src/yield-fixtures.ts packages/shared/src/yield-client.ts packages/shared/src/yield-client.test.ts packages/shared/src/index.ts
+  git commit -m "feat(shared): query Uniswap stablecoin fee yields"
+  git push origin main
 
 ---
 
 ### Task 3: Curve adapter and common-window behavior
 
 **Files:**
+
 - Modify: packages/shared/src/yield-client.ts
 - Modify: packages/shared/src/yield-client.test.ts
 
 **Interfaces:**
+
 - Produces: CurveYieldAdapter.getOpportunities(input): Promise of YieldAdapterResult.
 - Consumes: exact Curve daily fields dailySupplySideRevenueUSD, dailyVolumeUSD, totalValueLockedUSD, timestamp, blockNumber, pool input tokens.
 
@@ -167,20 +173,22 @@ Run the focused test and shared build. Expected: all pass.
 
 - [ ] **Step 5: Commit and push**
 
-    git add packages/shared/src/yield-client.ts packages/shared/src/yield-client.test.ts
-    git commit -m "feat(shared): query Curve stablecoin fee yields"
-    git push origin main
+  git add packages/shared/src/yield-client.ts packages/shared/src/yield-client.test.ts
+  git commit -m "feat(shared): query Curve stablecoin fee yields"
+  git push origin main
 
 ---
 
 ### Task 4: Pure discovery normalizer
 
 **Files:**
+
 - Create: packages/shared/src/yield-discovery.ts
 - Modify: packages/shared/src/yield-discovery.test.ts
 - Modify: packages/shared/src/index.ts
 
 **Interfaces:**
+
 - Produces: normalizeYieldDiscovery(input): DiscoverYieldsResult.
 - Input contains lending observations, DEX observations, gaps, minTvlUsd, limitPerCategory, and current time.
 
@@ -210,15 +218,16 @@ Run yield-discovery, compare, analysis, and trend tests plus shared build. Expec
 
 - [ ] **Step 6: Commit and push**
 
-    git add packages/shared/src/yield-discovery.ts packages/shared/src/yield-discovery.test.ts packages/shared/src/index.ts
-    git commit -m "feat(shared): rank cited yield opportunities"
-    git push origin main
+  git add packages/shared/src/yield-discovery.ts packages/shared/src/yield-discovery.test.ts packages/shared/src/index.ts
+  git commit -m "feat(shared): rank cited yield opportunities"
+  git push origin main
 
 ---
 
 ### Task 5: Fixture/live DEX data-source facade
 
 **Files:**
+
 - Create: packages/shared/src/yield-data-source.ts
 - Create: packages/shared/src/yield-data-source.test.ts
 - Modify: packages/shared/src/data-source.ts
@@ -227,9 +236,10 @@ Run yield-discovery, compare, analysis, and trend tests plus shared build. Expec
 - Modify: packages/shared/src/fixture-live-consistency.test.ts
 
 **Interfaces:**
+
 - Adds to MarketDataSource:
 
-    getDexYieldOpportunities(input: DexYieldRequest): Promise of YieldAdapterResult array
+  getDexYieldOpportunities(input: DexYieldRequest): Promise of YieldAdapterResult array
 
 - Produces createDexYieldDataSource(environment, fetchImpl).
 
@@ -259,15 +269,16 @@ Run focused tests and shared build. Expected: all pass.
 
 - [ ] **Step 7: Commit and push**
 
-    git add packages/shared/src/yield-data-source.ts packages/shared/src/yield-data-source.test.ts packages/shared/src/data-source.ts packages/shared/src/data-source.test.ts packages/shared/src/index.ts packages/shared/src/fixture-live-consistency.test.ts
-    git commit -m "feat(shared): add settled DEX yield data source"
-    git push origin main
+  git add packages/shared/src/yield-data-source.ts packages/shared/src/yield-data-source.test.ts packages/shared/src/data-source.ts packages/shared/src/data-source.test.ts packages/shared/src/index.ts packages/shared/src/fixture-live-consistency.test.ts
+  git commit -m "feat(shared): add settled DEX yield data source"
+  git push origin main
 
 ---
 
 ### Task 6: MCP handler and both transports
 
 **Files:**
+
 - Modify: packages/mcp-server/src/tools.ts
 - Modify: packages/mcp-server/src/tools.test.ts
 - Modify: packages/mcp-server/src/register.ts
@@ -277,6 +288,7 @@ Run focused tests and shared build. Expected: all pass.
 - Modify: demos/vercel-probe.ts
 
 **Interfaces:**
+
 - Produces DiscoverYieldsCoreSchema and DiscoverYieldsInputSchema.
 - Produces discoverYields(rawInput, dataSource): Promise of DiscoverYieldsResult.
 - Registers canonical tool name discover_yields.
@@ -311,19 +323,21 @@ Expected: handler tests pass and every transport/probe reports six tools.
 
 - [ ] **Step 6: Commit and push**
 
-    git add packages/mcp-server/src/tools.ts packages/mcp-server/src/tools.test.ts packages/mcp-server/src/register.ts packages/mcp-server/src/mcp-smoke.ts packages/mcp-server/src/http-smoke.ts packages/mcp-server/src/http.test.ts demos/vercel-probe.ts
-    git commit -m "feat(mcp): expose cross-venue yield discovery"
-    git push origin main
+  git add packages/mcp-server/src/tools.ts packages/mcp-server/src/tools.test.ts packages/mcp-server/src/register.ts packages/mcp-server/src/mcp-smoke.ts packages/mcp-server/src/http-smoke.ts packages/mcp-server/src/http.test.ts demos/vercel-probe.ts
+  git commit -m "feat(mcp): expose cross-venue yield discovery"
+  git push origin main
 
 ---
 
 ### Task 7: Grok routing
 
 **Files:**
+
 - Modify: packages/grok-orchestrator/src/loop.ts
 - Modify: packages/grok-orchestrator/src/loop.test.ts
 
 **Interfaces:**
+
 - Adds discover_yields to ASKCHING_TOOLS and executeTool.
 
 - [ ] **Step 1: Write failing orchestration tests**
@@ -344,15 +358,16 @@ Run loop tests and Grok package build. Expected: all pass.
 
 - [ ] **Step 5: Commit and push**
 
-    git add packages/grok-orchestrator/src/loop.ts packages/grok-orchestrator/src/loop.test.ts
-    git commit -m "feat(orchestrator): route USDC yield discovery"
-    git push origin main
+  git add packages/grok-orchestrator/src/loop.ts packages/grok-orchestrator/src/loop.test.ts
+  git commit -m "feat(orchestrator): route USDC yield discovery"
+  git push origin main
 
 ---
 
 ### Task 8: Evals, documentation, live probes, and handoff
 
 **Files:**
+
 - Modify: evals/cases.json
 - Modify: evals/run.ts
 - Modify: evals/skill-contract.test.ts
@@ -366,6 +381,7 @@ Run loop tests and Grok package build. Expected: all pass.
 - Modify: HANDOFF.md
 
 **Interfaces:**
+
 - Adds eval kind discover_yields and script probe:yields.
 
 - [ ] **Step 1: Add failing eval and documentation contracts**
@@ -388,26 +404,26 @@ Run the probe against both pending candidate ids. Only after both exact producti
 
 - [ ] **Step 5: Commit docs/evals and push**
 
-    git add evals/cases.json evals/run.ts evals/skill-contract.test.ts evals/showcase-contract.test.ts skills/askching/SKILL.md skills/askching/agents/openai.yaml README.md demos/prompts.md demos/probe-yield-sources.ts package.json packages/shared/src/yield-sources.ts packages/shared/src/yield-sources.test.ts
-    git commit -m "docs: add cited USDC yield discovery workflow"
-    git push origin main
+  git add evals/cases.json evals/run.ts evals/skill-contract.test.ts evals/showcase-contract.test.ts skills/askching/SKILL.md skills/askching/agents/openai.yaml README.md demos/prompts.md demos/probe-yield-sources.ts package.json packages/shared/src/yield-sources.ts packages/shared/src/yield-sources.test.ts
+  git commit -m "docs: add cited USDC yield discovery workflow"
+  git push origin main
 
 - [ ] **Step 6: Run the full release gate**
 
-    pnpm test
-    pnpm build
-    pnpm eval
-    pnpm mcp:smoke
-    pnpm mcp:http:smoke
-    pnpm vercel:probe
-    pnpm probe:yields
-    git diff --check
+  pnpm test
+  pnpm build
+  pnpm eval
+  pnpm mcp:smoke
+  pnpm mcp:http:smoke
+  pnpm vercel:probe
+  pnpm probe:yields
+  git diff --check
 
 Expected: all tests and evals pass; both MCP transports and Vercel probe report six tools; both DEX venues produce eligible cited live observations.
 
 - [ ] **Step 7: Run one credentialed Grok smoke**
 
-    ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching -- "Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep lending and LP rankings separate, show every formula and citation, and explain the risks."
+  ASKCHING_DEBUG=1 DEMO_LIVE=1 pnpm askching -- "Where can I earn yield on USDC across lending, Uniswap V3, and Curve? Keep lending and LP rankings separate, show every formula and citation, and explain the risks."
 
 Expected: Grok selects discover_yields; output includes separate rankings, complete common day, citations, formulas, risk flags, and no transaction or combined winner.
 

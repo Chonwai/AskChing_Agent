@@ -21,17 +21,17 @@
 
 先部署，取得 URL；然後：
 
-| 平台 | 設定檔 | 鍵 | 傳輸 |
-|---|---|---|---|
-| Claude Desktop | `claude_desktop_config.json` | `url` | Streamable HTTP |
-| Claude Code | `.mcp.json` | `type: http`, `url` | Streamable HTTP |
-| Cursor | `.cursor/mcp.json` | `url` | Streamable HTTP |
-| VS Code (Copilot) | `.vscode/mcp.json` | `type: http`, `url` | Streamable HTTP |
-| Codex | `~/.codex/config.toml` | `[mcp_servers.*]` | Streamable HTTP |
-| Gemini CLI / Antigravity | `settings.json` | `httpUrl` | Streamable HTTP |
-| Grok Bot | Bot connectors | MCP URL | connectors/MCP |
-| ChatGPT | Connectors（開發者模式） | MCP URL | Streamable HTTP |
-| 任何 stdio-only client | 任意 | `npx mcp-remote <url>` | 橋接 |
+| 平台                     | 設定檔                       | 鍵                     | 傳輸            |
+| ------------------------ | ---------------------------- | ---------------------- | --------------- |
+| Claude Desktop           | `claude_desktop_config.json` | `url`                  | Streamable HTTP |
+| Claude Code              | `.mcp.json`                  | `type: http`, `url`    | Streamable HTTP |
+| Cursor                   | `.cursor/mcp.json`           | `url`                  | Streamable HTTP |
+| VS Code (Copilot)        | `.vscode/mcp.json`           | `type: http`, `url`    | Streamable HTTP |
+| Codex                    | `~/.codex/config.toml`       | `[mcp_servers.*]`      | Streamable HTTP |
+| Gemini CLI / Antigravity | `settings.json`              | `httpUrl`              | Streamable HTTP |
+| Grok Bot                 | Bot connectors               | MCP URL                | connectors/MCP  |
+| ChatGPT                  | Connectors（開發者模式）     | MCP URL                | Streamable HTTP |
+| 任何 stdio-only client   | 任意                         | `npx mcp-remote <url>` | 橋接            |
 
 > 端點同時提供 `/api/mcp`（原生）與 `/mcp`（rewrite）；兩者等價。
 
@@ -52,6 +52,7 @@
 ```
 
 重啟 Claude Desktop → 對話中直接問：
+
 > Compare live USDC supply APY across Aave V3, Compound V3, and Spark Lend, and cite each source.
 
 ## 3. Claude Code
@@ -208,15 +209,15 @@ pnpm -C packages/mcp-server build
 
 ## 12. Demo 錄影建議
 
-| 順序 | 畫面 | 講解重點 |
-|---|---|---|
-| 1 | `curl .../api/health` | 「server 活著，現在是 live 模式」 |
-| 2 | `curl .../api/mcp` tools/list | 「5 個工具，一行 URL」 |
-| 3 | **Claude Desktop** 問一個問題 | 展示 ranked + citation + asOf |
-| 4 | **VS Code Copilot** 問同樣問題 | 證明「不是綁死某一家」 |
-| 5 | **Gemini CLI / Antigravity** `gemini mcp list` | 7 個 tools、`Connected` |
-| 6 | **Grok Bot**（若可用） | 把它接進後續工作流 |
-| 7 | 回到 terminal：`ASKCHING_DEBUG=1 pnpm askching -- "..."` | 顯示 tool trace，證明是真呼叫而非幻覺 |
+| 順序 | 畫面                                                     | 講解重點                              |
+| ---- | -------------------------------------------------------- | ------------------------------------- |
+| 1    | `curl .../api/health`                                    | 「server 活著，現在是 live 模式」     |
+| 2    | `curl .../api/mcp` tools/list                            | 「5 個工具，一行 URL」                |
+| 3    | **Claude Desktop** 問一個問題                            | 展示 ranked + citation + asOf         |
+| 4    | **VS Code Copilot** 問同樣問題                           | 證明「不是綁死某一家」                |
+| 5    | **Gemini CLI / Antigravity** `gemini mcp list`           | 7 個 tools、`Connected`               |
+| 6    | **Grok Bot**（若可用）                                   | 把它接進後續工作流                    |
+| 7    | 回到 terminal：`ASKCHING_DEBUG=1 pnpm askching -- "..."` | 顯示 tool trace，證明是真呼叫而非幻覺 |
 
 **每個平台都問同一條問題**，讓評審看到：同一份 evidence chain、同樣的 fail-closed 行為。
 
@@ -224,22 +225,22 @@ pnpm -C packages/mcp-server build
 
 ## 13. 常見問題
 
-| 症狀 | 原因 | 解法 |
-|---|---|---|
-| 平台顯示未連線 | URL 錯或部署失敗 | 先 `curl .../api/health` 確認 |
-| 工具列表是空的 | 函式未正確打包 | 見 `docs/deployment-vercel.md` §6 |
+| 症狀                                                               | 原因                                                   | 解法                                                                          |
+| ------------------------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| 平台顯示未連線                                                     | URL 錯或部署失敗                                       | 先 `curl .../api/health` 確認                                                 |
+| 工具列表是空的                                                     | 函式未正確打包                                         | 見 `docs/deployment-vercel.md` §6                                             |
 | 回 `Need at least 2 cited sources ...`（`structuredContent` 缺席） | 部署在 fixture 模式卻要求 live，或未設 `GRAPH_API_KEY` | 底層原因被 fail-closed 轉譯成「證據不足」。設 `DEMO_LIVE=1` + `GRAPH_API_KEY` |
-| `405 Method Not Allowed` | 用 GET/DELETE 打 endpoint | 預期行為：只支援 POST（stateless、JSON-only） |
-| 工具名有奇怪前綴 | 平台的命名空間規則 | Gemini CLI 用 `mcp_<server>_<tool>`；VS Code 用 `#` 引用 |
-| Claude Desktop 連不上 | 舊版不支援 remote | 更新 Claude Desktop；或改用 §10 的 `mcp-remote` 橋接 |
+| `405 Method Not Allowed`                                           | 用 GET/DELETE 打 endpoint                              | 預期行為：只支援 POST（stateless、JSON-only）                                 |
+| 工具名有奇怪前綴                                                   | 平台的命名空間規則                                     | Gemini CLI 用 `mcp_<server>_<tool>`；VS Code 用 `#` 引用                      |
+| Claude Desktop 連不上                                              | 舊版不支援 remote                                      | 更新 Claude Desktop；或改用 §10 的 `mcp-remote` 橋接                          |
 
 ---
 
 ## 14. 相關文件
 
-| 文件 | 用途 |
-|---|---|
-| `docs/deployment-vercel.md` | 部署步驟與疑難排解 |
-| `docs/improvement-blueprint.md` | 剩餘改善藍圖 |
-| `docs/superpowers/plans/2026-09-12-demo-narrative.md` | Demo 敘事腳本 |
-| `docs/cross-platform.md` | 本機／stdio 接入 |
+| 文件                                                  | 用途               |
+| ----------------------------------------------------- | ------------------ |
+| `docs/deployment-vercel.md`                           | 部署步驟與疑難排解 |
+| `docs/improvement-blueprint.md`                       | 剩餘改善藍圖       |
+| `docs/superpowers/plans/2026-09-12-demo-narrative.md` | Demo 敘事腳本      |
+| `docs/cross-platform.md`                              | 本機／stdio 接入   |

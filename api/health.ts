@@ -1,4 +1,4 @@
-import { describeAskChingServer } from "../packages/mcp-server/dist/http.js";
+import { describeAskChingServer } from '../packages/mcp-server/dist/http.js';
 
 /**
  * Credential-free health/metadata endpoint.
@@ -10,12 +10,12 @@ import { describeAskChingServer } from "../packages/mcp-server/dist/http.js";
  * bare `export default function` is not safe on Vercel).
  */
 
-export const config = { runtime: "nodejs" } as const;
+export const config = { runtime: 'nodejs' } as const;
 
 export default {
   fetch(): Response {
-    return Response.json(describeAskChingServer(process.env, "/api/mcp"), {
-      headers: { "Cache-Control": "no-store" }
+    return Response.json(describeAskChingServer(process.env, '/api/mcp'), {
+      headers: { 'Cache-Control': 'no-store' },
     });
-  }
+  },
 };

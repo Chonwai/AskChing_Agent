@@ -20,12 +20,12 @@ AskChing 是一個 **AI 研究中間層**：你用自然語言問，Grok 決定�
 
 ## 2. 問題痛點
 
-| 痛點 | 現狀 | 影響 |
-|------|------|------|
-| **鏈上數據難查** | 區塊鏈上全是原始交易 log，像流水帳一樣沒有整潔報表 | 開發者/分析師要自己扒數據，慢、貴、重複 |
-| **GraphQL 門檻高** | The Graph 雖然把數據整理成 Subgraph API，但要手寫 GraphQL 查詢 | 普通用戶/研究員難以上手 |
-| **AI agent 沒可靠數據源** | LLM 沒有即時鏈上數據，只能「估」或用過期/假數據 | Agent 的分析缺乏可信度，輸出不可靠 |
-| **單一協議視角** | 現有工具通常只查一個協議，無法跨協議比較 | 無法回答「哪個協議利率最高？」這種研究問題 |
+| 痛點                      | 現狀                                                           | 影響                                       |
+| ------------------------- | -------------------------------------------------------------- | ------------------------------------------ |
+| **鏈上數據難查**          | 區塊鏈上全是原始交易 log，像流水帳一樣沒有整潔報表             | 開發者/分析師要自己扒數據，慢、貴、重複    |
+| **GraphQL 門檻高**        | The Graph 雖然把數據整理成 Subgraph API，但要手寫 GraphQL 查詢 | 普通用戶/研究員難以上手                    |
+| **AI agent 沒可靠數據源** | LLM 沒有即時鏈上數據，只能「估」或用過期/假數據                | Agent 的分析缺乏可信度，輸出不可靠         |
+| **單一協議視角**          | 現有工具通常只查一個協議，無法跨協議比較                       | 無法回答「哪個協議利率最高？」這種研究問題 |
 
 ### 一句話痛點
 
@@ -55,13 +55,13 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 
 ### 核心能力
 
-| 能力 | 說明 | vs 官方 Subgraph MCP |
-|------|------|---------------------|
-| **Multi-subgraph fan-out** | 同一個問題，自動查多個協議的 Subgraph | 官方只查一個 endpoint |
-| **Metric normalization** | 跨協議的單位對齊（APR vs APY、percent vs raw rate） | 官方不做對齊 |
-| **Citation enforcement** | 每個數字必須帶 subgraphId + block + timestamp + queryHash | 官方只返回 raw JSON |
-| **Gap detection** | 缺數據時明確標示缺口，不瞎估 | 官方不處理缺失 |
-| **Structured brief** | `research_brief` 為模板包裝（非 LLM synthesis）；Grok orchestrator 版本才是 LLM synthesis | 官方不做解讀 |
+| 能力                       | 說明                                                                                      | vs 官方 Subgraph MCP  |
+| -------------------------- | ----------------------------------------------------------------------------------------- | --------------------- |
+| **Multi-subgraph fan-out** | 同一個問題，自動查多個協議的 Subgraph                                                     | 官方只查一個 endpoint |
+| **Metric normalization**   | 跨協議的單位對齊（APR vs APY、percent vs raw rate）                                       | 官方不做對齊          |
+| **Citation enforcement**   | 每個數字必須帶 subgraphId + block + timestamp + queryHash                                 | 官方只返回 raw JSON   |
+| **Gap detection**          | 缺數據時明確標示缺口，不瞎估                                                              | 官方不處理缺失        |
+| **Structured brief**       | `research_brief` 為模板包裝（非 LLM synthesis）；Grok orchestrator 版本才是 LLM synthesis | 官方不做解讀          |
 
 ---
 
@@ -104,21 +104,21 @@ Cited Research Brief（結論 + 數字 + 來源 + 風險 + 下一步）
 
 Grok 推理層（CLI）已驗證；AskChing MCP Server **現在**即可供其他 AI 工具接入；Grok 推理層的 MCP server 化列為 roadmap。
 
-| 工具 | 接入方式 | 用戶體驗 |
-|------|----------|---------|
-| **Cursor** | MCP Server config（`.cursor/mcp.json`） | 在 Cursor chat 中直接問鏈上問題 |
-| **Codex** | MCP Server（stdio） | Codex agent 調用 research tools |
-| **Gemini** | MCP Server 或 SKILL | Gemini 透過 tool-calling 使用 |
-| **自建 Agent** | import `@askching/mcp-server` | 任何支援 MCP 的 agent framework |
+| 工具           | 接入方式                                | 用戶體驗                        |
+| -------------- | --------------------------------------- | ------------------------------- |
+| **Cursor**     | MCP Server config（`.cursor/mcp.json`） | 在 Cursor chat 中直接問鏈上問題 |
+| **Codex**      | MCP Server（stdio）                     | Codex agent 調用 research tools |
+| **Gemini**     | MCP Server 或 SKILL                     | Gemini 透過 tool-calling 使用   |
+| **自建 Agent** | import `@askching/mcp-server`           | 任何支援 MCP 的 agent framework |
 
 ### 4.3 用戶類型
 
-| 類型 | 需求 | AskChing 價值 |
-|------|------|--------------|
-| **DeFi 研究員** | 跨協議利率比較、TVL 追蹤 | Multi-source comparison + citations |
-| **AI Agent 開發者** | 需要可靠鏈上數據源 | Reusable MCP infrastructure |
-| **交易員** | 即時市場監控、風險掃描 | Live data + gap detection |
-| **新用戶** | 不懂 GraphQL，想用自然語言問 | NL interface + Grok reasoning |
+| 類型                | 需求                         | AskChing 價值                       |
+| ------------------- | ---------------------------- | ----------------------------------- |
+| **DeFi 研究員**     | 跨協議利率比較、TVL 追蹤     | Multi-source comparison + citations |
+| **AI Agent 開發者** | 需要可靠鏈上數據源           | Reusable MCP infrastructure         |
+| **交易員**          | 即時市場監控、風險掃描       | Live data + gap detection           |
+| **新用戶**          | 不懂 GraphQL，想用自然語言問 | NL interface + Grok reasoning       |
 
 ---
 
@@ -149,22 +149,22 @@ Grok 推理層（CLI）已驗證；AskChing MCP Server **現在**即可供其他
 
 ### 5.2 交付物
 
-| 交付物 | 說明 | 受眾 |
-|--------|------|------|
-| `@askching/mcp-server` | MCP Server（stdio），暴露 research tools | 開發者 / AI 工具 |
-| `@askching/grok-orchestrator` | Grok tool-calling demo CLI | 演示 / 開發者 |
-| `skills/askching/SKILL.md` | Agent 操作手冊（薄 playbook） | AI agents |
-| `evals/` | 行為驗證套件 | 開發者 / CI |
-| Demo Video | 2:55 run script 已就緒，尚未錄製（Phase 4） | 評審 |
+| 交付物                        | 說明                                        | 受眾             |
+| ----------------------------- | ------------------------------------------- | ---------------- |
+| `@askching/mcp-server`        | MCP Server（stdio），暴露 research tools    | 開發者 / AI 工具 |
+| `@askching/grok-orchestrator` | Grok tool-calling demo CLI                  | 演示 / 開發者    |
+| `skills/askching/SKILL.md`    | Agent 操作手冊（薄 playbook）               | AI agents        |
+| `evals/`                      | 行為驗證套件                                | 開發者 / CI      |
+| Demo Video                    | 2:55 run script 已就緒，尚未錄製（Phase 4） | 評審             |
 
 ### 5.3 刻意不做
 
-| 不做 | 原因 |
-|------|------|
-| ❌ 炒幣 / 自動下單 | 我們是研究工具，不是交易工具 |
-| ❌ 自建 indexing pipeline | 用 The Graph 官方基礎設施 |
-| ❌ 華麗 Dashboard / UI | MVP 專注 CLI + MCP，不做 web app |
-| ❌ 另一個 Subgraph MCP | 我們在官方之上加 orchestration layer |
+| 不做                      | 原因                                 |
+| ------------------------- | ------------------------------------ |
+| ❌ 炒幣 / 自動下單        | 我們是研究工具，不是交易工具         |
+| ❌ 自建 indexing pipeline | 用 The Graph 官方基礎設施            |
+| ❌ 華麗 Dashboard / UI    | MVP 專注 CLI + MCP，不做 web app     |
+| ❌ 另一個 Subgraph MCP    | 我們在官方之上加 orchestration layer |
 
 ---
 
@@ -181,12 +181,12 @@ Grok 推理層（CLI）已驗證；AskChing MCP Server **現在**即可供其他
 
 ### 6.3 評審 10 秒測試
 
-| 測試 | 預期結果 |
-|------|---------|
-| 拔走 The Graph → 產品還有意義？ | **沒有**（The Graph 是 load-bearing） |
-| 拔走 Grok/SKILL 層 → 有明顯差？ | **有**（只剩 raw query，沒有 reasoning） |
-| 換一條 follow-up 問題 → 打第二個 subgraph？ | **會**（multi-source fan-out） |
-| 結果有 as-of 和來源？ | **有**（citation 結構強制） |
+| 測試                                        | 預期結果                                 |
+| ------------------------------------------- | ---------------------------------------- |
+| 拔走 The Graph → 產品還有意義？             | **沒有**（The Graph 是 load-bearing）    |
+| 拔走 Grok/SKILL 層 → 有明顯差？             | **有**（只剩 raw query，沒有 reasoning） |
+| 換一條 follow-up 問題 → 打第二個 subgraph？ | **會**（multi-source fan-out）           |
+| 結果有 as-of 和來源？                       | **有**（citation 結構強制）              |
 
 ### 6.4 「五個可交貨的差異」（vs 官方 MCP）
 
@@ -200,16 +200,16 @@ Grok 推理層（CLI）已驗證；AskChing MCP Server **現在**即可供其他
 
 ## 7. 競爭優勢
 
-| 維度 | AskChing | 官方 Subgraph MCP | 一般 DeFi Dashboard |
-|------|----------|-------------------|---------------------|
-| 數據來源 | The Graph (live) | The Graph (live) | 自建 / 延遲 |
-| 多源對比 | ✅ fan-out + normalize | ❌ 單一 query | ⚠️ 人工切換 |
-| AI reasoning | ✅ Grok tool-calling | ❌ 無 | ❌ 無 |
-| Citation 結構 | ✅ subgraphId + block + ts | ❌ raw JSON | ⚠️ 部分 |
-| Gap detection | ✅ 明確標示缺口 | ❌ | ❌ |
-| Evidence invariant | ✅ schema 強制，缺 citation 就 fail | ❌ raw JSON | ⚠️ 無 |
-| 可重用性 | ✅ MCP + SKILL | ✅ MCP | ❌ 綁 UI |
-| NL 接口 | ✅ 自然語言 | ❌ 需懂 GraphQL | ⚠️ 有限搜尋 |
+| 維度               | AskChing                            | 官方 Subgraph MCP | 一般 DeFi Dashboard |
+| ------------------ | ----------------------------------- | ----------------- | ------------------- |
+| 數據來源           | The Graph (live)                    | The Graph (live)  | 自建 / 延遲         |
+| 多源對比           | ✅ fan-out + normalize              | ❌ 單一 query     | ⚠️ 人工切換         |
+| AI reasoning       | ✅ Grok tool-calling                | ❌ 無             | ❌ 無               |
+| Citation 結構      | ✅ subgraphId + block + ts          | ❌ raw JSON       | ⚠️ 部分             |
+| Gap detection      | ✅ 明確標示缺口                     | ❌                | ❌                  |
+| Evidence invariant | ✅ schema 強制，缺 citation 就 fail | ❌ raw JSON       | ⚠️ 無               |
+| 可重用性           | ✅ MCP + SKILL                      | ✅ MCP            | ❌ 綁 UI            |
+| NL 接口            | ✅ 自然語言                         | ❌ 需懂 GraphQL   | ⚠️ 有限搜尋         |
 
 ---
 
@@ -221,13 +221,13 @@ Hackathon 交付 **v1.0**：技術 + 文書 100% 交付（**五個 tools**、Gro
 
 ## 9. 團隊與貢獻
 
-| 角色 | 職責 |
-|------|------|
+| 角色                           | 職責                                                      |
+| ------------------------------ | --------------------------------------------------------- |
 | **MCP Server + Normalization** | shared schemas、compare engine、graph-client、data-source |
-| **Grok Orchestrator + SKILL** | tool-calling loop、SKILL.md、demo CLI |
-| **Demo + Submission** | demo video、README、showcase page |
+| **Grok Orchestrator + SKILL**  | tool-calling loop、SKILL.md、demo CLI                     |
+| **Demo + Submission**          | demo video、README、showcase page                         |
 
 ---
 
-*Document version: 1.3 — 2026-09-09（進度更新：Phase 0-3 完成，Phase 4 進行中，總體 88%）*
-*Status: For team alignment and ETHOnline 2026 submission*
+_Document version: 1.3 — 2026-09-09（進度更新：Phase 0-3 完成，Phase 4 進行中，總體 88%）_
+_Status: For team alignment and ETHOnline 2026 submission_

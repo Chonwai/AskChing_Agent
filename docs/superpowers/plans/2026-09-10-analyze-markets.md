@@ -25,11 +25,13 @@
 ### Task 1: Analysis contracts and fixture coverage
 
 **Files:**
+
 - Modify: `packages/shared/src/schemas.ts`
 - Modify: `packages/shared/src/fixtures.ts`
 - Create: `packages/shared/src/analysis.test.ts`
 
 **Interfaces:**
+
 - Produces: `AnalysisObjectiveSchema`, `AnalysisSeveritySchema`, `AnalysisConfidenceSchema`, `AnalysisCitationSchema`, `AnalysisSupportingValueSchema`, `AnalysisFindingSchema`, `AnalysisGapSchema`, `AnalyzeMarketsResultSchema` and inferred TypeScript types.
 - Produces: at least three cited USDC utilization fixtures spanning `info`, `watch`, and `high`.
 
@@ -39,12 +41,12 @@ In `analysis.test.ts`, import the new schemas and assert:
 
 ```ts
 expect(AnalysisObjectiveSchema.options).toEqual([
-  "yield_opportunity",
-  "liquidity_stress",
-  "evidence_quality"
+  'yield_opportunity',
+  'liquidity_stress',
+  'evidence_quality',
 ]);
-expect(AnalysisSeveritySchema.parse("watch")).toBe("watch");
-expect(() => AnalysisConfidenceSchema.parse("certain")).toThrow();
+expect(AnalysisSeveritySchema.parse('watch')).toBe('watch');
+expect(() => AnalysisConfidenceSchema.parse('certain')).toThrow();
 ```
 
 Create an `AnalyzeMarketsResultSchema.parse` example containing one finding with two metric-aware citations. Assert a citation without `metric` fails.
@@ -77,11 +79,13 @@ git commit -m "feat(shared): add market analysis contracts"
 ### Task 2: Yield-opportunity analysis engine
 
 **Files:**
+
 - Create: `packages/shared/src/analysis.ts`
 - Modify: `packages/shared/src/analysis.test.ts`
 - Modify: `packages/shared/src/index.ts`
 
 **Interfaces:**
+
 - Consumes: normalized `MarketObservation[]`, `AnalysisGap[]`, objective, asset, protocols, metrics, and optional timeframe.
 - Produces:
 
@@ -96,9 +100,7 @@ export interface AnalyzeObservationInput {
   timeframe?: string;
 }
 
-export function analyzeMarketObservations(
-  input: AnalyzeObservationInput
-): AnalyzeMarketsResult;
+export function analyzeMarketObservations(input: AnalyzeObservationInput): AnalyzeMarketsResult;
 ```
 
 - [ ] **Step 1: Write failing yield tests**
@@ -106,12 +108,12 @@ export function analyzeMarketObservations(
 Use real fixture observations for Aave V3, Compound V3, and Spark Lend. Assert the yield finding:
 
 ```ts
-expect(result.objective).toBe("yield_opportunity");
-expect(result.findings[0]?.claim).toContain("aave-v3");
-expect(result.findings[0]?.calculation).toContain("1.11 percentage points");
+expect(result.objective).toBe('yield_opportunity');
+expect(result.findings[0]?.claim).toContain('aave-v3');
+expect(result.findings[0]?.calculation).toContain('1.11 percentage points');
 expect(result.findings[0]?.supportingValues).toHaveLength(3);
-expect(new Set(result.findings[0]?.citations.map(c => c.subgraphId)).size).toBe(3);
-expect(result.findings[0]?.confidence).toBe("high");
+expect(new Set(result.findings[0]?.citations.map((c) => c.subgraphId)).size).toBe(3);
+expect(result.findings[0]?.confidence).toBe('high');
 ```
 
 Also assert mixed assets, units, metrics, and APY rate types throw before ranking; fewer than two cited sources throws with `Need at least 2 cited sources`.
@@ -146,10 +148,12 @@ git commit -m "feat(shared): analyze cited yield opportunities"
 ### Task 3: Liquidity-stress and evidence-quality paths
 
 **Files:**
+
 - Modify: `packages/shared/src/analysis.ts`
 - Modify: `packages/shared/src/analysis.test.ts`
 
 **Interfaces:**
+
 - Extends `analyzeMarketObservations` without changing its signature.
 
 - [ ] **Step 1: Write failing utilization tests**
@@ -184,12 +188,14 @@ git commit -m "feat(shared): analyze liquidity stress and evidence quality"
 ### Task 4: MCP handler and server registration
 
 **Files:**
+
 - Modify: `packages/mcp-server/src/tools.ts`
 - Modify: `packages/mcp-server/src/tools.test.ts`
 - Modify: `packages/mcp-server/src/index.ts`
 - Modify: `packages/mcp-server/src/mcp-smoke.ts`
 
 **Interfaces:**
+
 - Produces: `AnalyzeMarketsCoreSchema`, `AnalyzeMarketsInputSchema`, `analyzeMarkets(rawInput, dataSource): Promise<AnalyzeMarketsResult>`.
 - Registers MCP tool name `analyze_markets` with structured output schema.
 
@@ -209,9 +215,9 @@ Use these defaults:
 
 ```ts
 const DEFAULT_ANALYSIS_METRICS = {
-  yield_opportunity: ["supply_apy", "utilization"],
-  liquidity_stress: ["utilization", "tvl"],
-  evidence_quality: ["supply_apy", "borrow_apy", "tvl", "utilization"]
+  yield_opportunity: ['supply_apy', 'utilization'],
+  liquidity_stress: ['utilization', 'tvl'],
+  evidence_quality: ['supply_apy', 'borrow_apy', 'tvl', 'utilization'],
 } as const;
 ```
 
@@ -235,10 +241,12 @@ git commit -m "feat(mcp): expose transparent market analysis"
 ### Task 5: Grok routing and tool execution
 
 **Files:**
+
 - Modify: `packages/grok-orchestrator/src/loop.ts`
 - Modify: `packages/grok-orchestrator/src/loop.test.ts`
 
 **Interfaces:**
+
 - Adds `analyze_markets` to `ASKCHING_TOOLS` and the internal `executeTool` switch.
 
 - [ ] **Step 1: Write the failing Grok-loop test**
@@ -269,6 +277,7 @@ git commit -m "feat(grok): route analytical market questions"
 ### Task 6: Evals, skill, and product documentation
 
 **Files:**
+
 - Modify: `evals/cases.json`
 - Modify: `evals/run.ts`
 - Modify: `skills/askching/SKILL.md`
@@ -277,6 +286,7 @@ git commit -m "feat(grok): route analytical market questions"
 - Modify: `demos/prompts.md`
 
 **Interfaces:**
+
 - Adds eval kind `analyze_markets` and four deterministic cases.
 
 - [ ] **Step 1: Add failing eval dispatch**
@@ -305,6 +315,7 @@ git commit -m "docs: add evidence-first market analysis workflow"
 ### Task 7: Final verification and durable handoff
 
 **Files:**
+
 - Modify: `HANDOFF.md`
 
 - [ ] **Step 1: Run the full gate**

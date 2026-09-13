@@ -7,16 +7,16 @@
 
 ## 測試鎖定點（smith 掃描）
 
-| 檔案 | 需更新 | 原因 |
-|---|---|---|
-| `register.ts` ASKCHING_TOOL_NAMES | 6→7 | 新增工具名 |
-| `http.test.ts:57-58` | toHaveLength(6)→7 | smoke 預期 |
-| `mcp-smoke.ts` | tool 列表 | 預期 6→7 |
-| `http-smoke.ts` | tool 列表 | 預期 6→7 |
-| landing page `index.html` | Six→Seven tools | 視覺 |
-| `docs/try-it.md` | 6 tools 處 | 描述 |
-| `docs/platform-integration.md` | 6 tools 處 | 描述 |
-| README.md | 六 tools | 描述 |
+| 檔案                              | 需更新            | 原因       |
+| --------------------------------- | ----------------- | ---------- |
+| `register.ts` ASKCHING_TOOL_NAMES | 6→7               | 新增工具名 |
+| `http.test.ts:57-58`              | toHaveLength(6)→7 | smoke 預期 |
+| `mcp-smoke.ts`                    | tool 列表         | 預期 6→7   |
+| `http-smoke.ts`                   | tool 列表         | 預期 6→7   |
+| landing page `index.html`         | Six→Seven tools   | 視覺       |
+| `docs/try-it.md`                  | 6 tools 處        | 描述       |
+| `docs/platform-integration.md`    | 6 tools 處        | 描述       |
+| README.md                         | 六 tools          | 描述       |
 
 ---
 

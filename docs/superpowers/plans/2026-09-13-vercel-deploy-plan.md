@@ -9,6 +9,7 @@
 根本問題不是「再寫功能」，而是「在 deadline 前把已 6-tool 的系統放上公開可連的遠端 MCP endpoint，並驗證法官真的連得上」。**零代碼變動**（`packages/`、`api/`、`demos/`、`evals/` 凍結）；只動 config + docs。
 
 成功標準：
+
 1. `https://<app>.vercel.app/api/health` → 200，mode 顯示 live（Production）
 2. `/api/mcp` 與 `/mcp` 的 `tools/list` 都回 **6 個工具**
 3. `tools/call compare_markets` → `isError:false` + citations
@@ -21,14 +22,14 @@
 
 ## 2. 現況 Baseline（已驗證）
 
-| 項目 | 現狀 |
-|---|---|
-| MCP tools | 6 個（register.ts 單一註冊源） |
-| vercel.json | ✅ 無 `framework`（正確 = 自動偵測 Other）；build/install/output/includeFiles/maxDuration 全正確 |
-| api/mcp.ts | ✅ `export default { fetch }` + runtime nodejs + maxDuration 60 |
-| api/health.ts | ✅ 免憑證回 mode |
-| docs/deployment-vercel.md | ✅ 已修 H1（framework 警示）+ M1（5→6 tools） |
-| GitHub remote | ✅ origin/main 可 push 觸發自動 deploy |
+| 項目                      | 現狀                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| MCP tools                 | 6 個（register.ts 單一註冊源）                                                                   |
+| vercel.json               | ✅ 無 `framework`（正確 = 自動偵測 Other）；build/install/output/includeFiles/maxDuration 全正確 |
+| api/mcp.ts                | ✅ `export default { fetch }` + runtime nodejs + maxDuration 60                                  |
+| api/health.ts             | ✅ 免憑證回 mode                                                                                 |
+| docs/deployment-vercel.md | ✅ 已修 H1（framework 警示）+ M1（5→6 tools）                                                    |
+| GitHub remote             | ✅ origin/main 可 push 觸發自動 deploy                                                           |
 
 ---
 
@@ -77,10 +78,10 @@ git remote -v    # origin 存在
 6. Node.js Version：**22.x**
 7. Environment Variables：
 
-| Variable | Production | Preview |
-|---|---|---|
-| `DEMO_LIVE` | `1` | `0` |
-| `GRAPH_API_KEY` | `<your key>`（low-quota） | 留空 |
+| Variable        | Production                | Preview |
+| --------------- | ------------------------- | ------- |
+| `DEMO_LIVE`     | `1`                       | `0`     |
+| `GRAPH_API_KEY` | `<your key>`（low-quota） | 留空    |
 
 > 不需要 `XAI_API_KEY`（Grok 是 CLI，不參與遠端 MCP）。
 
@@ -155,21 +156,21 @@ npx @modelcontextprotocol/inspector   # Transport=URL, 貼 /api/mcp
 
 ## 8. 時間表
 
-| 時間 | Phase | 執行者 | 預估 |
-|---|---|---|---|
-| T0 | Phase A | ✅ 已完成（3 commits） | 0 |
-| T0 | Phase B 專案建立 + env + deploy | 用戶 | 45 min |
-| T0+45 | Phase C1-C5 核心驗證 | Neo / 用戶 | 20 min |
-| T0+65 | Phase C6-C7 截圖 | 用戶 | 10 min |
-| T0+75 | Phase D URL 回寫 + gates | Neo | 15 min |
-| T0+90 | 錄影（依 finish-line 計畫） | John | critical path |
+| 時間  | Phase                           | 執行者                 | 預估          |
+| ----- | ------------------------------- | ---------------------- | ------------- |
+| T0    | Phase A                         | ✅ 已完成（3 commits） | 0             |
+| T0    | Phase B 專案建立 + env + deploy | 用戶                   | 45 min        |
+| T0+45 | Phase C1-C5 核心驗證            | Neo / 用戶             | 20 min        |
+| T0+65 | Phase C6-C7 截圖                | 用戶                   | 10 min        |
+| T0+75 | Phase D URL 回寫 + gates        | Neo                    | 15 min        |
+| T0+90 | 錄影（依 finish-line 計畫）     | John                   | critical path |
 
 ## 9. 風險緩解
 
-| 風險 | 緩解 |
-|---|---|
-| `500 Cannot find module` | includeFiles 已涵蓋 dist；部署後 C2 實測 |
-| lockfile 過期 | 本地 `pnpm install` 更新後 commit |
-| analyze_trends 30d timeout | demo 用 7d / fixture fallback |
-| DEX probe gateway 抖動 | 錄影前重跑（R1 已知） |
-| 冷啟動慢 | C2 先打一次預熱 |
+| 風險                       | 緩解                                     |
+| -------------------------- | ---------------------------------------- |
+| `500 Cannot find module`   | includeFiles 已涵蓋 dist；部署後 C2 實測 |
+| lockfile 過期              | 本地 `pnpm install` 更新後 commit        |
+| analyze_trends 30d timeout | demo 用 7d / fixture fallback            |
+| DEX probe gateway 抖動     | 錄影前重跑（R1 已知）                    |
+| 冷啟動慢                   | C2 先打一次預熱                          |

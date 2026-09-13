@@ -9,16 +9,16 @@
 
 ## 🗺️ 旅程總覽
 
-| Station | 內容 | 需要 API key | 預估時間 |
-|---|---|---|---|
-| **0** | 準備（.env / install / Node 驗證） | ❌（先填好） | 5 分鐘 |
-| **1** | 建置與測試紅綠燈（build / test / eval） | ❌ | 3 分鐘 |
-| **2** | Fixture Demo（不需 API key） | ❌ | 2 分鐘 |
-| **3** | Live Demo（真 Graph 資料） | ✅ GRAPH_API_KEY | 2 分鐘 |
-| **4** | Live Smoke（raw JSON 證據） | ✅ GRAPH_API_KEY | 1 分鐘 |
-| **5** | Grok Orchestrator（真 AI 推理） | ✅ XAI_API_KEY + GRAPH_API_KEY | 3 分鐘 |
-| **6** | MCP Server Smoke（stdio + HTTP 跨平台證明） | ❌（fixture mode） | 2 分鐘 |
-| **7** | Remote MCP（部署到 Vercel + 多平台接入） | ❌（或 ✅ 若要用 live） | 3 分鐘 |
+| Station | 內容                                        | 需要 API key                   | 預估時間 |
+| ------- | ------------------------------------------- | ------------------------------ | -------- |
+| **0**   | 準備（.env / install / Node 驗證）          | ❌（先填好）                   | 5 分鐘   |
+| **1**   | 建置與測試紅綠燈（build / test / eval）     | ❌                             | 3 分鐘   |
+| **2**   | Fixture Demo（不需 API key）                | ❌                             | 2 分鐘   |
+| **3**   | Live Demo（真 Graph 資料）                  | ✅ GRAPH_API_KEY               | 2 分鐘   |
+| **4**   | Live Smoke（raw JSON 證據）                 | ✅ GRAPH_API_KEY               | 1 分鐘   |
+| **5**   | Grok Orchestrator（真 AI 推理）             | ✅ XAI_API_KEY + GRAPH_API_KEY | 3 分鐘   |
+| **6**   | MCP Server Smoke（stdio + HTTP 跨平台證明） | ❌（fixture mode）             | 2 分鐘   |
+| **7**   | Remote MCP（部署到 Vercel + 多平台接入）    | ❌（或 ✅ 若要用 live）        | 3 分鐘   |
 
 > **總計：** 完整旅程約 **20 分鐘**；只跑「快速完成清單」（Station 0/1/2/4/6）約 **11 分鐘**。**全程不需要任何視覺化工具，全部在終端機完成。**
 
@@ -67,6 +67,7 @@ DEMO_LIVE=0
 - [ ] `node -v` ≥ v20
 
 > 🔑 **Key 取得方式：**
+>
 > - `XAI_API_KEY`：https://console.x.ai/ → API Keys → Create key。
 > - `GRAPH_API_KEY`：https://thegraph.com/studio/ → 任一 subgraph 的 Query 分頁 → API Key（AskChing 只用 public Messari subgraphs，任何有效 Studio key 皆可）。
 
@@ -402,16 +403,16 @@ risk_scan
 
 > 完整測試完 7 個 Station 後，填寫此表。任何 Fail 先查「失敗排查」，修復後重跑該 Station。
 
-| Station | 內容 | 結果（✅ Pass / ❌ Fail） | 備註 |
-|---|---:|---:|---|
-| 0 | 準備（.env / install / Node） | | |
-| 1 | 建置與測試紅綠燈（build / test / eval） | | |
-| 2 | Fixture Demo（不需 API key） | | |
-| 3 | Live Demo（真 Graph 資料） | | |
-| 4 | Live Smoke（raw JSON 證據） | | |
-| 5 | Grok Orchestrator（真 AI 推理） | | |
-| 6 | MCP Server Smoke（stdio + HTTP） | | |
-| 7 | Remote MCP（本機 HTTP / Vercel） | | |
+| Station |                                    內容 | 結果（✅ Pass / ❌ Fail） | 備註 |
+| ------- | --------------------------------------: | ------------------------: | ---- |
+| 0       |           準備（.env / install / Node） |                           |      |
+| 1       | 建置與測試紅綠燈（build / test / eval） |                           |      |
+| 2       |            Fixture Demo（不需 API key） |                           |      |
+| 3       |              Live Demo（真 Graph 資料） |                           |      |
+| 4       |             Live Smoke（raw JSON 證據） |                           |      |
+| 5       |         Grok Orchestrator（真 AI 推理） |                           |      |
+| 6       |        MCP Server Smoke（stdio + HTTP） |                           |      |
+| 7       |        Remote MCP（本機 HTTP / Vercel） |                           |      |
 
 **整體判定：** 全部 Pass → 可以進行錄影 / 提交（見 `docs/superpowers/specs/2026-09-09-pre-recording-checklist.md`）。任一 Fail → 停在該 Station，修復後重跑。
 
@@ -419,16 +420,16 @@ risk_scan
 
 ## 🔧 失敗排查（常見問題）
 
-| # | 症狀 | 可能原因 | 解法 |
-|---|---|---|---|
-| 1 | `XAI_API_KEY` 缺失：Grok 回「missing API key」或 401 | `.env` 未複製或 key 空白 | `cp .env.example .env`，填入 `XAI_API_KEY`；確認終端機有 `--env-file=.env`（scripts 已內建） |
-| 2 | `GRAPH_API_KEY` 401 / `fail-closed` | key 無效或過期，或 Demo 用到錯誤 key | 到 The Graph Studio 重新產生 key；確認 `.env` 的 `GRAPH_API_KEY` 是 **API key**，不是 subgraph ID；`pnpm live:smoke` 應出現 401 以外的回應 |
-| 3 | `pnpm demo` 出現 live 數值 / 卡網路 | 環境變數 `DEMO_LIVE=1` 殘留 | 檢查 `echo $DEMO_LIVE` 與 `.env`；確認為 `0`，或直接跑 `pnpm demo`（script 內建 `DEMO_LIVE=0`） |
-| 4 | `pnpm demo:live` 出現 `sha256:fixture-...` 標籤 | 環境誤入 fixture mode | 確認 `pnpm demo:live` 有將 `DEMO_LIVE=1` 傳入（script 內建）；fixture query hash 格式為 `sha256:fixture-...`，此字樣不應出現在 live 輸出 |
-| 5 | Grok 回 `model not found` / 404 | `ASKCHING_LLM_MODEL` 無效 | 改為 `grok-4`（fallback），並**同步三處**：`.env`、`.env.example`、文件（`docs/engineering-spec.md` 等處若有提及） |
-| 6 | Grok 不呼叫 tool，直接回答 / 回「I don't have the previous result」 | prompt 措辭或 stateless CLI 限制 | ① Demo B 類 follow-up 是 **stateless**，無法引用前一支 CLI 的 result —— 重新 query（見 `demos/prompts.md` Demo B 註解）② 加強 prompt 措辭，指名「live USDC supply APY」 |
-| 7 | `pnpm mcp:smoke` timeout / FAIL | MCP server build 失敗或 dist 未產出 | `pnpm mcp:smoke` 內建 `pnpm -C packages/mcp-server build`，重跑一次；確認無 TS error |
-| 8 | `pnpm test` 少於 26 tests | 環境污染 / 舊 build 殘留 | 重跑 `pnpm build` 後再 `pnpm test`；確認無 `node_modules/.cache` 干擾 |
+| #   | 症狀                                                                | 可能原因                             | 解法                                                                                                                                                                    |
+| --- | ------------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `XAI_API_KEY` 缺失：Grok 回「missing API key」或 401                | `.env` 未複製或 key 空白             | `cp .env.example .env`，填入 `XAI_API_KEY`；確認終端機有 `--env-file=.env`（scripts 已內建）                                                                            |
+| 2   | `GRAPH_API_KEY` 401 / `fail-closed`                                 | key 無效或過期，或 Demo 用到錯誤 key | 到 The Graph Studio 重新產生 key；確認 `.env` 的 `GRAPH_API_KEY` 是 **API key**，不是 subgraph ID；`pnpm live:smoke` 應出現 401 以外的回應                              |
+| 3   | `pnpm demo` 出現 live 數值 / 卡網路                                 | 環境變數 `DEMO_LIVE=1` 殘留          | 檢查 `echo $DEMO_LIVE` 與 `.env`；確認為 `0`，或直接跑 `pnpm demo`（script 內建 `DEMO_LIVE=0`）                                                                         |
+| 4   | `pnpm demo:live` 出現 `sha256:fixture-...` 標籤                     | 環境誤入 fixture mode                | 確認 `pnpm demo:live` 有將 `DEMO_LIVE=1` 傳入（script 內建）；fixture query hash 格式為 `sha256:fixture-...`，此字樣不應出現在 live 輸出                                |
+| 5   | Grok 回 `model not found` / 404                                     | `ASKCHING_LLM_MODEL` 無效            | 改為 `grok-4`（fallback），並**同步三處**：`.env`、`.env.example`、文件（`docs/engineering-spec.md` 等處若有提及）                                                      |
+| 6   | Grok 不呼叫 tool，直接回答 / 回「I don't have the previous result」 | prompt 措辭或 stateless CLI 限制     | ① Demo B 類 follow-up 是 **stateless**，無法引用前一支 CLI 的 result —— 重新 query（見 `demos/prompts.md` Demo B 註解）② 加強 prompt 措辭，指名「live USDC supply APY」 |
+| 7   | `pnpm mcp:smoke` timeout / FAIL                                     | MCP server build 失敗或 dist 未產出  | `pnpm mcp:smoke` 內建 `pnpm -C packages/mcp-server build`，重跑一次；確認無 TS error                                                                                    |
+| 8   | `pnpm test` 少於 26 tests                                           | 環境污染 / 舊 build 殘留             | 重跑 `pnpm build` 後再 `pnpm test`；確認無 `node_modules/.cache` 干擾                                                                                                   |
 
 ---
 
@@ -455,14 +456,14 @@ pnpm live:smoke
 pnpm mcp:smoke && pnpm mcp:http:smoke
 ```
 
-| Station | 檢查重點 |
-|---|---|
-| 0 | `.env` 存在、`pnpm install` exit 0、`node -v` ≥ 20 |
-| 1 | `167 passed` + `23/23 evals` |
-| 2 | `Mode: fixture`、三行 ranked（4.25 / 3.14 / 2.95）、asOf、三 subgraph ID |
-| 4 | rows + sources 齊全、queryHash 三源相同、block 相近 |
-| 6 | `mcp-smoke OK: askching (7 tools)` + `mcp-http-smoke OK` |
-| 7 | `/health` 無 key、GET 回 405 |
+| Station | 檢查重點                                                                 |
+| ------- | ------------------------------------------------------------------------ |
+| 0       | `.env` 存在、`pnpm install` exit 0、`node -v` ≥ 20                       |
+| 1       | `167 passed` + `23/23 evals`                                             |
+| 2       | `Mode: fixture`、三行 ranked（4.25 / 3.14 / 2.95）、asOf、三 subgraph ID |
+| 4       | rows + sources 齊全、queryHash 三源相同、block 相近                      |
+| 6       | `mcp-smoke OK: askching (7 tools)` + `mcp-http-smoke OK`                 |
+| 7       | `/health` 無 key、GET 回 405                                             |
 
 ✅ **快速版全 Pass = 核心功能（compare + cite + fan-out + MCP）已驗證。** 之後隨時可補跑 Station 3（live demo）與 Station 5（Grok 推理）做完整驗證。
 
@@ -478,13 +479,13 @@ pnpm mcp:smoke && pnpm mcp:http:smoke
 
 ## �📚 相關文件
 
-| 文件 | 用途 |
-|---|---|
-| `docs/engineering-spec.md` | 技術架構、API 契約、schema（§6b Demo CLI 規格） |
-| `demos/prompts.md` | Demo A/B/C 三源 prompts 底稿 + locked sources |
-| `docs/superpowers/specs/2026-09-09-pre-recording-checklist.md` | 錄影 / 提交前檢查清單 |
-| `docs/superpowers/plans/2026-09-09-showcase-run-script.md` | 錄影逐字稿 + 畫面動作 |
-| `docs/product-overview.md` | 產品概述 |
-| `docs/cross-platform.md` | 跨平台（Windows / Linux）差異說明 |
-| `docs/deployment-vercel.md` | 遠端部署（Vercel 設定、坑、驗証） |
-| `docs/platform-integration.md` | 7+ 平台接入設定 |
+| 文件                                                           | 用途                                            |
+| -------------------------------------------------------------- | ----------------------------------------------- |
+| `docs/engineering-spec.md`                                     | 技術架構、API 契約、schema（§6b Demo CLI 規格） |
+| `demos/prompts.md`                                             | Demo A/B/C 三源 prompts 底稿 + locked sources   |
+| `docs/superpowers/specs/2026-09-09-pre-recording-checklist.md` | 錄影 / 提交前檢查清單                           |
+| `docs/superpowers/plans/2026-09-09-showcase-run-script.md`     | 錄影逐字稿 + 畫面動作                           |
+| `docs/product-overview.md`                                     | 產品概述                                        |
+| `docs/cross-platform.md`                                       | 跨平台（Windows / Linux）差異說明               |
+| `docs/deployment-vercel.md`                                    | 遠端部署（Vercel 設定、坑、驗証）               |
+| `docs/platform-integration.md`                                 | 7+ 平台接入設定                                 |

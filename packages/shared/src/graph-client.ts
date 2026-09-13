@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import { getMetricDescriptor, type MetricDescriptor } from "./metrics.js";
+import { getMetricDescriptor, type MetricDescriptor } from './metrics.js';
 import {
   AssetSymbolSchema,
   MarketObservationSchema,
@@ -8,9 +8,9 @@ import {
   type AssetSymbol,
   type MarketMetricId,
   type MarketObservation,
-  type TrendPoint
-} from "./schemas.js";
-import type { SubgraphSource } from "./source-config.js";
+  type TrendPoint,
+} from './schemas.js';
+import type { SubgraphSource } from './source-config.js';
 
 // D5: single fixed query covering every metric/asset combination.
 export const GET_MARKETS_QUERY = `
@@ -65,34 +65,34 @@ const GraphEnvelopeSchema = z.object({
         z.object({
           inputToken: z.object({
             symbol: z.string(),
-            decimals: z.coerce.number().optional()
+            decimals: z.coerce.number().optional(),
           }),
           rates: z
             .array(
               z.object({
                 rate: GraphNumberSchema,
                 side: z.string(),
-                type: z.string()
-              })
+                type: z.string(),
+              }),
             )
             .nullable(),
           totalValueLockedUSD: GraphNumberSchema.nullish(),
           totalDepositBalanceUSD: GraphNumberSchema.nullish(),
           totalBorrowBalanceUSD: GraphNumberSchema.nullish(),
           indexLastUpdatedTimestamp: GraphNumberSchema.nullish(),
-          isActive: z.boolean().nullish()
-        })
+          isActive: z.boolean().nullish(),
+        }),
       ),
       _meta: z.object({
         deployment: z.string().optional(),
         block: z.object({
           number: GraphNumberSchema,
-          timestamp: GraphNumberSchema.optional()
-        })
-      })
+          timestamp: GraphNumberSchema.optional(),
+        }),
+      }),
     })
     .optional(),
-  errors: z.array(z.object({ message: z.string() })).optional()
+  errors: z.array(z.object({ message: z.string() })).optional(),
 });
 
 const GraphHistoryEnvelopeSchema = z.object({
@@ -102,7 +102,7 @@ const GraphHistoryEnvelopeSchema = z.object({
         z.object({
           inputToken: z.object({
             symbol: z.string(),
-            decimals: z.coerce.number().optional()
+            decimals: z.coerce.number().optional(),
           }),
           isActive: z.boolean().nullish(),
           dailySnapshots: z
@@ -116,28 +116,28 @@ const GraphHistoryEnvelopeSchema = z.object({
                     z.object({
                       rate: GraphNumberSchema,
                       side: z.string(),
-                      type: z.string()
-                    })
+                      type: z.string(),
+                    }),
                   )
                   .nullable(),
                 totalDepositBalanceUSD: GraphNumberSchema.nullish(),
                 totalBorrowBalanceUSD: GraphNumberSchema.nullish(),
-                totalValueLockedUSD: GraphNumberSchema.nullish()
-              })
+                totalValueLockedUSD: GraphNumberSchema.nullish(),
+              }),
             )
-            .nullable()
-        })
+            .nullable(),
+        }),
       ),
       _meta: z.object({
         deployment: z.string().optional(),
         block: z.object({
           number: GraphNumberSchema,
-          timestamp: GraphNumberSchema.optional()
-        })
-      })
+          timestamp: GraphNumberSchema.optional(),
+        }),
+      }),
     })
     .optional(),
-  errors: z.array(z.object({ message: z.string() })).optional()
+  errors: z.array(z.object({ message: z.string() })).optional(),
 });
 
 /**
@@ -160,29 +160,27 @@ interface MarketValueInput {
  */
 function extractMetricValues(
   records: readonly MarketValueInput[],
-  descriptor: MetricDescriptor
+  descriptor: MetricDescriptor,
 ): number[] {
   switch (descriptor.extractor) {
-    case "rates": {
-      const isBorrow = descriptor.rateSide === "BORROWER";
+    case 'rates': {
+      const isBorrow = descriptor.rateSide === 'BORROWER';
       return records
         .flatMap((record) =>
           (record.rates ?? []).filter(
-            (rate) =>
-              rate.side === descriptor.rateSide &&
-              rate.type === descriptor.rateType
-          )
+            (rate) => rate.side === descriptor.rateSide && rate.type === descriptor.rateType,
+          ),
         )
         .map((rate) => rate.rate)
         .filter(Number.isFinite)
         .sort((a, b) => (isBorrow ? a - b : b - a));
     }
-    case "tvl":
+    case 'tvl':
       return records
         .map((record) => record.totalValueLockedUSD)
         .filter((amount): amount is number => Number.isFinite(amount))
         .sort((a, b) => b - a);
-    case "utilization":
+    case 'utilization':
       return records
         .map((record) => {
           const deposit = record.totalDepositBalanceUSD ?? undefined;
@@ -204,29 +202,23 @@ function extractMetricValues(
 }
 
 /** True when `candidate` is the better market value for this metric. */
-function isBetterValue(
-  candidate: number,
-  current: number,
-  descriptor: MetricDescriptor
-): boolean {
+function isBetterValue(candidate: number, current: number, descriptor: MetricDescriptor): boolean {
   // Mirrors the spot rule: cheapest borrow rate, otherwise the largest value.
-  return descriptor.rateSide === "BORROWER"
-    ? candidate < current
-    : candidate > current;
+  return descriptor.rateSide === 'BORROWER' ? candidate < current : candidate > current;
 }
 
 function describeMissingMetric(
   protocol: string,
   asset: string,
   metricId: MarketMetricId,
-  descriptor: MetricDescriptor
+  descriptor: MetricDescriptor,
 ): string {
   switch (descriptor.extractor) {
-    case "rates":
+    case 'rates':
       return `The Graph query for ${protocol} returned no ${asset} ${metricId} rate`;
-    case "tvl":
+    case 'tvl':
       return `The Graph query for ${protocol} returned no ${asset} totalValueLockedUSD`;
-    case "utilization":
+    case 'utilization':
       return `No utilization data for ${asset} on ${protocol}`;
   }
 }
@@ -252,7 +244,7 @@ export class GraphGatewayClient {
   async getMarketObservation(
     source: SubgraphSource,
     metricId: MarketMetricId,
-    asset: AssetSymbol
+    asset: AssetSymbol,
   ): Promise<MarketObservation> {
     const descriptor = getMetricDescriptor(metricId);
     const { data } = await this.#queryMarkets(source);
@@ -260,13 +252,10 @@ export class GraphGatewayClient {
 
     const candidates = data.markets.filter(
       (market) =>
-        market.inputToken.symbol.toUpperCase() === normalizedAsset &&
-        market.isActive !== false
+        market.inputToken.symbol.toUpperCase() === normalizedAsset && market.isActive !== false,
     );
     if (candidates.length === 0) {
-      throw new Error(
-        `No ${normalizedAsset} market found for ${source.protocol}`
-      );
+      throw new Error(`No ${normalizedAsset} market found for ${source.protocol}`);
     }
 
     const marketTimestamps = candidates
@@ -274,9 +263,7 @@ export class GraphGatewayClient {
       .filter((timestamp): timestamp is number => timestamp != null);
     const timestampSeconds = data._meta.block.timestamp ?? marketTimestamps[0];
     if (timestampSeconds === undefined) {
-      throw new Error(
-        `The Graph query for ${source.protocol} returned no source timestamp`
-      );
+      throw new Error(`The Graph query for ${source.protocol} returned no source timestamp`);
     }
 
     // M1: branch on the descriptor's declared extractor so the registry is the
@@ -286,28 +273,23 @@ export class GraphGatewayClient {
     const value = extractMetricValues(candidates, descriptor)[0];
     if (value === undefined) {
       throw new Error(
-        describeMissingMetric(
-          source.protocol,
-          normalizedAsset,
-          metricId,
-          descriptor
-        )
+        describeMissingMetric(source.protocol, normalizedAsset, metricId, descriptor),
       );
     }
-    const unit: "percent" | "usd" = descriptor.unit;
+    const unit: 'percent' | 'usd' = descriptor.unit;
 
     return MarketObservationSchema.parse({
       metric: metricId,
       asset: normalizedAsset,
       value,
       unit,
-      rateType: descriptor.rateSide ? "variable" : undefined,
+      rateType: descriptor.rateSide ? 'variable' : undefined,
       protocol: source.protocol,
       subgraphId: source.subgraphId,
       deploymentId: data._meta.deployment,
       block: data._meta.block.number,
       timestamp: new Date(timestampSeconds * 1000).toISOString(),
-      queryHash: await sha256(GET_MARKETS_QUERY)
+      queryHash: await sha256(GET_MARKETS_QUERY),
     });
   }
 
@@ -319,12 +301,10 @@ export class GraphGatewayClient {
     source: SubgraphSource,
     metricId: MarketMetricId,
     asset: AssetSymbol,
-    days: number
+    days: number,
   ): Promise<TrendPoint[]> {
     if (!Number.isInteger(days) || days < 2) {
-      throw new Error(
-        `Trend history requires an integer window of at least 2 days; got ${days}`
-      );
+      throw new Error(`Trend history requires an integer window of at least 2 days; got ${days}`);
     }
 
     const descriptor = getMetricDescriptor(metricId);
@@ -333,29 +313,19 @@ export class GraphGatewayClient {
 
     const candidates = data.markets.filter(
       (market) =>
-        market.inputToken.symbol.toUpperCase() === normalizedAsset &&
-        market.isActive !== false
+        market.inputToken.symbol.toUpperCase() === normalizedAsset && market.isActive !== false,
     );
     if (candidates.length === 0) {
-      throw new Error(
-        `No ${normalizedAsset} market found for ${source.protocol}`
-      );
+      throw new Error(`No ${normalizedAsset} market found for ${source.protocol}`);
     }
 
     // One point per snapshot day, keeping the best market value for that day
     // together with its own block/timestamp so the citation stays truthful.
-    const byDay = new Map<
-      number,
-      { value: number; timestampSeconds: number; block: number }
-    >();
+    const byDay = new Map<number, { value: number; timestampSeconds: number; block: number }>();
     let skipped = 0;
     for (const market of candidates) {
       for (const snapshot of market.dailySnapshots ?? []) {
-        if (
-          snapshot.days == null ||
-          snapshot.timestamp == null ||
-          snapshot.blockNumber == null
-        ) {
+        if (snapshot.days == null || snapshot.timestamp == null || snapshot.blockNumber == null) {
           skipped += 1;
           continue;
         }
@@ -366,14 +336,11 @@ export class GraphGatewayClient {
           continue;
         }
         const current = byDay.get(snapshot.days);
-        if (
-          current === undefined ||
-          isBetterValue(value, current.value, descriptor)
-        ) {
+        if (current === undefined || isBetterValue(value, current.value, descriptor)) {
           byDay.set(snapshot.days, {
             value,
             timestampSeconds: snapshot.timestamp,
-            block: snapshot.blockNumber
+            block: snapshot.blockNumber,
           });
         }
       }
@@ -389,15 +356,15 @@ export class GraphGatewayClient {
           asset: normalizedAsset,
           value: sample.value,
           unit: descriptor.unit,
-          rateType: descriptor.rateSide ? "variable" : undefined,
+          rateType: descriptor.rateSide ? 'variable' : undefined,
           protocol: source.protocol,
           subgraphId: source.subgraphId,
           deploymentId: data._meta.deployment,
           block: sample.block,
           timestamp: new Date(sample.timestampSeconds * 1000).toISOString(),
           queryHash,
-          days: snapshotDays
-        })
+          days: snapshotDays,
+        }),
       );
 
     if (points.length < 2) {
@@ -405,7 +372,7 @@ export class GraphGatewayClient {
         `The Graph query for ${source.protocol} returned ${points.length} usable ${normalizedAsset} ${metricId} snapshot(s); at least 2 are required for a trend` +
           (skipped > 0
             ? ` (${skipped} snapshot(s) skipped for missing rates or citation fields)`
-            : "")
+            : ''),
       );
     }
 
@@ -416,30 +383,26 @@ export class GraphGatewayClient {
    * @deprecated Use getMarketObservation(source, "supply_apy", "USDC") instead.
    */
   async getUsdcSupplyApy(source: SubgraphSource): Promise<MarketObservation> {
-    return this.getMarketObservation(source, "supply_apy", "USDC");
+    return this.getMarketObservation(source, 'supply_apy', 'USDC');
   }
 
   /** Shared transport for every Graph Gateway request this client makes. */
-  async #post(
-    source: SubgraphSource,
-    operationName: string,
-    query: string
-  ): Promise<unknown> {
+  async #post(source: SubgraphSource, operationName: string, query: string): Promise<unknown> {
     const response = await this.#fetch(
       `https://gateway.thegraph.com/api/subgraphs/id/${source.subgraphId}`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${this.#apiKey}`,
-          "Content-Type": "application/json"
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ operationName, query })
-      }
+        body: JSON.stringify({ operationName, query }),
+      },
     );
 
     if (!response.ok) {
       throw new Error(
-        `The Graph request for ${source.protocol} failed with HTTP ${response.status}`
+        `The Graph request for ${source.protocol} failed with HTTP ${response.status}`,
       );
     }
 
@@ -450,7 +413,7 @@ export class GraphGatewayClient {
       throw new Error(
         `The Graph query for ${source.protocol} failed: ${payload.errors
           .map((error) => error.message)
-          .join("; ")}`
+          .join('; ')}`,
       );
     }
     return payload;
@@ -458,38 +421,34 @@ export class GraphGatewayClient {
 
   async #queryMarkets(source: SubgraphSource) {
     const envelope = GraphEnvelopeSchema.parse(
-      await this.#post(source, "AskChingGetMarkets", GET_MARKETS_QUERY)
+      await this.#post(source, 'AskChingGetMarkets', GET_MARKETS_QUERY),
     );
     if (!envelope.data) {
       throw new Error(`The Graph query for ${source.protocol} returned no data`);
     }
     return envelope as z.infer<typeof GraphEnvelopeSchema> & {
-      data: NonNullable<z.infer<typeof GraphEnvelopeSchema>["data"]>;
+      data: NonNullable<z.infer<typeof GraphEnvelopeSchema>['data']>;
     };
   }
 
   async #queryMarketHistory(source: SubgraphSource) {
     const envelope = GraphHistoryEnvelopeSchema.parse(
-      await this.#post(
-        source,
-        "AskChingMarketHistory",
-        GET_MARKET_HISTORY_QUERY
-      )
+      await this.#post(source, 'AskChingMarketHistory', GET_MARKET_HISTORY_QUERY),
     );
     if (!envelope.data) {
       throw new Error(`The Graph query for ${source.protocol} returned no data`);
     }
     return envelope as z.infer<typeof GraphHistoryEnvelopeSchema> & {
-      data: NonNullable<z.infer<typeof GraphHistoryEnvelopeSchema>["data"]>;
+      data: NonNullable<z.infer<typeof GraphHistoryEnvelopeSchema>['data']>;
     };
   }
 }
 
 async function sha256(value: string): Promise<string> {
   const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  const hex = Array.from(new Uint8Array(digest), (byte) =>
-    byte.toString(16).padStart(2, "0")
-  ).join("");
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join(
+    '',
+  );
   return `sha256:${hex}`;
 }

@@ -13,7 +13,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "defi",
     "the-graph",
@@ -34,4 +36,3 @@
     "zod": "^3.25.76"
   }
 }
-

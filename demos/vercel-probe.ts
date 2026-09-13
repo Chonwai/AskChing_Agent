@@ -14,9 +14,9 @@
  * Run: pnpm vercel:probe
  */
 
-import { ASKCHING_TOOL_NAMES } from "../packages/mcp-server/dist/register.js";
+import { ASKCHING_TOOL_NAMES } from '../packages/mcp-server/dist/register.js';
 
-const ACCEPT = "application/json, text/event-stream";
+const ACCEPT = 'application/json, text/event-stream';
 
 interface JsonRpcResponse {
   result?: {
@@ -35,16 +35,19 @@ interface JsonRpcResponse {
  * Checking it here keeps the failure local and obvious instead of showing up as
  * a hung request in production.
  */
-function requireFetchExport(module: unknown, label: string): (request: Request) => Promise<Response> {
+function requireFetchExport(
+  module: unknown,
+  label: string,
+): (request: Request) => Promise<Response> {
   const exported = (module as { default?: unknown }).default;
-  if (typeof exported !== "object" || exported === null) {
+  if (typeof exported !== 'object' || exported === null) {
     throw new Error(
       `${label} must default-export an object with a fetch method; got ${typeof exported}. ` +
-        "Vercel only recognises `export default { fetch(request) { ... } }`."
+        'Vercel only recognises `export default { fetch(request) { ... } }`.',
     );
   }
   const fetchFn = (exported as { fetch?: unknown }).fetch;
-  if (typeof fetchFn !== "function") {
+  if (typeof fetchFn !== 'function') {
     throw new Error(`${label} default export has no fetch method`);
   }
   return fetchFn as (request: Request) => Promise<Response>;
@@ -52,100 +55,117 @@ function requireFetchExport(module: unknown, label: string): (request: Request) 
 
 async function callMcp(
   handler: (request: Request) => Promise<Response>,
-  payload: unknown
+  payload: unknown,
 ): Promise<{ status: number; body: JsonRpcResponse }> {
   const response = await handler(
-    new Request("http://probe.local/api/mcp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: ACCEPT },
-      body: JSON.stringify(payload)
-    })
+    new Request('http://probe.local/api/mcp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: ACCEPT },
+      body: JSON.stringify(payload),
+    }),
   );
   const text = await response.text();
-  return { status: response.status, body: text.length > 0 ? (JSON.parse(text) as JsonRpcResponse) : {} };
+  return {
+    status: response.status,
+    body: text.length > 0 ? (JSON.parse(text) as JsonRpcResponse) : {},
+  };
 }
 
 async function main() {
-  const mcpModule = await import("../api/mcp.js");
-  const healthModule = await import("../api/health.js");
+  const mcpModule = await import('../api/mcp.js');
+  const healthModule = await import('../api/health.js');
 
-  const handler = requireFetchExport(mcpModule, "api/mcp.ts");
-  requireFetchExport(healthModule, "api/health.ts");
-  console.log("export shape        OK  api/mcp.ts + api/health.ts use export default { fetch }");
+  const handler = requireFetchExport(mcpModule, 'api/mcp.ts');
+  requireFetchExport(healthModule, 'api/health.ts');
+  console.log('export shape        OK  api/mcp.ts + api/health.ts use export default { fetch }');
 
   // The MCP function must declare the Node.js runtime, and its max duration
   // must not exceed what `vercel.json` gives it.
   const mcpConfig = (mcpModule as { config?: { runtime?: string; maxDuration?: number } }).config;
-  if (mcpConfig?.runtime !== "nodejs") {
-    throw new Error(`api/mcp.ts config.runtime must be 'nodejs', got ${String(mcpConfig?.runtime)}`);
+  if (mcpConfig?.runtime !== 'nodejs') {
+    throw new Error(
+      `api/mcp.ts config.runtime must be 'nodejs', got ${String(mcpConfig?.runtime)}`,
+    );
   }
   const vercelJson = JSON.parse(
-    await (await import("node:fs/promises")).readFile(
-      new URL("../vercel.json", import.meta.url),
-      "utf8"
-    )
+    await (
+      await import('node:fs/promises')
+    ).readFile(new URL('../vercel.json', import.meta.url), 'utf8'),
   ) as { functions?: Record<string, { maxDuration?: number }>; outputDirectory?: string };
   const declaredMax = Object.values(vercelJson.functions ?? {})[0]?.maxDuration;
   if (declaredMax !== undefined && (mcpConfig?.maxDuration ?? 0) > declaredMax) {
     throw new Error(
-      `api/mcp.ts maxDuration (${String(mcpConfig?.maxDuration)}) exceeds vercel.json (${declaredMax})`
+      `api/mcp.ts maxDuration (${String(mcpConfig?.maxDuration)}) exceeds vercel.json (${declaredMax})`,
     );
   }
-  console.log(`config              OK  runtime=nodejs maxDuration=${String(mcpConfig?.maxDuration)}`);
+  console.log(
+    `config              OK  runtime=nodejs maxDuration=${String(mcpConfig?.maxDuration)}`,
+  );
 
   // The "Other" framework preset sets the output directory to `public` if it
   // exists, otherwise to the repository root. Without a public/ directory the
   // whole repo would be served as static files, so assert both the setting and
   // the directory.
-  const fs = await import("node:fs/promises");
-  if (vercelJson.outputDirectory !== "public") {
+  const fs = await import('node:fs/promises');
+  if (vercelJson.outputDirectory !== 'public') {
     throw new Error("vercel.json must set outputDirectory to 'public'");
   }
   const publicIndex = await fs
-    .stat(new URL("../public/index.html", import.meta.url))
+    .stat(new URL('../public/index.html', import.meta.url))
     .then(() => true)
     .catch(() => false);
   if (!publicIndex) {
-    throw new Error("public/index.html must exist so the output directory never falls back to the repo root");
+    throw new Error(
+      'public/index.html must exist so the output directory never falls back to the repo root',
+    );
   }
-  console.log("output directory    OK  vercel.json -> public/, public/index.html present");
+  console.log('output directory    OK  vercel.json -> public/, public/index.html present');
 
   const initialized = await callMcp(handler, {
-    jsonrpc: "2.0",
+    jsonrpc: '2.0',
     id: 1,
-    method: "initialize",
+    method: 'initialize',
     params: {
-      protocolVersion: "2025-03-26",
+      protocolVersion: '2025-03-26',
       capabilities: {},
-      clientInfo: { name: "vercel-probe", version: "0.1.0" }
-    }
+      clientInfo: { name: 'vercel-probe', version: '0.1.0' },
+    },
   });
   const serverName = initialized.body.result?.serverInfo?.name;
-  if (initialized.status !== 200 || serverName !== "askching") {
-    throw new Error(`initialize failed: HTTP ${initialized.status} ${JSON.stringify(initialized.body)}`);
+  if (initialized.status !== 200 || serverName !== 'askching') {
+    throw new Error(
+      `initialize failed: HTTP ${initialized.status} ${JSON.stringify(initialized.body)}`,
+    );
   }
   console.log(`initialize          OK  serverInfo.name=${serverName}`);
 
-  const listed = await callMcp(handler, { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });
+  const listed = await callMcp(handler, {
+    jsonrpc: '2.0',
+    id: 2,
+    method: 'tools/list',
+    params: {},
+  });
   const names = (listed.body.result?.tools ?? []).map((tool) => tool.name).sort();
   if (JSON.stringify(names) !== JSON.stringify([...ASKCHING_TOOL_NAMES].sort())) {
-    throw new Error(`expected tools [${[...ASKCHING_TOOL_NAMES].join(", ")}] but got [${names.join(", ")}]`);
+    throw new Error(
+      `expected tools [${[...ASKCHING_TOOL_NAMES].join(', ')}] but got [${names.join(', ')}]`,
+    );
   }
-  console.log(`tools/list          OK  ${names.join(", ")}`);
+  console.log(`tools/list          OK  ${names.join(', ')}`);
 
   const analysis = await callMcp(handler, {
-    jsonrpc: "2.0",
+    jsonrpc: '2.0',
     id: 3,
-    method: "tools/call",
+    method: 'tools/call',
     params: {
-      name: "analyze_trends",
+      name: 'analyze_trends',
       arguments: {
-        metric: "supply_apy",
-        asset: "USDC",
-        protocols: ["aave-v3", "compound-v3", "spark-lend"],
-        window: "7d"
-      }
-    }
+        metric: 'supply_apy',
+        asset: 'USDC',
+        protocols: ['aave-v3', 'compound-v3', 'spark-lend'],
+        window: '7d',
+      },
+    },
   });
   const findings = analysis.body.result?.structuredContent?.findings ?? [];
   if (findings.length < 2) {
@@ -153,13 +173,12 @@ async function main() {
   }
   console.log(`tools/call          OK  analyze_trends -> ${findings.length} cited findings`);
 
-  const info = (await (healthModule as { default: { fetch: () => Response } }).default.fetch().json()) as Record<
-    string,
-    unknown
-  >;
+  const info = (await (healthModule as { default: { fetch: () => Response } }).default
+    .fetch()
+    .json()) as Record<string, unknown>;
   console.log(`health              OK  ${JSON.stringify(info)}`);
 
-  console.log("\nvercel-probe OK: api/mcp.ts and api/health.ts are deployable");
+  console.log('\nvercel-probe OK: api/mcp.ts and api/health.ts are deployable');
 }
 
 main().catch((error) => {

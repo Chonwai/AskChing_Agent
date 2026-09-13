@@ -11,7 +11,7 @@
  */
 
 export interface ToolLogEvent {
-  type: "tool_start" | "tool_end" | "tool_error";
+  type: 'tool_start' | 'tool_end' | 'tool_error';
   tool: string;
   requestId?: string;
   /** Truncated, redacted preview of the tool arguments. */
@@ -23,7 +23,7 @@ export interface ToolLogEvent {
 }
 
 export interface RequestLogEvent {
-  type: "request_start" | "request_end";
+  type: 'request_start' | 'request_end';
   requestId?: string;
   method?: string;
   path?: string;
@@ -35,11 +35,11 @@ const PARAMS_PREVIEW_LIMIT = 300;
 
 /** Redact known secret-ish keys from an args object before logging. */
 function redactArgs(args: unknown): unknown {
-  if (typeof args !== "object" || args === null) return args;
+  if (typeof args !== 'object' || args === null) return args;
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(args as Record<string, unknown>)) {
     if (/key|token|secret|password|auth/i.test(key)) {
-      out[key] = "[redacted]";
+      out[key] = '[redacted]';
     } else {
       out[key] = value;
     }
@@ -54,9 +54,7 @@ function argsPreview(args: unknown): string {
   } catch {
     text = String(args);
   }
-  return text.length > PARAMS_PREVIEW_LIMIT
-    ? text.slice(0, PARAMS_PREVIEW_LIMIT) + "..."
-    : text;
+  return text.length > PARAMS_PREVIEW_LIMIT ? text.slice(0, PARAMS_PREVIEW_LIMIT) + '...' : text;
 }
 
 export function logEvent(event: RequestLogEvent | ToolLogEvent): void {
@@ -70,36 +68,34 @@ export function logEvent(event: RequestLogEvent | ToolLogEvent): void {
 export function logToolCall(
   tool: string,
   args: unknown,
-  requestId?: string
+  requestId?: string,
 ): (result?: unknown, error?: unknown) => void {
   logEvent({
-    type: "tool_start",
+    type: 'tool_start',
     tool,
     requestId,
-    argsPreview: argsPreview(args)
+    argsPreview: argsPreview(args),
   });
   const startedAt = Date.now();
   return (result?: unknown, error?: unknown) => {
     const durationMs = Date.now() - startedAt;
     if (error) {
       logEvent({
-        type: "tool_error",
+        type: 'tool_error',
         tool,
         requestId,
         durationMs,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       return;
     }
-    const resultSize = result
-      ? JSON.stringify(result).length
-      : 0;
+    const resultSize = result ? JSON.stringify(result).length : 0;
     logEvent({
-      type: "tool_end",
+      type: 'tool_end',
       tool,
       requestId,
       durationMs,
-      resultSize
+      resultSize,
     });
   };
 }

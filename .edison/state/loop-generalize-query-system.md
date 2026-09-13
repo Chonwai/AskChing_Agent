@@ -1,7 +1,7 @@
 # Loop State: AskChing 泛化 — 從 USDC-only Hardcode 邁向動態多資產/多 metric/多協議查詢
 
 Goal: 移除硬編碼，建立動態的 metric descriptor + protocol registry + query builder，
-      使 AskChing 能用自然語言查詢任意受支援的資產（USDC/USDT/DAI/WETH…）× metric（supply/borrow APY）× 協議（Aave V3 / Compound V3 / Spark / 可擴展）
+使 AskChing 能用自然語言查詢任意受支援的資產（USDC/USDT/DAI/WETH…）× metric（supply/borrow APY）× 協議（Aave V3 / Compound V3 / Spark / 可擴展）
 Started: 2026-09-10
 Status: active
 Quality Mode: strict (93)
@@ -12,10 +12,10 @@ Connector: web research（Brave/exa）+ 本地 codebase
 
 | Stage                | Current Round | Max Rounds (Stop Rule) | Status  |
 | -------------------- | :-----------: | :--------------------: | ------- |
-| DISCOVER (research)  |       0       |          2             | pending |
-| PLAN (architecture)  |       0       |          2             | pending |
-| EXECUTE (dev)        |       0       |          3             | pending |
-| VERIFY (code-review) |       0       |          2 (strict)    | pending |
+| DISCOVER (research)  |       0       |           2            | pending |
+| PLAN (architecture)  |       0       |           2            | pending |
+| EXECUTE (dev)        |       0       |           3            | pending |
+| VERIFY (code-review) |       0       |       2 (strict)       | pending |
 
 ## Iterations
 
@@ -25,6 +25,7 @@ Agent: jarvis-deep-research
 Quality Mode: strict / Depth: L3（5+ sources, cross-validation）
 Result: ✅ PASS — 完整研究報告已產出
 Key Findings:
+
 1. Messari Standardized Lending Schema v3.1.0 原生支持多資產（inputToken.symbol）+ 多 metric（rates[]: LENDER/BORROWER × VARIABLE/STABLE/FIXED + totalValueLockedUSD + totalDepositBalanceUSD + totalBorrowBalanceUSD）
 2. Ethereum mainnet 上有 27 個 production lending subgraph（Messari schema），可用 Subgraph ID registry 靜態列出
 3. 一個 GET_RATES query 就能拿到所有 inputTokens 的 supply/borrow APY；GraphQL 支持 variables
@@ -40,6 +41,7 @@ Score: 92/100（strict threshold 93，略低但 Discover 無 measured score 機�
 Agent: architect（規劃部）
 Quality Mode: strict / Depth: L3
 Neo 初步架構決策（傳遞給 architect）：
+
 - Metric 拆成 metric_id + asset 兩維（"usdc_supply_apy" → "supply_apy" + asset="USDC"）
 - METRIC_REGISTRY: supply_apy / borrow_apy / tvl / utilization（含 legacy alias）
 - ProtocolSchema: enum → string（registry 驗證）
@@ -48,7 +50,7 @@ Neo 初步架構決策（傳遞給 architect）：
 - Protocol registry 擴展到 6+ live protocols
 - MCP tools 增加 asset 參數（預設 USDC）
 - 6 個 commits 分階段交付
-Result: ✅ PASS — 方案文件已寫入 `docs/superpowers/plans/2026-09-10-generalize-query-system.md`
+  Result: ✅ PASS — 方案文件已寫入 `docs/superpowers/plans/2026-09-10-generalize-query-system.md`
   - architect self-audit DR-D1..D6 = 93.1/100（達 strict 93 threshold）
   - 6 commits 計劃：C1 schemas+metrics registry → C2 source-config 6 LIVE → C3 graph-client GET_MARKETS → C4 data-source+fixtures → C5 MCP tools+orchestrator → C6 evals+smoke
   - 完整 schema 草案（可直接 copy）、10 個 subgraph IDs（6 live 3.1.0 + 4 deferred）、16 新 tests + 6 新 evals
@@ -59,6 +61,7 @@ Result: ✅ PASS — 方案文件已寫入 `docs/superpowers/plans/2026-09-10-ge
 Agent: trinity（開發部）
 Quality Mode: strict（要求 self-mirror scorecard）/ Depth: L3
 Result: ✅ PASS — 6 commits 全數完成
+
 - C1 e0188fd schemas+METRIC_REGISTRY（38 tests）
 - C2 e63daf8 PROTOCOL_REGISTRY 6 LIVE（48 tests）
 - C3 ab9675a graph-client GET_MARKETS（58 tests）
@@ -73,6 +76,7 @@ Result: ✅ PASS — 6 commits 全數完成
 Agent: smith（品管部 — 獨立審查，Maker ≠ Checker）
 Quality Mode: strict (93) / Depth: L3
 Result: 🔧 REPAIRABLE — Measured Score 90/100（threshold 93, gap 3）
+
 - Critical: 0 / High: 3 / Medium: 4 / Low: 2
 - H1: GET_MARKETS_QUERY 缺 indexLastUpdatedTimestamp 欄位（回退路徑永不觸發）
 - H2: SKILL.md 未泛化（仍寫 usdc_supply_apy + 3 協議）→ LLM 不會傳 asset
@@ -87,6 +91,7 @@ Result: 🔧 REPAIRABLE — Measured Score 90/100（threshold 93, gap 3）
 
 Agent: trinity（paired author）
 Result: ✅ PASS — 7 commits 修復 9 findings
+
 - dcd2982 fix H1 (query + indexLastUpdatedTimestamp)
 - 4869221 fix H2 (SKILL.md 泛化, symlink 單一來源)
 - 008bb69 fix H3 (field-level MetricFieldSchema/AssetFieldSchema)
@@ -101,6 +106,7 @@ Result: ✅ PASS — 7 commits 修復 9 findings
 
 Agent: smith（品管部）
 Result: ✅ PASS — Measured Score 95/100（≥93）
+
 - Round 1 findings 9/9 全部 FIXED（smith 記錄於 repo memory）
 - Neo 獨立驗證確認：
   - H1: query:22 indexLastUpdatedTimestamp + schema:55 + 回退:110 對齊
@@ -111,16 +117,16 @@ Result: ✅ PASS — Measured Score 95/100（≥93）
 
 ## Done Contract 驗證
 
-| 條件 | 狀態 |
-|------|------|
-| Multi-asset (USDC/USDT/DAI/WETH) | ✅ tests + evals 覆蓋 |
-| Multi-metric (supply/borrow/tvl/utilization) | ✅ registry + extraction |
-| Multi-protocol (6 LIVE) | ✅ PROTOCOL_REGISTRY |
-| Backward compat (usdc_supply_apy) | ✅ legacy alias |
-| Citation fail-closed | ✅ 不退化 |
-| 75+ tests 全綠 | ✅ 79/79 |
-| VERIFY ≥ 93 (strict) | ✅ 95/100 |
-| ⚠️ 殘留風險 | ~/.agents + ~/.claude SKILL.md 副本非 symlink 需手動 sync（out-of-scope minor） |
+| 條件                                         | 狀態                                                                            |
+| -------------------------------------------- | ------------------------------------------------------------------------------- |
+| Multi-asset (USDC/USDT/DAI/WETH)             | ✅ tests + evals 覆蓋                                                           |
+| Multi-metric (supply/borrow/tvl/utilization) | ✅ registry + extraction                                                        |
+| Multi-protocol (6 LIVE)                      | ✅ PROTOCOL_REGISTRY                                                            |
+| Backward compat (usdc_supply_apy)            | ✅ legacy alias                                                                 |
+| Citation fail-closed                         | ✅ 不退化                                                                       |
+| 75+ tests 全綠                               | ✅ 79/79                                                                        |
+| VERIFY ≥ 93 (strict)                         | ✅ 95/100                                                                       |
+| ⚠️ 殘留風險                                  | ~/.agents + ~/.claude SKILL.md 副本非 symlink 需手動 sync（out-of-scope minor） |
 
 ## 最終狀態
 

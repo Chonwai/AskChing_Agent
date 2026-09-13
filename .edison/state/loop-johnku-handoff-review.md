@@ -63,6 +63,7 @@ Deadline context: ETHOnline 2026-09-13 12:00 PM EDT（台北 9/14 00:00）
 ## DECISION（2026-09-12 13:30 — uniswap-v3 subgraph schema 不相容）
 
 **實測發現（credentialed probe）**：
+
 - `4cKy6...`（johnku pin 的 uniswap source）是 **Messari DEX schema**：有 `liquidityPools` / `liquidityPoolDailySnapshots`，**無** `pools` / `poolDayData` / `feeTier`（introspection 證實）
 - 但 johnku 寫的 `UniswapV3YieldAdapter`（yield-client.ts）用的是**官方 v3-subgraph schema**（`pools`/`poolDayData`）→ 註定不相容，probe 0 observations
 - 官方 Uniswap V3 subgraph ID 全部 404（`5zvR...`/`8q1J...`/`ELnU...` 皆不存在於 gateway）
@@ -91,13 +92,13 @@ Deadline context: ETHOnline 2026-09-13 12:00 PM EDT（台北 9/14 00:00）
 
 ## Stage Round Counters
 
-| Stage | Current Round | Max Rounds (strict) | Status |
-| --- | --- | --- | --- |
-| DISCOVER | 1 | - | complete |
-| PLAN | 1 | - | complete |
-| EXECUTE | 3 | 4 | complete |
-| VERIFY (code-review) | 1 | 4 | ✅ PASS 94/100 |
-| VERIFY (gates) | 1 | - | complete |
+| Stage                | Current Round | Max Rounds (strict) | Status         |
+| -------------------- | ------------- | ------------------- | -------------- |
+| DISCOVER             | 1             | -                   | complete       |
+| PLAN                 | 1             | -                   | complete       |
+| EXECUTE              | 3             | 4                   | complete       |
+| VERIFY (code-review) | 1             | 4                   | ✅ PASS 94/100 |
+| VERIFY (gates)       | 1             | -                   | complete       |
 
 ## Circuit Breaker
 

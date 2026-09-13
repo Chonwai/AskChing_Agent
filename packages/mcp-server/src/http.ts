@@ -1,12 +1,12 @@
-import { createMarketDataSource, type AskChingEnvironment } from "@askching/shared";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { createMarketDataSource, type AskChingEnvironment } from '@askching/shared';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 
-import { registerAskChingTools } from "./register.js";
-import { logEvent } from "./observability.js";
+import { registerAskChingTools } from './register.js';
+import { logEvent } from './observability.js';
 
-const SERVER_NAME = "askching";
-const SERVER_VERSION = "0.1.0";
+const SERVER_NAME = 'askching';
+const SERVER_VERSION = '0.1.0';
 
 export interface HttpHandlerOptions {
   /**
@@ -22,17 +22,16 @@ export interface HttpHandlerOptions {
 // This server is stateless and answers with JSON, so POST is the only method
 // that can do useful work. GET (standalone SSE stream) and DELETE (session
 // termination) are deliberately not offered.
-const CORS_METHODS = "POST, OPTIONS";
-const ALLOWED_METHODS = "POST, OPTIONS";
-const CORS_HEADERS =
-  "Content-Type, Accept, Mcp-Protocol-Version, Authorization";
+const CORS_METHODS = 'POST, OPTIONS';
+const ALLOWED_METHODS = 'POST, OPTIONS';
+const CORS_HEADERS = 'Content-Type, Accept, Mcp-Protocol-Version, Authorization';
 
 function corsHeaders(origin: string): Record<string, string> {
   return {
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": CORS_METHODS,
-    "Access-Control-Allow-Headers": CORS_HEADERS,
-    "Access-Control-Max-Age": "86400"
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': CORS_METHODS,
+    'Access-Control-Allow-Headers': CORS_HEADERS,
+    'Access-Control-Max-Age': '86400',
   };
 }
 
@@ -49,12 +48,12 @@ function corsHeaders(origin: string): Record<string, string> {
  * between calls.
  */
 export function createAskChingHttpHandler(
-  options: HttpHandlerOptions = {}
+  options: HttpHandlerOptions = {},
 ): (request: Request) => Promise<Response> {
-  const origin = options.corsOrigin ?? "*";
+  const origin = options.corsOrigin ?? '*';
 
   return async function handle(request: Request): Promise<Response> {
-    if (request.method === "OPTIONS") {
+    if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
 
@@ -62,24 +61,24 @@ export function createAskChingHttpHandler(
     // 200 and an open (then immediately closed) standalone SSE stream, and
     // DELETE with an empty 200 - both meaningless for a stateless, JSON-only
     // server. A 405 is the honest answer.
-    if (request.method !== "POST") {
+    if (request.method !== 'POST') {
       return new Response(
         JSON.stringify({
-          jsonrpc: "2.0",
+          jsonrpc: '2.0',
           id: null,
           error: {
             code: -32000,
-            message: `Method ${request.method} is not supported; use POST.`
-          }
+            message: `Method ${request.method} is not supported; use POST.`,
+          },
         }),
         {
           status: 405,
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Allow: ALLOWED_METHODS,
-            ...corsHeaders(origin)
-          }
-        }
+            ...corsHeaders(origin),
+          },
+        },
       );
     }
 
@@ -87,14 +86,14 @@ export function createAskChingHttpHandler(
     const requestId = crypto.randomUUID();
     const requestStart = Date.now();
     const path = new URL(request.url).pathname;
-    logEvent({ type: "request_start", requestId, method: "POST", path });
+    logEvent({ type: 'request_start', requestId, method: 'POST', path });
 
     const dataSource = createMarketDataSource(
-      options.environment ?? (process.env as AskChingEnvironment)
+      options.environment ?? (process.env as AskChingEnvironment),
     );
     const server = new McpServer({
       name: SERVER_NAME,
-      version: SERVER_VERSION
+      version: SERVER_VERSION,
     });
     registerAskChingTools(server, dataSource, { requestId });
 
@@ -102,7 +101,7 @@ export function createAskChingHttpHandler(
       // Stateless: no session id, so no cross-request affinity is required.
       sessionIdGenerator: undefined,
       // JSON responses keep the serverless path simple and client-portable.
-      enableJsonResponse: true
+      enableJsonResponse: true,
     });
 
     try {
@@ -111,7 +110,12 @@ export function createAskChingHttpHandler(
       await server.connect(transport);
       const response = await transport.handleRequest(request);
       const durationMs = Date.now() - requestStart;
-      logEvent({ type: "request_end", requestId, status: response.status, durationMs });
+      logEvent({
+        type: 'request_end',
+        requestId,
+        status: response.status,
+        durationMs,
+      });
       const headers = new Headers(response.headers);
       for (const [key, value] of Object.entries(corsHeaders(origin))) {
         headers.set(key, value);
@@ -119,7 +123,7 @@ export function createAskChingHttpHandler(
       return new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
-        headers
+        headers,
       });
     } finally {
       // The transport is single-use in stateless mode; release it once the
@@ -133,20 +137,20 @@ export function createAskChingHttpHandler(
 export interface AskChingServerInfo {
   name: string;
   version: string;
-  transport: "streamable-http";
+  transport: 'streamable-http';
   endpoint: string;
   live: boolean;
 }
 
 export function describeAskChingServer(
   environment: AskChingEnvironment = process.env as AskChingEnvironment,
-  endpoint = "/api/mcp"
+  endpoint = '/api/mcp',
 ): AskChingServerInfo {
   return {
     name: SERVER_NAME,
     version: SERVER_VERSION,
-    transport: "streamable-http",
+    transport: 'streamable-http',
     endpoint,
-    live: environment.DEMO_LIVE === "1"
+    live: environment.DEMO_LIVE === '1',
   };
 }

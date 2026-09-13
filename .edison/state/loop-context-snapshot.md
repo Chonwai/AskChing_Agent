@@ -18,12 +18,12 @@ Budget: 4 sub-agents × 2 iterations max
 
 ## Stage Round Counters
 
-| Stage | Current Round | Max Rounds (Stop Rule) | Status |
-|-------|:---:|:---:|------|
-| DISCOVER | 1 | 2 | complete ✅ |
-| PLAN | 1 | 2 | complete ✅ |
-| EXECUTE | 2 | 3 | complete ✅ |
-| VERIFY (smith strict) | 2 | 3 → 4th PM 對話 → 停手 | complete ✅ (PASS via delta repair) |
+| Stage                 | Current Round | Max Rounds (Stop Rule) | Status                              |
+| --------------------- | :-----------: | :--------------------: | ----------------------------------- |
+| DISCOVER              |       1       |           2            | complete ✅                         |
+| PLAN                  |       1       |           2            | complete ✅                         |
+| EXECUTE               |       2       |           3            | complete ✅                         |
+| VERIFY (smith strict) |       2       | 3 → 4th PM 對話 → 停手 | complete ✅ (PASS via delta repair) |
 
 ## Iterations
 
@@ -95,6 +95,7 @@ Status: HEALTHY — completed without circuit trip
 Consecutive fails: 0/3
 Budget: 0%
 Status: HEALTHY
+
 ### Iteration 2 - VERIFY（Round 2 repair）
 
 Agent: smith（strict, threshold 93）→ trinity repair

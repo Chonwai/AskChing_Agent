@@ -9,11 +9,11 @@
 
 ## 2. 數據源（已實測驗證）
 
-| 源 | Subgraph ID | Schema | 取用方式 | 狀態 |
-|---|---|---|---|---|
-| **Lido 官方** | `Sxx812XgeKyzQPaBpR5YZWmGV5fZuBaPdh7DFhzSwiQ` | 官方 | `totalRewards(orderBy:block desc, first:1){ apr block }` → 現成 APR | ✅ live |
-| Messari lido | `F7qb71hWab6SuRL5sf6LQLTpNahmqMsBnnweYHzLGUyG` | Messari generic | protocols/pools（無 APY 欄位，需自行推算） | ✅ live（fallback） |
-| Rocket Pool | 社群 ID 失效 / Messari 無 allocations | — | — | ❌ 不可用 |
+| 源            | Subgraph ID                                    | Schema          | 取用方式                                                            | 狀態                |
+| ------------- | ---------------------------------------------- | --------------- | ------------------------------------------------------------------- | ------------------- |
+| **Lido 官方** | `Sxx812XgeKyzQPaBpR5YZWmGV5fZuBaPdh7DFhzSwiQ`  | 官方            | `totalRewards(orderBy:block desc, first:1){ apr block }` → 現成 APR | ✅ live             |
+| Messari lido  | `F7qb71hWab6SuRL5sf6LQLTpNahmqMsBnnweYHzLGUyG` | Messari generic | protocols/pools（無 APY 欄位，需自行推算）                          | ✅ live（fallback） |
+| Rocket Pool   | 社群 ID 失效 / Messari 無 allocations          | —               | —                                                                   | ❌ 不可用           |
 
 **Citation 保證**：Lido 官方源提供 `block`（subgraph 區塊高度）+ `blockTime`（unix seconds）→ 構成完整 citation：`subgraphId + block + timestamp + queryHash`，其中 `timestamp = new Date(blockTime * 1000).toISOString()`（`CitationSchema.timestamp` 是 required，smith 實測 `TotalReward` 有 `blockTime` 欄位 — 見 `schemas.ts:48-59`）。但**只有 1 個可用源**，需決定是否放寬 ≥2 sources 保證（見 §5）。
 
@@ -52,9 +52,9 @@ case "lido-staking-apr": {
 
 ```ts
 export const StakingObservationSchema = MarketObservationSchema.extend({
-  asset: z.literal("ETH"),
-  metric: z.literal("staking_apr"),
-  protocol: z.enum(["lido"])  // future: rocket-pool
+  asset: z.literal('ETH'),
+  metric: z.literal('staking_apr'),
+  protocol: z.enum(['lido']), // future: rocket-pool
 });
 ```
 
@@ -66,6 +66,7 @@ compare_staking(asset: "ETH", protocols: ["lido"]) →
 ```
 
 **核心問題**：單源 vs fail-closed。兩種路線：
+
 - **A. 維持 fail-closed**：`compare_staking` 需要 ≥2 sources → 目前只有 Lido 會 throw → 誠實但功能「看起來不能用」
 - **B. 單源允許**（附 explicit caveat）：`compare_staking` 允許 1 source，但輸出標明「single-source, no cross-protocol ranking」→ 功能可用但保證降級
 
@@ -80,12 +81,12 @@ compare_staking(asset: "ETH", protocols: ["lido"]) →
 
 ## 5. 決策點
 
-| 決策 | 選項 | 建議 |
-|---|---|---|
-| 單源 vs fail-closed | A 維持 / B 降級允許 | **B**（explicit caveat，參考 risk_scan 精神） |
-| 新 tool vs 擴充 discover_yields | 獨立 `compare_staking` / 併入 | **獨立 tool**（discover_yields 已鎖 USDC 品牌） |
-| Rocket Pool 缺口 | 標 gap / 找替代源 | **標 gap**（社群 ID 失效、Messari 未索引 — 誠實記錄） |
-| deadline | 現在做 / demo 後做 | **demo 後做**（動 adapter 的風險 > 評審加分；demo 用 Demo H 展示誠實 fail-closed） |
+| 決策                            | 選項                          | 建議                                                                               |
+| ------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------- |
+| 單源 vs fail-closed             | A 維持 / B 降級允許           | **B**（explicit caveat，參考 risk_scan 精神）                                      |
+| 新 tool vs 擴充 discover_yields | 獨立 `compare_staking` / 併入 | **獨立 tool**（discover_yields 已鎖 USDC 品牌）                                    |
+| Rocket Pool 缺口                | 標 gap / 找替代源             | **標 gap**（社群 ID 失效、Messari 未索引 — 誠實記錄）                              |
+| deadline                        | 現在做 / demo 後做            | **demo 後做**（動 adapter 的風險 > 評審加分；demo 用 Demo H 展示誠實 fail-closed） |
 
 ## 6. 估算
 
