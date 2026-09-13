@@ -25,6 +25,8 @@ import {
   riskScan
 } from "./tools.js";
 
+import { logToolCall } from "./observability.js";
+
 /**
  * Register every AskChing research tool on an MCP server.
  *
@@ -35,8 +37,10 @@ import {
  */
 export function registerAskChingTools(
   server: McpServer,
-  dataSource: MarketDataSource
+  dataSource: MarketDataSource,
+  options: { requestId?: string } = {}
 ): void {
+  const { requestId } = options;
   server.registerTool(
     "analyze_markets",
     {
@@ -47,11 +51,18 @@ export function registerAskChingTools(
       outputSchema: AnalyzeMarketsResultSchema.shape
     },
     async (input) => {
-      const result = await analyzeMarkets(input, dataSource);
-      return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        structuredContent: result
-      };
+      const finish = logToolCall("analyze_markets", input, requestId);
+      try {
+        const result = await analyzeMarkets(input, dataSource);
+        finish(result);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result
+        };
+      } catch (error) {
+        finish(undefined, error);
+        throw error;
+      }
     }
   );
 
@@ -65,11 +76,18 @@ export function registerAskChingTools(
       outputSchema: AnalyzeTrendsResultSchema.shape
     },
     async (input) => {
-      const result = await analyzeTrends(input, dataSource);
-      return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        structuredContent: result
-      };
+      const finish = logToolCall("analyze_trends", input, requestId);
+      try {
+        const result = await analyzeTrends(input, dataSource);
+        finish(result);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result
+        };
+      } catch (error) {
+        finish(undefined, error);
+        throw error;
+      }
     }
   );
 
@@ -83,11 +101,18 @@ export function registerAskChingTools(
       outputSchema: ComparisonSchema.shape
     },
     async (input) => {
-      const result = await compareMarkets(input, dataSource);
-      return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        structuredContent: result
-      };
+      const finish = logToolCall("compare_markets", input, requestId);
+      try {
+        const result = await compareMarkets(input, dataSource);
+        finish(result);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result
+        };
+      } catch (error) {
+        finish(undefined, error);
+        throw error;
+      }
     }
   );
 
@@ -101,11 +126,18 @@ export function registerAskChingTools(
       outputSchema: DiscoverYieldsResultSchema.shape
     },
     async (input) => {
-      const result = await discoverYields(input, dataSource);
-      return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        structuredContent: result
-      };
+      const finish = logToolCall("discover_yields", input, requestId);
+      try {
+        const result = await discoverYields(input, dataSource);
+        finish(result);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result
+        };
+      } catch (error) {
+        finish(undefined, error);
+        throw error;
+      }
     }
   );
 
@@ -119,11 +151,18 @@ export function registerAskChingTools(
       outputSchema: ResearchBriefResultSchema.shape
     },
     async (input) => {
-      const result = await researchBrief(input, dataSource);
-      return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        structuredContent: result as unknown as Record<string, unknown>
-      };
+      const finish = logToolCall("research_brief", input, requestId);
+      try {
+        const result = await researchBrief(input, dataSource);
+        finish(result);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result as unknown as Record<string, unknown>
+        };
+      } catch (error) {
+        finish(undefined, error);
+        throw error;
+      }
     }
   );
 
@@ -136,11 +175,18 @@ export function registerAskChingTools(
       inputSchema: RiskScanCoreSchema.shape
     },
     async (input) => {
-      const result = await riskScan(input, dataSource);
-      return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        structuredContent: result as unknown as Record<string, unknown>
-      };
+      const finish = logToolCall("risk_scan", input, requestId);
+      try {
+        const result = await riskScan(input, dataSource);
+        finish(result);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result as unknown as Record<string, unknown>
+        };
+      } catch (error) {
+        finish(undefined, error);
+        throw error;
+      }
     }
   );
 
@@ -153,11 +199,18 @@ export function registerAskChingTools(
       inputSchema: GetInfoInputSchema.shape
     },
     async (input) => {
-      const result = getInfo(input);
-      return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        structuredContent: result as unknown as Record<string, unknown>
-      };
+      const finish = logToolCall("get_info", input, requestId);
+      try {
+        const result = getInfo(input);
+        finish(result);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: result as unknown as Record<string, unknown>
+        };
+      } catch (error) {
+        finish(undefined, error);
+        throw error;
+      }
     }
   );
 }

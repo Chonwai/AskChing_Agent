@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 
 import { registerAskChingTools } from "./register.js";
+import { logEvent } from "./observability.js";
 
 const SERVER_NAME = "askching";
 const SERVER_VERSION = "0.1.0";
@@ -82,6 +83,12 @@ export function createAskChingHttpHandler(
       );
     }
 
+    // Request-level observability: log start, wrap response to log end + timing.
+    const requestId = crypto.randomUUID();
+    const requestStart = Date.now();
+    const path = new URL(request.url).pathname;
+    logEvent({ type: "request_start", requestId, method: "POST", path });
+
     const dataSource = createMarketDataSource(
       options.environment ?? (process.env as AskChingEnvironment)
     );
@@ -89,7 +96,7 @@ export function createAskChingHttpHandler(
       name: SERVER_NAME,
       version: SERVER_VERSION
     });
-    registerAskChingTools(server, dataSource);
+    registerAskChingTools(server, dataSource, { requestId });
 
     const transport = new WebStandardStreamableHTTPServerTransport({
       // Stateless: no session id, so no cross-request affinity is required.
@@ -103,6 +110,8 @@ export function createAskChingHttpHandler(
       // throw still releases the server.
       await server.connect(transport);
       const response = await transport.handleRequest(request);
+      const durationMs = Date.now() - requestStart;
+      logEvent({ type: "request_end", requestId, status: response.status, durationMs });
       const headers = new Headers(response.headers);
       for (const [key, value] of Object.entries(corsHeaders(origin))) {
         headers.set(key, value);
