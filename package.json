@@ -11,6 +11,8 @@
     "build": "pnpm -r build",
     "test": "vitest run",
     "eval": "tsx evals/run.ts",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,html}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,html}\"",
     "live:smoke": "DEMO_LIVE=1 tsx --env-file=.env demos/live-smoke.ts",
     "demo": "DEMO_LIVE=0 tsx --env-file=.env demos/demo.ts",
     "demo:live": "DEMO_LIVE=1 tsx --env-file=.env demos/demo.ts --live",
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
+    "prettier": "^3.9.6",
     "tsx": "^4.20.3",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
