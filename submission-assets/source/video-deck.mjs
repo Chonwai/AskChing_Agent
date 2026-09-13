@@ -216,60 +216,70 @@ function addImageFrame(slide, bytes, alt, left, top, width, height) {
 {
   const slide = presentation.slides.add();
   addBackground(slide);
-  addTitle(slide, "A DeFi number without evidence is impossible to trust", "01 / Problem");
+  addTitle(
+    slide,
+    "The Graph supplies data. AskChing builds the comparison.",
+    "01 / Problem",
+  );
 
-  addText(slide, "“USDC APY is 4.2%”", 72, 198, 480, 64, {
-    size: 38,
-    color: COLORS.warning,
-    bold: true,
-  });
-  addText(slide, "Which protocol? Which block? Which definition? When was it observed?", 74, 272, 470, 90, {
-    size: 23,
-    color: COLORS.muted,
-  });
-  addText(slide, "UNSUPPORTED", 74, 394, 300, 34, {
-    size: 18,
-    color: COLORS.magenta,
-    bold: true,
-    font: MONO_FONT,
-  });
-  addRule(slide, 566, 194, 0, COLORS.border, 1);
-
-  addText(slide, "AskChing requires", 642, 188, 430, 38, {
-    size: 18,
+  addRect(slide, 64, 202, 520, 398, COLORS.bgDeep, COLORS.border, 12);
+  addText(slide, "DIRECT SUBGRAPH RESEARCH", 90, 228, 452, 28, {
+    size: 16,
     color: COLORS.cyan,
     bold: true,
     font: MONO_FONT,
   });
-  const proofRows = [
-    ["SUBGRAPH ID", "where the value came from"],
-    ["BLOCK", "which chain state it reflects"],
-    ["TIMESTAMP", "when the source observed it"],
-    ["QUERY HASH", "which query produced it"],
-  ];
-  proofRows.forEach(([label, desc], i) => {
-    const y = 244 + i * 78;
-    addText(slide, label, 642, y, 230, 30, {
-      size: 18,
-      color: COLORS.green,
-      bold: true,
-      font: MONO_FONT,
-    });
-    addText(slide, desc, 872, y, 320, 32, {
-      size: 18,
-      color: COLORS.text,
-    });
-    addRule(slide, 642, y + 48, 550, COLORS.border, 1);
-  });
-  addText(slide, "Evidence travels with the number.", 642, 576, 550, 42, {
-    size: 25,
+  addText(slide, "The researcher must", 90, 272, 420, 34, {
+    size: 23,
     color: COLORS.text,
     bold: true,
+  });
+  const directSteps = [
+    "01  find the active deployments",
+    "02  inspect each protocol schema",
+    "03  write GraphQL for every source",
+    "04  reconcile APY definitions and units",
+    "05  assemble citations and gaps",
+  ];
+  directSteps.forEach((text, i) => {
+    addText(slide, text, 92, 330 + i * 48, 432, 28, {
+      size: 17,
+      color: i === 3 ? COLORS.warning : COLORS.muted,
+      font: MONO_FONT,
+    });
+  });
+
+  addRect(slide, 628, 202, 588, 398, COLORS.panel, COLORS.green, 12);
+  addText(slide, "ASKCHING RESEARCH LAYER", 654, 228, 510, 28, {
+    size: 16,
+    color: COLORS.green,
+    bold: true,
+    font: MONO_FONT,
+  });
+  addText(slide, "The user asks one question", 654, 272, 500, 34, {
+    size: 23,
+    color: COLORS.text,
+    bold: true,
+  });
+  const askChingSteps = [
+    "01  fan out across live subgraphs",
+    "02  normalize comparable definitions",
+    "03  rank only valid observations",
+    "04  attach block-level provenance",
+    "05  fail closed or report explicit gaps",
+  ];
+  askChingSteps.forEach((text, i) => {
+    addText(slide, text, 656, 330 + i * 48, 510, 28, {
+      size: 17,
+      color: i === 4 ? COLORS.green : COLORS.text,
+      font: MONO_FONT,
+      bold: i === 4,
+    });
   });
   addFooter(slide, 2);
   addSpeakerNotes(
     slide,
-    "[0:15–0:35] Ask an AI which lending market has the best USDC rate and it may give you one confident number. But without the protocol, block, definition, or observation time, that number is difficult to trust. AskChing attaches the evidence to each figure: its subgraph, block, timestamp, and query hash.",
+    "[0:15–0:40] A user can query The Graph directly, and The Graph gives us the verifiable on-chain data. But answering a cross-protocol research question still means finding the correct deployments, inspecting different schemas, writing several queries, reconciling rate definitions, and assembling the evidence by hand. AskChing automates that research workflow. The user asks one question, and the system returns only comparable observations with citations or explicit gaps.",
   );
 }
 
@@ -277,7 +287,7 @@ function addImageFrame(slide, bytes, alt, left, top, width, height) {
 {
   const slide = presentation.slides.add();
   addBackground(slide);
-  addTitle(slide, "One MCP research layer connects agents to live subgraphs", "02 / Architecture");
+  addTitle(slide, "AskChing turns Graph access into comparable research", "02 / Architecture");
 
   const nodes = [
     { x: 64, w: 226, label: "ANY MCP CLIENT", detail: "Claude · Cursor · VS Code\nCodex · Gemini · ChatGPT", color: COLORS.cyan },
@@ -310,28 +320,41 @@ function addImageFrame(slide, bytes, alt, left, top, width, height) {
     }
   });
 
-  addRect(slide, 350, 458, 548, 90, COLORS.bgDeep, COLORS.border, 10);
-  addText(slide, "GROK DEMO CLI", 372, 478, 190, 26, {
+  addText(slide, "THE GRAPH", 116, 464, 190, 24, {
     size: 16,
+    color: COLORS.cyan,
+    bold: true,
+    font: MONO_FONT,
+  });
+  addText(slide, "queryable protocol data + block provenance", 274, 460, 850, 32, {
+    size: 19,
+    color: COLORS.text,
+  });
+  addText(slide, "ASKCHING", 116, 514, 190, 24, {
+    size: 16,
+    color: COLORS.green,
+    bold: true,
+    font: MONO_FONT,
+  });
+  addText(slide, "fan-out + normalization + ranking + evidence gates", 274, 510, 850, 32, {
+    size: 19,
+    color: COLORS.text,
+  });
+  addRect(slide, 116, 566, 1008, 54, COLORS.bgDeep, COLORS.border, 8);
+  addText(slide, "GROK DEMO CLI", 142, 580, 190, 24, {
+    size: 14,
     color: COLORS.magenta,
     bold: true,
     font: MONO_FONT,
   });
-  addText(slide, "Grok interprets the question and selects an AskChing tool.", 568, 474, 306, 50, {
+  addText(slide, "Grok routes the demo. Other MCP clients call AskChing directly.", 342, 577, 748, 28, {
     size: 17,
     color: COLORS.muted,
   });
-  addText(slide, "The MCP server remains model-independent.", 350, 582, 548, 34, {
-    size: 22,
-    color: COLORS.green,
-    bold: true,
-    align: "center",
-  });
-  addImage(slide, logo, "AskChing logo", 1080, 500, 96, 96, "contain");
   addFooter(slide, 3);
   addSpeakerNotes(
     slide,
-    "[0:35–0:55] AskChing is a model-independent MCP server. Any compatible client can call the same seven tools. For our featured CLI demo, Grok interprets the question, selects a tool, and explains the cited result. AskChing then fans out through The Graph Gateway to four lending and two DEX subgraphs on Ethereum mainnet.",
+    "[0:40–1:00] The Graph is the load-bearing data layer: it gives AskChing queryable protocol data with block provenance. AskChing adds the research logic above that access. It fans out across sources, normalizes comparable definitions, ranks valid observations, and enforces evidence gates. The MCP server remains model-independent. Grok routes questions in our demo CLI, while other MCP clients can call AskChing directly.",
   );
 }
 
