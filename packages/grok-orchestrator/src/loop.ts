@@ -324,11 +324,24 @@ export async function runGrokOrchestrator(options: {
   const toolCalls: ToolExecution[] = [];
 
   for (let turn = 0; turn < (options.maxTurns ?? 4); turn += 1) {
+    const startedAt = Date.now();
     const assistant = await options.client.complete({
       messages,
       tools: ASKCHING_TOOLS,
       toolChoice: 'auto',
     });
+    // eslint-disable-next-line no-console
+    console.log(
+      JSON.stringify({
+        ts: new Date().toISOString(),
+        type: 'llm_decision',
+        turn,
+        model: 'grok-4.6',
+        toolCount: assistant.tool_calls?.length ?? 0,
+        selectedTools: assistant.tool_calls?.map((call) => call.function.name) ?? [],
+        durationMs: Date.now() - startedAt,
+      }),
+    );
     messages.push(assistant);
 
     if (!assistant.tool_calls?.length) {

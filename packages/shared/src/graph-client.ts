@@ -388,6 +388,7 @@ export class GraphGatewayClient {
 
   /** Shared transport for every Graph Gateway request this client makes. */
   async #post(source: SubgraphSource, operationName: string, query: string): Promise<unknown> {
+    const startedAt = Date.now();
     const response = await this.#fetch(
       `https://gateway.thegraph.com/api/subgraphs/id/${source.subgraphId}`,
       {
@@ -401,6 +402,17 @@ export class GraphGatewayClient {
     );
 
     if (!response.ok) {
+      // eslint-disable-next-line no-console
+      console.log(
+        JSON.stringify({
+          ts: new Date().toISOString(),
+          type: 'subgraph_query_error',
+          protocol: source.protocol,
+          operation: operationName,
+          httpStatus: response.status,
+          durationMs: Date.now() - startedAt,
+        }),
+      );
       throw new Error(
         `The Graph request for ${source.protocol} failed with HTTP ${response.status}`,
       );
@@ -409,6 +421,17 @@ export class GraphGatewayClient {
     const payload = (await response.json()) as {
       errors?: Array<{ message: string }>;
     };
+    // eslint-disable-next-line no-console
+    console.log(
+      JSON.stringify({
+        ts: new Date().toISOString(),
+        type: 'subgraph_query',
+        protocol: source.protocol,
+        operation: operationName,
+        status: payload.errors?.length ? 'error' : 'ok',
+        durationMs: Date.now() - startedAt,
+      }),
+    );
     if (payload.errors?.length) {
       throw new Error(
         `The Graph query for ${source.protocol} failed: ${payload.errors
