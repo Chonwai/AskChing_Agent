@@ -6,4 +6,5 @@ coverage/
 .getsuperpower/
 .superpowers/
 .vercel
+.tmp/
 .env*
