@@ -1,7 +1,7 @@
 ---
 title: AskChing handoff
 updated: 2026-09-13
-checkpoint: 7689162
+checkpoint: c4c8f5f
 status: video-presentation-complete
 ---
 
@@ -11,14 +11,16 @@ Updated: 2026-09-13 (Asia/Hong_Kong)
 
 ## ETHOnline video presentation — COMPLETE
 
-- Final editable deck: `submission-assets/AskChing-ETHOnline-Video-Deck.pptx`.
+- **Current final deck:** `submission-assets/AskChing-ETHOnline-Video-Deck-v2.pptx` (`c4c8f5f`). It replaces v1 for recording but does not overwrite it.
+- V2 directly answers “why not query The Graph yourself?” on slides 2–3: The Graph supplies queryable data and block provenance; AskChing automates deployment/schema selection, multi-source fan-out, definition normalization, ranking, citation assembly, and fail-closed gaps. Source revision: `1211a08`.
+- The original `submission-assets/AskChing-ETHOnline-Video-Deck.pptx` remains preserved because it was open and locally autosaved during the v2 revision.
 - Approved design: `docs/superpowers/specs/2026-09-13-video-presentation-design.md` (`f2f6b3c`).
 - Execution plan: `docs/superpowers/plans/2026-09-13-video-presentation.md` (`12ddeb6`).
 - Reproducible Artifact Tool source: `submission-assets/source/video-deck.mjs` (`76c6fca`), refined at `6e1c0cd` so the live-demo slide shows a matching `compare_markets` tool trace instead of a `discover_yields` screenshot.
-- Final deck commit: `7689162`. The deck has **7 slides**, uses the approved Terminal Proof branding, and includes timed speaker notes on every slide.
+- Original v1 deck commit: `7689162`; current v2 deck commit: `c4c8f5f`. Both have **7 slides**, use the approved Terminal Proof branding, and include timed speaker notes on every slide.
 - Slide 4 contains the explicit recording cue: read the canonical three-market USDC prompt, switch to the deployed app, point out the rank, `asOf`, subgraph ID, block, and query hash, then return to the deck.
 - Validation evidence: finalizer found 7 slides, 0 package findings, 0 layout findings, and approved font use (`Arial`, `Courier New`); first-party Artifact Tool re-import passed; final rendering produced 7 slides; overflow test passed; 7 speaker-note parts are present; the extracted slide and note text contains the canonical endpoint once and no `GRAPH_API_KEY`, `XAI_API_KEY`, bearer token, or `.env` marker.
-- Final SHA-256: `7b546c23ad6c087c7c673cfa89e2674542a773f21ed53ec728d6fcedd5ad55fa` (1.7 MB).
+- Current v2 SHA-256: `dca47813c7f9cf5a49ff66f82c1b2d98824325b5ac9cdca9e352314c4c15948a` (1.6 MB).
 - **Next action:** record the 3–4 minute narrated video. Present slides 1–3, use slide 4 to switch to `https://ask-ching-agent.vercel.app`, run the live `compare_markets` prompt, return for slides 5–7, and end on the remote MCP URL plus public GitHub repository.
 
 ## Submission image batch — COMPLETE
