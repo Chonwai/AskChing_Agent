@@ -39,11 +39,10 @@ const BODY_FONT = "Arial";
 const MONO_FONT = "Courier New";
 
 const asset = (name) => path.join(workspaceDir, "submission-assets", name);
-const [logo, cover, toolCalling, yieldResults, citationsRisks] = await Promise.all(
+const [logo, cover, yieldResults, citationsRisks] = await Promise.all(
   [
     "askching-logo-512.png",
     "askching-cover-1600x900.png",
-    "01-tool-calling-1600x900.png",
     "02-yield-results-1600x900.png",
     "03-citations-risks-1600x900.png",
   ].map((name) => fs.readFile(asset(name))),
@@ -368,7 +367,52 @@ function addImageFrame(slide, bytes, alt, left, top, width, height) {
     valign: "middle",
   });
 
-  addImageFrame(slide, toolCalling, "AskChing Grok tool-calling CLI", 618, 196, 598, 336);
+  addRect(slide, 618, 196, 598, 336, COLORS.bgDeep, COLORS.border, 12);
+  addRect(slide, 618, 196, 598, 42, COLORS.panel, COLORS.border, 12);
+  addText(slide, "●  ●  ●    askching · grok tool loop", 638, 207, 430, 20, {
+    size: 12,
+    color: COLORS.faint,
+    font: MONO_FONT,
+  });
+  addText(slide, "selected tool", 646, 266, 180, 24, {
+    size: 14,
+    color: COLORS.muted,
+    font: MONO_FONT,
+  });
+  addText(slide, "compare_markets", 838, 266, 330, 24, {
+    size: 17,
+    color: COLORS.cyan,
+    bold: true,
+    font: MONO_FONT,
+  });
+  addText(slide, "query fan-out", 646, 316, 180, 24, {
+    size: 14,
+    color: COLORS.muted,
+    font: MONO_FONT,
+  });
+  addText(slide, "3 live lending subgraphs", 838, 316, 330, 24, {
+    size: 17,
+    color: COLORS.text,
+    font: MONO_FONT,
+  });
+  addText(slide, "sources", 646, 366, 180, 24, {
+    size: 14,
+    color: COLORS.muted,
+    font: MONO_FONT,
+  });
+  addText(slide, "Aave V3 · Compound V3 · Spark Lend", 838, 366, 330, 44, {
+    size: 16,
+    color: COLORS.text,
+    font: MONO_FONT,
+  });
+  addRule(slide, 646, 428, 540, COLORS.border, 1);
+  addText(slide, "✓ ranked values   ✓ citations   ✓ asOf", 646, 456, 540, 30, {
+    size: 16,
+    color: COLORS.green,
+    bold: true,
+    font: MONO_FONT,
+    align: "center",
+  });
   addText(slide, "Point out", 620, 556, 130, 26, {
     size: 14,
     color: COLORS.cyan,
